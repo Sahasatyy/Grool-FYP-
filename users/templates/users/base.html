@@ -24,66 +24,64 @@
       crossorigin="anonymous"
     />
 
-    <title>{% block title %}{% endblock %}</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
   <style>
-   
-
+  
   </style>
+
+  {% if messages %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            {% for message in messages %}
+                Swal.fire({
+                    icon: "{% if message.tags == 'success' %}success{% elif message.tags == 'error' or message.tags == 'danger' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% endif %}",
+                    title: "{% if message.tags == 'success' %}Success!{% elif message.tags == 'error' or message.tags == 'danger' %}Error!{% elif message.tags == 'warning' %}Warning!{% elif message.tags == 'info' %}Info{% endif %}",
+                    text: "{{ message }}",
+                    timer: 5000,
+                    showConfirmButton: false
+                });
+            {% endfor %}
+        });
+    </script>
+{% endif %}
+
   <body>
     <div class="container p-3 my-3">
       <div class="row">
         <div class="col-md-12">
-          <nav
-            class="navbar navbar-expand-md navbar-light"
-            style="background-color: transparent"
-          >
-            <button
-              type="button"
-              class="navbar-toggler"
-              data-toggle="collapse"
-              data-target="#navbarCollapse"
-            >
-              <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarCollapse">
-              <div class="navbar-nav ml-auto">
+          {% if not hide_navbar %}
+          <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+            <div class="container-fluid">
+              <!-- Left: Logo -->
+              <a class="navbar-brand" href="#">Grool</a>
+          
+              <!-- Middle: Search Bar -->
+              <form class="d-flex mx-auto" style="width: 40%">
+                <input
+                  class="form-control me-2"
+                  type="search"
+                  placeholder="Search songs, artists..."
+                  aria-label="Search"
+                />
+              </form>
+          
+              <!-- Right: Profile & Logout -->
+              <div class="navbar-nav ms-auto">
                 {% if user.is_authenticated %}
                 <a href="#" class="nav-item nav-link">Profile</a>
-                <form
-                method="post"
-                action="{% url 'logout' %}"
-                class="form-inline"
-                onsubmit="return confirmLogout(event)"
-              >
-                {% csrf_token %}
-                <button class="btn btn-outline-danger" type="submit" aria-label="Log out">
-                  Log out
-                </button>
+                <form id="logout-form" method="POST" action="{% url 'logout' %}">
+                  {% csrf_token %}
+                  <button type="submit" id="logout-btn" class="btn btn-danger">Logout</button>
               </form>
+              {% else %}
+              <a href="{% url 'login' %}" class="btn btn-primary">Sign In</a>
                 {% endif %}
               </div>
             </div>
           </nav>
-
-          <!-- Flash messages -->
-          {% if messages %} {% for message in messages %}
-          <div
-            class="alert alert-{{ message.tags }} alert-dismissible fade show"
-            role="alert"
-          >
-            {{ message }}
-            <button
-              type="button"
-              class="close"
-              data-dismiss="alert"
-              aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          {% endfor %} {% endif %}
-
+          {% endif %}
+          
           <!-- Main content block -->
           {% block content %}{% endblock %}
         </div>
@@ -119,6 +117,34 @@
           event.target.submit(); // Submit the form if confirmed
         }
       }
+
     </script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("logout-btn").addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent form from submitting immediately
+            
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You will be logged out!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Yes, Logout!",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById("logout-form").submit(); // Submit the form
+                }
+            });
+        });
+    });
+  </script>
+
   </body>
 </html>
+
+
+

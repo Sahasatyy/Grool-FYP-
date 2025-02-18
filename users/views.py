@@ -12,7 +12,6 @@ from .forms import RegisterForm, LoginForm
 def home(request):
     return render(request, 'users/home.html')
 
-
 class RegisterView(View):
     form_class = RegisterForm
     initial = {'key': 'value'}
@@ -26,7 +25,7 @@ class RegisterView(View):
 
     def get(self, request, *args, **kwargs):
         form = self.form_class(initial=self.initial)
-        return render(request, self.template_name, {'form': form})
+        return render(request, self.template_name, {'form': form, 'hide_navbar': True})  # Hide navbar
 
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST)
@@ -34,8 +33,7 @@ class RegisterView(View):
             user = form.save()
             messages.success(request, f'Account created successfully for {user.username}! You can now log in.')
             return redirect(to='login')
-        return render(request, self.template_name, {'form': form})
-
+        return render(request, self.template_name, {'form': form, 'hide_navbar': True})  # Hide navbar
 
 class CustomLoginView(LoginView):
     form_class = LoginForm
@@ -48,3 +46,9 @@ class CustomLoginView(LoginView):
             self.request.session.set_expiry(0)
             self.request.session.modified = True
         return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['hide_navbar'] = True  # Hide navbar
+        return context
+

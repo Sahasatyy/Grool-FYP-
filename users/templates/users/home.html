@@ -1,14 +1,217 @@
-{% extends "users/base.html" %} {% block title %} Home Page {% endblock title%}
+{% extends "users/base.html" %}
+
+{% block title %}Grool - Home{% endblock title %}
+
 {% block content %}
-<div class="jumbotron">
-  <h1 class="display-4">Welcome</h1>
-  <p class="lead">This is a default home page</p>
-  <hr class="my-4" />
-  <p class="lead">
-    <a class="btn btn-primary btn-lg" href="{% url 'login' %}" role="button"
-      >Sign in</a
-    >
-  </p>
-</div>
+<style>
+  /* General Reset */
+  body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #121212;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  
+  /* Navbar */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #1e1e1e;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+  }
+  
+  .logo {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #bb86fc;
+  }
+  
+  .search-bar {
+    flex: 1;
+    margin-left: 2rem;
+  }
+  
+  .search-bar input {
+    padding: 0.7rem;
+    border-radius: 20px;
+    border: none;
+    width: 300px;
+    background-color: #2e2e2e;
+    color: white;
+  }
+  
+  .user-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .user-actions button {
+    padding: 0.5rem 1rem;
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .user-actions button:hover {
+    background-color: darkred;
+  }
+  
+  /* Sidebar */
+  .sidebar {
+    width: 250px;
+    background-color: #1e1e1e;
+    padding: 2rem;
+    position: fixed;
+    top: 60px;
+    bottom: 0;
+    left: 0;
+    overflow-y: auto;
+  }
+  
+  .sidebar h2 {
+    color: #bb86fc;
+  }
+  
+  .sidebar ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .sidebar li {
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .sidebar li:hover {
+    background-color: #2e2e2e;
+  }
+  
+  .main-content {
+    margin-left: 270px; /* Avoid overlap with sidebar */
+    margin-top: 90px; /* Ensure space below navbar */
+    padding: 3rem 4rem; /* More space inside */
+  }
+  
+  /* Songs Section - Add More Space */
+  .songs {
+    padding: 3rem; /* More space around */
+    margin: 0 auto; /* Center content */
+    max-width: 900px; /* Limit width for better readability */
+  }
+  
+  /* Song Items - Add Breathing Space */
+  .song-item {
+    padding: 1.5rem; /* Increase padding inside */
+    margin-bottom: 1.5rem; /* More gap between items */
+    border-radius: 12px;
+  }
+  
+  .song-item:hover {
+    background-color: #3a3a3a;
+  }
+  
+  /* Music Controller (Footer) */
+  .music-controller {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #1e1e1e;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+  }
+  
+  .song-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .song-info img {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+  }
+  
+  .song-info div p {
+    font-size: 1rem;
+    font-weight: bold;
+  }
+  
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .controls button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: white;
+    margin: 0 10px;
+  }
+  
+  .controls button:hover {
+    color: #bb86fc;
+  }
+  
+</style>
+    <main>
+        <nav class="sidebar">
+            <h2>Playlists</h2>
+            <ul>
+                <li>Favorites</li>
+                <li>Top Hits</li>
+                <li>Workout Mix</li>
+                <li>Chill Vibes</li>
+                <li>New Releases</li>
+            </ul>
+        </nav>
+        
+        <section class="songs">
+            <h2>Trending Songs</h2>
+            <div class="song-list">
+                <div class="song-item" onclick="playMusic('Song 1')">Song 1 - Artist A</div>
+                <div class="song-item" onclick="playMusic('Song 2')">Song 2 - Artist B</div>
+                <div class="song-item" onclick="playMusic('Song 3')">Song 3 - Artist C</div>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="music-controller">
+        <div class="current-song">
+            <p id="current-song-name">No song playing</p>
+        </div>
+        <div class="controls">
+            <button onclick="previousSong()">⏮</button>
+            <button onclick="togglePlayPause()">▶️</button>
+            <button onclick="nextSong()">⏭</button>
+            <button onclick="shuffle()">🔀</button>
+            <button onclick="repeat()">🔁</button>
+            <button onclick="closePlayer()">❌</button>
+        </div>
+    </footer>
+    
+    <script src="/static/js/script.js"></script>
+
 
 {% endblock content %}
