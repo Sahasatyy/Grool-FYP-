@@ -1,0 +1,20 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="module">
+    <h2>Confirm Artist Verification</h2>
+    <div class="form-row">
+        <p>Are you sure you want to verify {{ artist_profile.artist_name }} ({{ artist_profile.user_profile.user.username }}) as an artist?</p>
+        <p>This will grant the user artist privileges on the platform.</p>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="submit-row">
+            <input type="submit" value="Verify Artist" class="default" />
+            <a href="{% url 'admin:app_artistprofile_changelist' %}" class="button cancel-link">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

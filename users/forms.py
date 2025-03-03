@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm 
+from .models import ArtistProfile
 
 
 class RegisterForm(UserCreationForm):
@@ -63,3 +64,11 @@ class LoginForm(AuthenticationForm):
     class Meta:
         model = User
         fields = ['username', 'password', 'remember_me']
+
+
+
+class ArtistVerificationForm(forms.ModelForm):
+    class Meta:
+        model = ArtistProfile
+        fields = ['artist_name', 'genre']
+        # You might add more fields like 'website', 'social_media_links', etc.

@@ -1,0 +1,380 @@
+{% extends "users/base.html" %}
+
+{% block title %}{{ user.username }} - Profile{% endblock %}
+
+{% block content %}
+<style>
+  :root {
+    --primary-color: #ff7043;
+    --secondary-color: #ff5722;
+    --accent-color: #ff9e80;
+    --light-color: #f8f9fa;
+    --dark-color: #1a1a1e;
+    --darker-color: #121218;
+    --text-color: #e9e9e9;
+    --border-radius: 12px;
+    --card-bg: #1e1e24;
+    --card-secondary-bg: #2d2d34;
+    --profile-card-bg: #2d2d34;
+    --feature-card-bg: #1e1e24;
+    --input-bg: #2d2d34;
+  }
+  
+  body {
+    font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: var(--text-color);
+    background-color: #121212;
+    line-height: 1.6;
+  }
+  
+  /* Profile Card Styles */
+  .profile-card {
+    background-color: var(--profile-card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    border: none;
+  }
+  
+  .profile-image-container {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 5px solid #1e1e24;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  .profile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  /* Form Controls */
+  .form-control {
+    border-radius: 10px;
+    padding: 12px 15px;
+    border: 1px solid #444;
+  }
+  
+  .form-control:focus {
+    box-shadow: 0 0 0 3px rgba(255, 112, 67, 0.3);
+    border-color: var(--primary-color);
+  }
+  
+  /* Buttons */
+  .btn {
+    padding: 10px 20px;
+    font-weight: 500;
+    border-radius: 50px;
+  }
+  
+  .btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+  }
+  
+  .btn-primary:hover {
+    background-color: #f4683f;
+    border-color: #f4683f;
+  }
+  
+  .btn-outline-primary {
+    color: var(--light-color);
+    border-color: var(--light-color);
+  }
+  
+  .btn-outline-primary:hover {
+    background-color: var(--light-color);
+    color: var(--primary-color);
+  }
+  
+  .btn-outline-secondary {
+    color: var(--light-color);
+    border-color: var(--light-color);
+  }
+  
+  .btn-outline-secondary:hover {
+    background-color: var(--light-color);
+    color: var(--dark-color);
+  }
+  
+  /* Feature Cards */
+  .feature-card {
+    background-color: var(--feature-card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid #2a2a34;
+    transition: all 0.3s ease;
+    height: 100%;
+  }
+  
+  .feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  }
+  
+  .feature-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-bottom: 15px;
+    background-color: rgba(255, 112, 67, 0.2);
+    color: var(--primary-color);
+  }
+  
+  .feature-title {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--light-color);
+  }
+  
+  .feature-text {
+    color: #aaa;
+  }
+  
+  /* Artist verification banner */
+  .artist-verification {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    background-color: var(--card-secondary-bg);
+  }
+  
+  .alert {
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin-top: 20px;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 992px) {
+    .search-container {
+      width: 60%;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .search-container {
+      width: 100%;
+      margin: 10px 0;
+    }
+   
+    .profile-image-container {
+      width: 150px;
+      height: 150px;
+    }
+   
+    .feature-card {
+      margin-bottom: 20px;
+    }
+   
+    .navbar > .container {
+      flex-direction: column;
+    }
+   
+    .d-flex.mx-auto.search-container {
+      margin: 15px 0;
+      width: 100%;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .profile-image-container {
+      width: 120px;
+      height: 120px;
+    }
+   
+    .profile-card .row > div {
+      text-align: center;
+    }
+   
+    .profile-card .col-md-3.text-end {
+      text-align: center !important;
+      margin-top: 20px;
+    }
+   
+    .btn {
+      padding: 8px 16px;
+      font-size: 0.9rem;
+    }
+  }
+</style>
+
+<div class="container-fluid p-0">
+  <!-- Profile Section -->
+  <div class="container mt-4">
+    <div class="card profile-card border-0">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-3 text-center">
+            <div class="profile-image-container mx-auto mb-3">
+              <img src="https://via.placeholder.com/200" class="profile-image" alt="Profile Image">
+            </div>
+            <button class="btn btn-outline-primary rounded-pill px-4 mb-3">
+              <i class="bi bi-camera me-2"></i>Change photo
+            </button>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <input type="text" class="form-control" placeholder="Your first name" value="{{ user_profile.user.first_name }}">
+            </div>
+            <div class="mb-3">
+              <input type="text" class="form-control" placeholder="Your last name" value="{{ user_profile.user.last_name }}">
+            </div>
+            <div class="mb-3">
+              <textarea class="form-control" rows="3" placeholder="Your description">{{ user_profile.bio|default:'' }}</textarea>
+            </div>
+          </div>
+          <div class="col-md-3 text-end">
+            <button class="btn btn-outline-secondary rounded-pill mb-3 w-100">
+              <i class="bi bi-key me-2"></i>Change password
+            </button>
+            <button class="btn btn-outline-secondary rounded-pill mb-3 w-100">
+              <i class="bi bi-envelope me-2"></i>Change email
+            </button>
+            <button class="btn btn-primary rounded-pill mt-4">
+              <i class="bi bi-check2 me-2"></i>Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Artist Verification Status Section -->
+    {% if has_artist_request %}
+      <div class="alert alert-info mt-4">
+        <i class="bi bi-info-circle me-2"></i> Your artist verification request is pending approval.
+      </div>
+    {% else %}
+      <div class="artist-verification mt-4">
+        <h3 class="mb-3">Are you an artist?</h3>
+        <p>Request verification to share your music with fans and access creator tools.</p>
+        <a href="{% url 'request_artist_status' %}" class="btn btn-primary">
+          <i class="bi bi-music-note-beamed me-2"></i>Become an Artist
+        </a>
+      </div>
+    {% endif %}
+
+    <!-- User Features Section -->
+    <div class="row mt-4 mb-4">
+      <div class="col-lg-3 col-md-6 mb-4">
+        <div class="feature-card p-4">
+          <div class="feature-icon mx-auto">
+            <i class="bi bi-collection-play fs-3"></i>
+          </div>
+          <h5 class="feature-title text-center">My Playlists</h5>
+          <p class="feature-text text-center">Create and manage your custom playlists</p>
+          <div class="text-center mt-3">
+            <button class="btn btn-outline-primary btn-sm rounded-pill">
+              <i class="bi bi-plus-lg me-1"></i>Create New
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 mb-4">
+        <div class="feature-card p-4">
+          <div class="feature-icon mx-auto">
+            <i class="bi bi-heart fs-3"></i>
+          </div>
+          <h5 class="feature-title text-center">Favorites</h5>
+          <p class="feature-text text-center">Access your liked songs and albums</p>
+          <div class="text-center mt-3">
+            <button class="btn btn-outline-primary btn-sm rounded-pill">
+              <i class="bi bi-music-note-list me-1"></i>View All
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 mb-4">
+        <div class="feature-card p-4">
+          <div class="feature-icon mx-auto">
+            <i class="bi bi-clock-history fs-3"></i>
+          </div>
+          <h5 class="feature-title text-center">Recently Played</h5>
+          <p class="feature-text text-center">See your listening history</p>
+          <div class="text-center mt-3">
+            <button class="btn btn-outline-primary btn-sm rounded-pill">
+              <i class="bi bi-arrow-clockwise me-1"></i>View History
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 mb-4">
+        <div class="feature-card p-4">
+          <div class="feature-icon mx-auto">
+            <i class="bi bi-gear fs-3"></i>
+          </div>
+          <h5 class="feature-title text-center">Settings</h5>
+          <p class="feature-text text-center">Customize your listening experience</p>
+          <div class="text-center mt-3">
+            <button class="btn btn-outline-primary btn-sm rounded-pill">
+              <i class="bi bi-sliders me-1"></i>Preferences
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Initialize form elements with placeholder values
+    const firstNameInput = document.querySelector('input[placeholder="Your first name"]');
+    const lastNameInput = document.querySelector('input[placeholder="Your last name"]');
+    const descriptionTextarea = document.querySelector('textarea[placeholder="Your description"]');
+   
+    if (firstNameInput && lastNameInput && descriptionTextarea) {
+      // Save button functionality
+      const saveButton = document.querySelector('.btn-primary');
+     
+      if (saveButton) {
+        saveButton.addEventListener('click', () => {
+          // Get form values
+          const firstName = firstNameInput.value;
+          const lastName = lastNameInput.value;
+          const description = descriptionTextarea.value;
+         
+          // Simple validation
+          if (firstName && lastName) {
+            // Show success message
+            alert(`Profile updated successfully!\nName: ${firstName} ${lastName}\nDescription: ${description}`);
+          } else {
+            alert('Please fill in at least your first and last name.');
+          }
+        });
+      }
+    }
+
+    // Add hover effects to feature cards
+    const featureCards = document.querySelectorAll('.feature-card');
+    featureCards.forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        card.style.transform = 'translateY(-5px)';
+        card.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';
+      });
+     
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'translateY(0)';
+        card.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.1)';
+      });
+    });
+
+    // Feature card button functionality
+    const featureButtons = document.querySelectorAll('.feature-card .btn');
+    featureButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const featureTitle = e.target.closest('.feature-card').querySelector('.feature-title').textContent;
+        alert(`${featureTitle} feature will be available soon!`);
+      });
+    });
+  });
+</script>
+{% endblock %}

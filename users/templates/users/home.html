@@ -3,125 +3,320 @@
 {% block title %}Grool - Home{% endblock title %}
 
 {% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 <style>
   /* General Reset */
-  body {
-    font-family: 'Poppins', sans-serif;
+  * {
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Poppins', sans-serif;
     background-color: #121212;
     color: white;
     display: flex;
     flex-direction: column;
     height: 100vh;
+    overflow: hidden;
   }
   
-  /* Navbar */
-  header {
+  /* Content Wrapper */
+  .content-wrapper {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 2rem;
-    background-color: #1e1e1e;
-    width: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-  }
-  
-  .logo {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: #bb86fc;
-  }
-  
-  .search-bar {
-    flex: 1;
-    margin-left: 2rem;
-  }
-  
-  .search-bar input {
-    padding: 0.7rem;
-    border-radius: 20px;
-    border: none;
-    width: 300px;
-    background-color: #2e2e2e;
-    color: white;
-  }
-  
-  .user-actions {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-  
-  .user-actions button {
-    padding: 0.5rem 1rem;
-    background-color: red;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .user-actions button:hover {
-    background-color: darkred;
+    height: calc(100vh - 160px);
+    margin-top: 70px;
+    margin-right:40px;
   }
   
   /* Sidebar */
   .sidebar {
     width: 250px;
-    background-color: #1e1e1e;
-    padding: 2rem;
-    position: fixed;
-    top: 60px;
-    bottom: 0;
     left: 0;
+    background-color: #1a1a1a;
+    padding: 1.5rem;
     overflow-y: auto;
+    border-right: 1px solid #333;
+    flex-shrink: 0;
   }
   
-  .sidebar h2 {
+  .sidebar::-webkit-scrollbar {
+    width: 5px;
+  }
+  
+  .sidebar::-webkit-scrollbar-thumb {
+    background-color: #444;
+    border-radius: 5px;
+  }
+  
+  .sidebar-section {
+    margin-bottom: 2rem;
+  }
+  
+  .sidebar h3 {
     color: #bb86fc;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
   }
   
   .sidebar ul {
     list-style: none;
-    padding: 0;
   }
   
   .sidebar li {
-    padding: 10px;
+    padding: 0.7rem 0.8rem;
+    margin-bottom: 0.3rem;
     cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+  }
+  
+  .sidebar li i {
+    margin-right: 10px;
+    font-size: 1.1rem;
   }
   
   .sidebar li:hover {
     background-color: #2e2e2e;
   }
   
+  .sidebar li.active {
+    background-color: #3e3e3e;
+    font-weight: 500;
+  }
+  
+  .create-playlist {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    color: #aaa;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .create-playlist:hover {
+    color: #bb86fc;
+  }
+  
+  .create-playlist i {
+    margin-right: 8px;
+    font-size: 1.2rem;
+  }
+  
+  /* Main Content */
   .main-content {
-    margin-left: 270px; /* Avoid overlap with sidebar */
-    margin-top: 90px; /* Ensure space below navbar */
-    padding: 3rem 4rem; /* More space inside */
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
   }
   
-  /* Songs Section - Add More Space */
-  .songs {
-    padding: 3rem; /* More space around */
-    margin: 0 auto; /* Center content */
-    max-width: 900px; /* Limit width for better readability */
+  .main-content::-webkit-scrollbar {
+    width: 8px;
   }
   
-  /* Song Items - Add Breathing Space */
+  .main-content::-webkit-scrollbar-thumb {
+    background-color: #444;
+    border-radius: 8px;
+  }
+  
+  .section-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #fff;
+  }
+  
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+  
+  .album-card {
+    background-color: #181818;
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .album-card:hover {
+    background-color: #282828;
+    transform: translateY(-5px);
+  }
+  
+  .album-image {
+    width: 100%;
+    aspect-ratio: 1/1;
+    background-color: #333;
+    border-radius: 6px;
+    margin-bottom: 0.8rem;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .album-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .play-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+  
+  .play-btn {
+    width: 48px;
+    height: 48px;
+    background-color: #bb86fc;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: scale(0.8);
+    transition: all 0.3s ease;
+  }
+  
+  .play-btn i {
+    color: #121212;
+    font-size: 1.2rem;
+  }
+  
+  .album-card:hover .play-overlay {
+    opacity: 1;
+  }
+  
+  .album-card:hover .play-btn {
+    transform: scale(1);
+  }
+  
+  .album-title {
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .album-artist {
+    color: #aaa;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .songs-section {
+    margin-top: 2rem;
+  }
+  
+  .song-list {
+    background-color: rgba(30, 30, 30, 0.5);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  
   .song-item {
-    padding: 1.5rem; /* Increase padding inside */
-    margin-bottom: 1.5rem; /* More gap between items */
-    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1.2rem;
+    border-bottom: 1px solid #333;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .song-item:last-child {
+    border-bottom: none;
   }
   
   .song-item:hover {
     background-color: #3a3a3a;
+  }
+  
+  .song-number {
+    width: 30px;
+    color: #aaa;
+    font-size: 0.9rem;
+  }
+  
+  .song-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+  
+  .song-thumbnail {
+    width: 40px;
+    height: 40px;
+    background-color: #333;
+    border-radius: 4px;
+    margin-right: 1rem;
+    overflow: hidden;
+  }
+  
+  .song-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .song-title-artist {
+    flex: 1;
+  }
+  
+  .song-title {
+    font-weight: 500;
+    margin-bottom: 0.2rem;
+  }
+  
+  .song-artist {
+    color: #aaa;
+    font-size: 0.85rem;
+  }
+  
+  .song-duration {
+    color: #aaa;
+    font-size: 0.9rem;
+    margin-left: 1rem;
+  }
+  
+  .song-actions {
+    display: flex;
+    gap: 1rem;
+    margin-left: 1rem;
+    opacity: 0;
+    transition: all 0.2s ease;
+  }
+  
+  .song-actions i {
+    color: #aaa;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .song-actions i:hover {
+    color: #bb86fc;
+  }
+  
+  .song-item:hover .song-actions {
+    opacity: 1;
   }
   
   /* Music Controller (Footer) */
@@ -130,88 +325,822 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 2rem;
-    background-color: #1e1e1e;
+    background-color: #1a1a1a;
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     width: 100%;
+    height: 90px;
+    border-top: 1px solid #333;
+    z-index: 1000;
   }
   
   .song-info {
     display: flex;
     align-items: center;
     gap: 1rem;
+    min-width: 180px;
   }
   
-  .song-info img {
-    width: 50px;
-    height: 50px;
-    border-radius: 10px;
+  .song-thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: 6px;
+    background-color: #333;
+    overflow: hidden;
   }
   
-  .song-info div p {
-    font-size: 1rem;
-    font-weight: bold;
+  .song-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
   
-  .controls {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+  .song-details h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
   }
   
-  .controls button {
-    background: none;
-    border: none;
+  .song-details p {
+    font-size: 0.8rem;
+    color: #aaa;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+  }
+  
+  .like-button {
+    color: #aaa;
     cursor: pointer;
-    font-size: 1.5rem;
-    color: white;
-    margin: 0 10px;
+    transition: all 0.2s ease;
   }
   
-  .controls button:hover {
+  .like-button:hover, .like-button.active {
     color: #bb86fc;
   }
   
+  .player-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 700px;
+  }
+  
+  .player-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  .control-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .control-button:hover {
+    color: #bb86fc;
+    transform: scale(1.1);
+  }
+  
+  .control-button.small i {
+    font-size: 1.1rem;
+  }
+  
+  .control-button.medium i {
+    font-size: 1.3rem;
+  }
+  
+  .control-button.large {
+    width: 40px;
+    height: 40px;
+    background-color: #fff;
+    border-radius: 50%;
+  }
+  
+  .control-button.large i {
+    font-size: 1.2rem;
+    color: #121212;
+  }
+  
+  .control-button.large:hover {
+    background-color: #bb86fc;
+  }
+  
+  .progress-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  
+  .time {
+    font-size: 0.75rem;
+    color: #aaa;
+    min-width: 35px;
+  }
+  
+  .progress-bar {
+    flex: 1;
+    height: 4px;
+    background-color: #4e4e4e;
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+  }
+  
+  .progress-fill {
+    position: absolute;
+    height: 100%;
+    background-color: #bb86fc;
+    border-radius: 2px;
+    width: 30%;
+  }
+  
+  .progress-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background-color: #fff;
+    border-radius: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    left: 30%;
+    opacity: 0;
+    transition: all 0.2s ease;
+  }
+  
+  .progress-bar:hover .progress-handle {
+    opacity: 1;
+  }
+  
+  .player-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 180px;
+    justify-content: flex-end;
+  }
+  
+  .volume-container {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  
+  .volume-icon {
+    color: #aaa;
+    cursor: pointer;
+  }
+  
+  .volume-icon:hover {
+    color: #fff;
+  }
+  
+  .volume-slider {
+    width: 80px;
+    height: 4px;
+    background-color: #4e4e4e;
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+  }
+  
+  .volume-fill {
+    position: absolute;
+    height: 100%;
+    background-color: #aaa;
+    border-radius: 2px;
+    width: 70%;
+  }
+  
+  .volume-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background-color: #fff;
+    border-radius: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    left: 70%;
+    opacity: 0;
+    transition: all 0.2s ease;
+  }
+  
+  .volume-slider:hover .volume-fill {
+    background-color: #bb86fc;
+  }
+  
+  .volume-slider:hover .volume-handle {
+    opacity: 1;
+  }
+  
+  .extra-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  
+  .extra-button {
+    color: #aaa;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .extra-button:hover, .extra-button.active {
+    color: #bb86fc;
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 1024px) {
+    .sidebar {
+      width: 200px;
+    }
+    
+    .grid-container {
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .search-bar {
+      display: none;
+    }
+    
+    .player-right .volume-container {
+      display: none;
+    }
+    
+    .grid-container {
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .sidebar {
+      width: 70px;
+      padding: 1rem 0.5rem;
+    }
+    
+    .sidebar h3 {
+      font-size: 0;
+      margin-bottom: 0.5rem;
+    }
+    
+    .sidebar li {
+      justify-content: center;
+      padding: 0.7rem 0;
+    }
+    
+    .sidebar li i {
+      margin-right: 0;
+      font-size: 1.3rem;
+    }
+    
+    .create-playlist {
+      justify-content: center;
+    }
+    
+    .create-playlist i {
+      margin-right: 0;
+    }
+    
+    .main-content {
+      padding: 1rem;
+    }
+    
+    .song-details h4, .song-details p {
+      max-width: 80px;
+    }
+  }
 </style>
-    <main>
-        <nav class="sidebar">
-            <h2>Playlists</h2>
-            <ul>
-                <li>Favorites</li>
-                <li>Top Hits</li>
-                <li>Workout Mix</li>
-                <li>Chill Vibes</li>
-                <li>New Releases</li>
-            </ul>
-        </nav>
-        
-        <section class="songs">
-            <h2>Trending Songs</h2>
-            <div class="song-list">
-                <div class="song-item" onclick="playMusic('Song 1')">Song 1 - Artist A</div>
-                <div class="song-item" onclick="playMusic('Song 2')">Song 2 - Artist B</div>
-                <div class="song-item" onclick="playMusic('Song 3')">Song 3 - Artist C</div>
+<body>
+
+  <!-- Main Content with Sidebar -->
+  <div class="content-wrapper">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="sidebar-section">
+        <h3>Menu</h3>
+        <ul>
+          <li class="active"><i class="bi bi-house-door"></i> Home</li>
+          <li><i class="bi bi-compass"></i> Explore</li>
+          <li><i class="bi bi-collection"></i> Library</li>
+          <li><i class="bi bi-heart"></i> Liked Songs</li>
+        </ul>
+      </div>
+      
+      <div class="sidebar-section">
+        <h3>Your Playlists</h3>
+        <ul>
+          <li><i class="bi bi-music-note-list"></i> Favorites</li>
+          <li><i class="bi bi-music-note-list"></i> Top Hits</li>
+          <li><i class="bi bi-music-note-list"></i> Workout Mix</li>
+          <li><i class="bi bi-music-note-list"></i> Chill Vibes</li>
+          <li><i class="bi bi-music-note-list"></i> New Releases</li>
+        </ul>
+        <div class="create-playlist">
+          <i class="bi bi-plus-circle"></i> Create Playlist
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <section>
+        <h2 class="section-title">Featured Albums</h2>
+        <div class="grid-container">
+          <!-- Album 1 -->
+          <div class="album-card">
+            <div class="album-image">
+              <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Album cover">
+              <div class="play-overlay">
+                <div class="play-btn">
+                  <i class="bi bi-play-fill"></i>
+                </div>
+              </div>
             </div>
-        </section>
+            <h4 class="album-title">After Hours</h4>
+            <p class="album-artist">The Weeknd</p>
+          </div>
+          
+          <!-- Album 2 -->
+          <div class="album-card">
+            <div class="album-image">
+              <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Album cover">
+              <div class="play-overlay">
+                <div class="play-btn">
+                  <i class="bi bi-play-fill"></i>
+                </div>
+              </div>
+            </div>
+            <h4 class="album-title">Future Nostalgia</h4>
+            <p class="album-artist">Dua Lipa</p>
+          </div>
+          
+          <!-- Album 3 -->
+          <div class="album-card">
+            <div class="album-image">
+              <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Album cover">
+              <div class="play-overlay">
+                <div class="play-btn">
+                  <i class="bi bi-play-fill"></i>
+                </div>
+              </div>
+            </div>
+            <h4 class="album-title">DAMN.</h4>
+            <p class="album-artist">Kendrick Lamar</p>
+          </div>
+          
+          <!-- Album 4 -->
+          <div class="album-card">
+            <div class="album-image">
+              <img src="https://images.unsplash.com/photo-1496293455970-f8581aae0e3b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Album cover">
+              <div class="play-overlay">
+                <div class="play-btn">
+                  <i class="bi bi-play-fill"></i>
+                </div>
+              </div>
+            </div>
+            <h4 class="album-title">Chromatica</h4>
+            <p class="album-artist">Lady Gaga</p>
+          </div>
+          
+          <!-- Album 5 -->
+          <div class="album-card">
+            <div class="album-image">
+              <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Album cover">
+              <div class="play-overlay">
+                <div class="play-btn">
+                  <i class="bi bi-play-fill"></i>
+                </div>
+              </div>
+            </div>
+            <h4 class="album-title">Fine Line</h4>
+            <p class="album-artist">Harry Styles</p>
+          </div>
+        </div>
+      </section>
+      
+      <section class="songs-section">
+        <h2 class="section-title">Trending Songs</h2>
+        <div class="song-list">
+          <!-- Song 1 -->
+          <div class="song-item" onclick="playMusic('Blinding Lights', 'The Weeknd')">
+            <div class="song-number">01</div>
+            <div class="song-info">
+              <div class="song-thumbnail">
+                <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Song thumbnail">
+              </div>
+              <div class="song-title-artist">
+                <div class="song-title">Blinding Lights</div>
+                <div class="song-artist">The Weeknd</div>
+              </div>
+            </div>
+            <div class="song-duration">3:20</div>
+            <div class="song-actions">
+              <i class="bi bi-heart"></i>
+              <i class="bi bi-plus-circle"></i>
+              <i class="bi bi-three-dots"></i>
+            </div>
+          </div>
+          
+          <!-- Song 2 -->
+          <div class="song-item" onclick="playMusic('Don\'t Start Now', 'Dua Lipa')">
+            <div class="song-number">02</div>
+            <div class="song-info">
+              <div class="song-thumbnail">
+                <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Song thumbnail">
+              </div>
+              <div class="song-title-artist">
+                <div class="song-title">Don't Start Now</div>
+                <div class="song-artist">Dua Lipa</div>
+              </div>
+            </div>
+            <div class="song-duration">3:03</div>
+            <div class="song-actions">
+              <i class="bi bi-heart"></i>
+              <i class="bi bi-plus-circle"></i>
+              <i class="bi bi-three-dots"></i>
+            </div>
+          </div>
+          
+          <!-- Song 3 -->
+          <div class="song-item" onclick="playMusic('HUMBLE.', 'Kendrick Lamar')">
+            <div class="song-number">03</div>
+            <div class="song-info">
+              <div class="song-thumbnail">
+                <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Song thumbnail">
+              </div>
+              <div class="song-title-artist">
+                <div class="song-title">HUMBLE.</div>
+                <div class="song-artist">Kendrick Lamar</div>
+              </div>
+            </div>
+            <div class="song-duration">2:57</div>
+            <div class="song-actions">
+              <i class="bi bi-heart"></i>
+              <i class="bi bi-plus-circle"></i>
+              <i class="bi bi-three-dots"></i>
+            </div>
+          </div>
+          
+          <!-- Song 4 -->
+          <div class="song-item" onclick="playMusic('Rain On Me', 'Lady Gaga, Ariana Grande')">
+            <div class="song-number">04</div>
+            <div class="song-info">
+              <div class="song-thumbnail">
+                <img src="https://images.unsplash.com/photo-1496293455970-f8581aae0e3b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Song thumbnail">
+              </div>
+              <div class="song-title-artist">
+                <div class="song-title">Rain On Me</div>
+                <div class="song-artist">Lady Gaga, Ariana Grande</div>
+              </div>
+            </div>
+            <div class="song-duration">3:02</div>
+            <div class="song-actions">
+              <i class="bi bi-heart"></i>
+              <i class="bi bi-plus-circle"></i>
+              <i class="bi bi-three-dots"></i>
+            </div>
+          </div>
+          
+          <!-- Song 5 -->
+          <div class="song-item" onclick="playMusic('Watermelon Sugar', 'Harry Styles')">
+            <div class="song-number">05</div>
+            <div class="song-info">
+              <div class="song-thumbnail">
+                <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Song thumbnail">
+              </div>
+              <div class="song-title-artist">
+                <div class="song-title">Watermelon Sugar</div>
+                <div class="song-artist">Harry Styles</div>
+              </div>
+            </div>
+            <div class="song-duration">2:54</div>
+            <div class="song-actions">
+              <i class="bi bi-heart"></i>
+              <i class="bi bi-plus-circle"></i>
+              <i class="bi bi-three-dots"></i>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <section>
+        <h2 class="section-title">Made For You</h2>
+        <div class="grid-container">
+          <!-- Playlist 1 -->
+          <div class="album-card">
+            <div class="album-image">
+              <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Playlist cover">
+              <div class="play-overlay">
+                <div class="play-btn">
+                  <i class="bi bi-play-fill"></i>
+                </div>
+              </div>
+            </div>
+            <h4 class="album-title">Daily Mix 1</h4>
+            <p class="album-artist">Based on your listening</p>
+          </div>
+          
+          <!-- Playlist 2 -->
+          <div class="album-card">
+            <div class="album-image">
+              <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Playlist cover">
+              <div class="play-overlay">
+                <div class="play-btn">
+                  <i class="bi bi-play-fill"></i>
+                </div>
+              </div>
+            </div>
+            <h4 class="album-title">Discover Weekly</h4>
+            <p class="album-artist">New music for you</p>
+          </div>
+          
+          <!-- Playlist 3 -->
+          <div class="album-card">
+            <div class="album-image">
+              <img src="https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Playlist cover">
+              <div class="play-overlay">
+                <div class="play-btn">
+                  <i class="bi bi-play-fill"></i>
+                </div>
+              </div>
+            </div>
+            <h4 class="album-title">Release Radar</h4>
+            <p class="album-artist">Latest releases from artists you follow</p>
+          </div>
+        </div>
+      </section>
     </main>
-    
-    <footer class="music-controller">
-        <div class="current-song">
-            <p id="current-song-name">No song playing</p>
-        </div>
-        <div class="controls">
-            <button onclick="previousSong()">⏮</button>
-            <button onclick="togglePlayPause()">▶️</button>
-            <button onclick="nextSong()">⏭</button>
-            <button onclick="shuffle()">🔀</button>
-            <button onclick="repeat()">🔁</button>
-            <button onclick="closePlayer()">❌</button>
-        </div>
-    </footer>
-    
-    <script src="/static/js/script.js"></script>
+  </div>
 
+  <!-- Music Controller (Footer) -->
+  <footer class="music-controller">
+    <div class="song-info">
+      <div class="song-thumb">
+        <img id="current-song-image" src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Current song">
+      </div>
+      <div class="song-details">
+        <h4 id="current-song-title">Blinding Lights</h4>
+        <p id="current-song-artist">The Weeknd</p>
+      </div>
+      <div class="like-button">
+        <i class="bi bi-heart"></i>
+      </div>
+    </div>
+    
+    <div class="player-center">
+      <div class="player-controls">
+        <button class="control-button small">
+          <i class="bi bi-shuffle"></i>
+        </button>
+        <button class="control-button medium">
+          <i class="bi bi-skip-start-fill"></i>
+        </button>
+        <button class="control-button large">
+          <i class="bi bi-play-fill"></i>
+        </button>
+        <button class="control-button medium">
+          <i class="bi bi-skip-end-fill"></i>
+        </button>
+        <button class="control-button small">
+          <i class="bi bi-repeat"></i>
+        </button>
+      </div>
+      
+      <div class="progress-container">
+        <div class="time">1:12</div>
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+          <div class="progress-handle"></div>
+        </div>
+        <div class="time">3:20</div>
+      </div>
+    </div>
+    
+    <div class="player-right">
+      <div class="volume-container">
+        <div class="volume-icon">
+          <i class="bi bi-volume-up"></i>
+        </div>
+        <div class="volume-slider">
+          <div class="volume-fill"></div>
+          <div class="volume-handle"></div>
+        </div>
+      </div>
+      
+      <div class="extra-controls">
+        <div class="extra-button">
+          <i class="bi bi-music-note-list"></i>
+        </div>
+        <div class="extra-button">
+          <i class="bi bi-laptop"></i>
+        </div>
+      </div>
+    </div>
+  </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+
+    let currentSong = {
+      title: "Blinding Lights",
+      artist: "The Weeknd",
+      image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
+      duration: "3:20",
+      progress: 30
+    };
+    
+    let isPlaying = false;
+    let isLiked = false;
+    let volume = 70;
+    
+    // DOM Elements
+    const playButton = document.querySelector('.control-button.large i');
+    const likeButton = document.querySelector('.like-button i');
+    const progressFill = document.querySelector('.progress-fill');
+    const progressHandle = document.querySelector('.progress-handle');
+    const volumeFill = document.querySelector('.volume-fill');
+    const volumeHandle = document.querySelector('.volume-handle');
+    const currentSongTitle = document.getElementById('current-song-title');
+    const currentSongArtist = document.getElementById('current-song-artist');
+    const currentSongImage = document.getElementById('current-song-image');
+    
+    // Initialize UI
+    function initializeUI() {
+      updateSongInfo();
+      updateProgressBar();
+      updateVolumeBar();
+    }
+    
+    // Update song information in the player
+    function updateSongInfo() {
+      currentSongTitle.textContent = currentSong.title;
+      currentSongArtist.textContent = currentSong.artist;
+      currentSongImage.src = currentSong.image;
+    }
+    
+    // Update progress bar
+    function updateProgressBar() {
+      progressFill.style.width = `${currentSong.progress}%`;
+      progressHandle.style.left = `${currentSong.progress}%`;
+    }
+    
+    // Update volume bar
+    function updateVolumeBar() {
+      volumeFill.style.width = `${volume}%`;
+      volumeHandle.style.left = `${volume}%`;
+    }
+    
+    // Play a song
+    function playMusic(title, artist, image = null) {
+      currentSong.title = title;
+      currentSong.artist = artist;
+      
+      if (image) {
+        currentSong.image = image;
+      }
+      
+      isPlaying = true;
+      updateSongInfo();
+      updatePlayButton();
+      
+      // Reset progress
+      currentSong.progress = 0;
+      updateProgressBar();
+      
+      // Simulate progress (for demo purposes)
+      simulateProgress();
+    }
+    
+    // Toggle play/pause
+    function togglePlayPause() {
+      isPlaying = !isPlaying;
+      updatePlayButton();
+      
+      if (isPlaying) {
+        simulateProgress();
+      }
+    }
+    
+    // Update play button icon
+    function updatePlayButton() {
+      if (isPlaying) {
+        playButton.classList.remove('bi-play-fill');
+        playButton.classList.add('bi-pause-fill');
+      } else {
+        playButton.classList.remove('bi-pause-fill');
+        playButton.classList.add('bi-play-fill');
+      }
+    }
+    
+    // Toggle like
+    function toggleLike() {
+      isLiked = !isLiked;
+      
+      if (isLiked) {
+        likeButton.classList.remove('bi-heart');
+        likeButton.classList.add('bi-heart-fill');
+        likeButton.style.color = '#bb86fc';
+      } else {
+        likeButton.classList.remove('bi-heart-fill');
+        likeButton.classList.add('bi-heart');
+        likeButton.style.color = '';
+      }
+    }
+    
+    // Simulate progress (for demo purposes)
+    function simulateProgress() {
+      if (!isPlaying) return;
+      
+      const interval = setInterval(() => {
+        if (!isPlaying || currentSong.progress >= 100) {
+          clearInterval(interval);
+          if (currentSong.progress >= 100) {
+            currentSong.progress = 0;
+            isPlaying = false;
+            updatePlayButton();
+          }
+          return;
+        }
+        
+        currentSong.progress += 0.5;
+        updateProgressBar();
+      }, 500);
+    }
+    
+    // Event Listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeUI();
+      
+      // Play button click
+      document.querySelector('.control-button.large').addEventListener('click', togglePlayPause);
+      
+      // Like button click
+      likeButton.addEventListener('click', toggleLike);
+      
+      // Progress bar click
+      document.querySelector('.progress-bar').addEventListener('click', (e) => {
+        const progressBar = e.currentTarget;
+        const rect = progressBar.getBoundingClientRect();
+        const clickPosition = e.clientX - rect.left;
+        const progressPercentage = (clickPosition / rect.width) * 100;
+        
+        currentSong.progress = progressPercentage;
+        updateProgressBar();
+      });
+      
+      // Volume bar click
+      document.querySelector('.volume-slider').addEventListener('click', (e) => {
+        const volumeBar = e.currentTarget;
+        const rect = volumeBar.getBoundingClientRect();
+        const clickPosition = e.clientX - rect.left;
+        const volumePercentage = (clickPosition / rect.width) * 100;
+        
+        volume = volumePercentage;
+        updateVolumeBar();
+      });
+      
+      // Song items click
+      document.querySelectorAll('.song-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const title = item.querySelector('.song-title').textContent;
+          const artist = item.querySelector('.song-artist').textContent;
+          const image = item.querySelector('.song-thumbnail img').src;
+          
+          playMusic(title, artist, image);
+        });
+      });
+      
+      // Album cards click
+      document.querySelectorAll('.album-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const title = card.querySelector('.album-title').textContent;
+          const artist = card.querySelector('.album-artist').textContent;
+          const image = card.querySelector('.album-image img').src;
+          
+          playMusic(title, artist, image);
+        });
+      });
+    });
+
+  </script>
+</body>
 {% endblock content %}

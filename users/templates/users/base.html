@@ -1,150 +1,200 @@
-<!DOCTYPE html>
+{% load static %}
+
 <html lang="en">
   <head>
-    <!-- Required meta tags -->
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
     <!-- Bootstrap CSS -->
-    <link
-      rel="stylesheet"
-      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
-      crossorigin="anonymous"
-    />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" crossorigin="anonymous" />
 
     <!-- Font awesome icons -->
-    <link
-      rel="stylesheet"
-      href="https://use.fontawesome.com/releases/v5.8.2/css/all.css"
-      integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay"
-      crossorigin="anonymous"
-    />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" crossorigin="anonymous" />
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.8rem 2rem;
+        background-color: rgba(30, 30, 30, 0.95);
+        backdrop-filter: blur(10px);
+        width: 100%;
+        position: fixed;  /* Ensures it stays fixed on all pages */
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        border-bottom: 1px solid #333;
+        height: 70px; /* Fixed height to prevent shifting */
+    }
+    
+    .logo-container {
+        display: flex;
+        align-items: center;
+    }
+    
+    .logo-placeholder {
+        width: 40px;
+        height: 50px;
+        border-radius: 8px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .logo-placeholder img {
+        height: 50px;
+        width: auto;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .search-bar {
+        flex: 1;
+        max-width: 400px;
+        margin: 0 2rem;
+        position: relative;
+    }
+    
+    .search-bar input {
+        padding: 0.7rem 1rem 0.7rem 2.5rem;
+        border-radius: 20px;
+        border: none;
+        width: 100%;
+        background-color: #2e2e2e;
+        color: white;
+    }
+    
+    .search-bar i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #888;
+    }
+    
+    .user-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-shrink: 0; /* Prevents shrinking */
+    }
+    
+    .user-actions .btn {
+        padding: 0.5rem 1rem;
+        background-color: #bb86fc;
+        color: #121212;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        flex-shrink: 0; /* Prevents shrinking */
+    }
+    
+    .user-actions .btn-secondary {
+        background-color: transparent;
+        color: #bb86fc;
+        border: 1px solid #bb86fc;
+    }
+    
+    .user-profile {
+        width: 36px;
+        height: 36px;
+        background-color: #3e3e3e;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .user-profile img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    /* Ensures navbar does not get covered by content */
+    body {
+        padding-top: 5px; /* Pushes content down so it doesn't overlap with navbar */
+    }
+    
+    </style>
   </head>
-  <style>
-  
-  </style>
-
-  {% if messages %}
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            {% for message in messages %}
-                Swal.fire({
-                    icon: "{% if message.tags == 'success' %}success{% elif message.tags == 'error' or message.tags == 'danger' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% endif %}",
-                    title: "{% if message.tags == 'success' %}Success!{% elif message.tags == 'error' or message.tags == 'danger' %}Error!{% elif message.tags == 'warning' %}Warning!{% elif message.tags == 'info' %}Info{% endif %}",
-                    text: "{{ message }}",
-                    timer: 5000,
-                    showConfirmButton: false
-                });
-            {% endfor %}
-        });
-    </script>
-{% endif %}
-
   <body>
+    {% if not hide_navbar %}
+    <header>
+      <div class="logo-container">
+        <a href="{% url 'users-home' %}">
+            <div class="logo-placeholder">
+                <img src="{% static 'images/logo.png' %}" alt="Logo" class="navbar-logo">
+            </div>
+        </a>
+    </div>
+      <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search songs, artists, albums...">
+      </div>
+      <div class="user-actions">
+        {% if user.is_authenticated %}
+          {% if user.user_type == 'artist' %}
+            <a href="{% url 'artist_profile' %}" class="btn btn-secondary">Artist Dashboard</a>
+            {% comment %} <a href="{% url 'upload_song' %}" class="btn">Upload Music</a> {% endcomment %}
+          {% else %}
+            <a href="{% url 'user_profile' %}" class="btn btn-secondary">My Library</a>
+          {% endif %}
+          <form id="logout-form" method="POST" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary" id="logout-btn">Logout</button>
+          </form>
+          {% comment %} <div class="user-profile">
+            {% if user.profile_image %}
+              <img src="{{ user.profile_image.url }}" alt="{{ user.username }}">
+            {% else %}
+              <i class="fas fa-user"></i>
+            {% endif %} {% endcomment %}
+          </div>
+        {% else %}
+          <a href="{% url 'login' %}" class="btn btn-secondary">Sign Up</a>
+          <a href="{% url 'login' %}" class="btn">Log In</a>
+        {% endif %}
+      </div>
+    </header>
+    {% endif %}
+    
     <div class="container p-3 my-3">
       <div class="row">
         <div class="col-md-12">
-          {% if not hide_navbar %}
-          <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-            <div class="container-fluid">
-              <!-- Left: Logo -->
-              <a class="navbar-brand" href="#">Grool</a>
-          
-              <!-- Middle: Search Bar -->
-              <form class="d-flex mx-auto" style="width: 40%">
-                <input
-                  class="form-control me-2"
-                  type="search"
-                  placeholder="Search songs, artists..."
-                  aria-label="Search"
-                />
-              </form>
-          
-              <!-- Right: Profile & Logout -->
-              <div class="navbar-nav ms-auto">
-                {% if user.is_authenticated %}
-                <a href="#" class="nav-item nav-link">Profile</a>
-                <form id="logout-form" method="POST" action="{% url 'logout' %}">
-                  {% csrf_token %}
-                  <button type="submit" id="logout-btn" class="btn btn-danger">Logout</button>
-              </form>
-              {% else %}
-              <a href="{% url 'login' %}" class="btn btn-primary">Sign In</a>
-                {% endif %}
-              </div>
-            </div>
-          </nav>
-          {% endif %}
-          
-          <!-- Main content block -->
           {% block content %}{% endblock %}
         </div>
       </div>
     </div>
-
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script
-      src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-      integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
-      integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-      crossorigin="anonymous"
-    ></script>
-
-    <!-- A plugin for password show/hide -->
-    <script src="https://unpkg.com/bootstrap-show-password@1.2.1/dist/bootstrap-show-password.min.js"></script>
-
-    <script>
-      function confirmLogout(event) {
-        event.preventDefault(); // Stop form submission
-        let confirmAction = confirm("Are you sure you want to log out?");
     
-        if (confirmAction) {
-          event.target.submit(); // Submit the form if confirmed
-        }
-      }
-
-    </script>
-
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        document.getElementById("logout-btn").addEventListener("click", function (event) {
-            event.preventDefault(); // Prevent form from submitting immediately
-            
-            Swal.fire({
-                title: "Are you sure?",
-                text: "You will be logged out!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#d33",
-                cancelButtonColor: "#3085d6",
-                confirmButtonText: "Yes, Logout!",
-                cancelButtonText: "Cancel"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById("logout-form").submit(); // Submit the form
-                }
-            });
+        document.getElementById("logout-btn")?.addEventListener("click", function (event) {
+          event.preventDefault();
+          Swal.fire({
+            title: "Are you sure?",
+            text: "You will be logged out!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, Logout!",
+            cancelButtonText: "Cancel"
+          }).then((result) => {
+            if (result.isConfirmed) {
+              document.getElementById("logout-form").submit();
+            }
+          });
         });
-    });
-  </script>
-
+      });
+    </script>
   </body>
 </html>
-
-
-

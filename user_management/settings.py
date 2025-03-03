@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-
+    'users',
     'social_django',
     'allauth',
     'allauth.account',
@@ -62,6 +62,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware',
+    'users.middleware.ArtistRedirectMiddleware',
 ]
 
 ROOT_URLCONF = 'user_management.urls'
@@ -80,6 +81,7 @@ TEMPLATES = [
                 'social_django.context_processors.backends',
                 'social_django.context_processors.login_redirect',
                 'django.template.context_processors.request',
+                'users.context_processors.user_type',
             ],
         },
     },
