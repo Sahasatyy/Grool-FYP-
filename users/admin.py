@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import UserProfile, ArtistProfile
+from .models import UserProfile, ArtistProfile, Song
 from django.urls import path
 
 # Register your models here.
@@ -52,3 +52,4 @@ class ArtistProfileAdmin(admin.ModelAdmin):
 
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(ArtistProfile, ArtistProfileAdmin)
+admin.site.register(Song)

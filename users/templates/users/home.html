@@ -1,11 +1,11 @@
 {% extends "users/base.html" %}
-
+{% load static %}
 {% block title %}Grool - Home{% endblock title %}
 
 {% block content %}
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 <style>
   /* General Reset */
   * {
@@ -631,8 +631,8 @@
 </style>
 <body>
 
-  <!-- Main Content with Sidebar -->
-  <div class="content-wrapper">
+   <!-- Main Content with Sidebar -->
+   <div class="content-wrapper">
     <!-- Sidebar -->
     <nav class="sidebar">
       <div class="sidebar-section">
@@ -661,245 +661,51 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="main-content">
-      <section>
-        <h2 class="section-title">Featured Albums</h2>
-        <div class="grid-container">
-          <!-- Album 1 -->
-          <div class="album-card">
-            <div class="album-image">
-              <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Album cover">
-              <div class="play-overlay">
-                <div class="play-btn">
-                  <i class="bi bi-play-fill"></i>
-                </div>
-              </div>
-            </div>
-            <h4 class="album-title">After Hours</h4>
-            <p class="album-artist">The Weeknd</p>
-          </div>
-          
-          <!-- Album 2 -->
-          <div class="album-card">
-            <div class="album-image">
-              <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Album cover">
-              <div class="play-overlay">
-                <div class="play-btn">
-                  <i class="bi bi-play-fill"></i>
-                </div>
-              </div>
-            </div>
-            <h4 class="album-title">Future Nostalgia</h4>
-            <p class="album-artist">Dua Lipa</p>
-          </div>
-          
-          <!-- Album 3 -->
-          <div class="album-card">
-            <div class="album-image">
-              <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Album cover">
-              <div class="play-overlay">
-                <div class="play-btn">
-                  <i class="bi bi-play-fill"></i>
-                </div>
-              </div>
-            </div>
-            <h4 class="album-title">DAMN.</h4>
-            <p class="album-artist">Kendrick Lamar</p>
-          </div>
-          
-          <!-- Album 4 -->
-          <div class="album-card">
-            <div class="album-image">
-              <img src="https://images.unsplash.com/photo-1496293455970-f8581aae0e3b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Album cover">
-              <div class="play-overlay">
-                <div class="play-btn">
-                  <i class="bi bi-play-fill"></i>
-                </div>
-              </div>
-            </div>
-            <h4 class="album-title">Chromatica</h4>
-            <p class="album-artist">Lady Gaga</p>
-          </div>
-          
-          <!-- Album 5 -->
-          <div class="album-card">
-            <div class="album-image">
-              <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Album cover">
-              <div class="play-overlay">
-                <div class="play-btn">
-                  <i class="bi bi-play-fill"></i>
-                </div>
-              </div>
-            </div>
-            <h4 class="album-title">Fine Line</h4>
-            <p class="album-artist">Harry Styles</p>
-          </div>
-        </div>
-      </section>
-      
-      <section class="songs-section">
-        <h2 class="section-title">Trending Songs</h2>
-        <div class="song-list">
-          <!-- Song 1 -->
-          <div class="song-item" onclick="playMusic('Blinding Lights', 'The Weeknd')">
-            <div class="song-number">01</div>
-            <div class="song-info">
-              <div class="song-thumbnail">
-                <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Song thumbnail">
-              </div>
-              <div class="song-title-artist">
-                <div class="song-title">Blinding Lights</div>
-                <div class="song-artist">The Weeknd</div>
-              </div>
-            </div>
-            <div class="song-duration">3:20</div>
-            <div class="song-actions">
-              <i class="bi bi-heart"></i>
-              <i class="bi bi-plus-circle"></i>
-              <i class="bi bi-three-dots"></i>
-            </div>
-          </div>
-          
-          <!-- Song 2 -->
-          <div class="song-item" onclick="playMusic('Don\'t Start Now', 'Dua Lipa')">
-            <div class="song-number">02</div>
-            <div class="song-info">
-              <div class="song-thumbnail">
-                <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Song thumbnail">
-              </div>
-              <div class="song-title-artist">
-                <div class="song-title">Don't Start Now</div>
-                <div class="song-artist">Dua Lipa</div>
-              </div>
-            </div>
-            <div class="song-duration">3:03</div>
-            <div class="song-actions">
-              <i class="bi bi-heart"></i>
-              <i class="bi bi-plus-circle"></i>
-              <i class="bi bi-three-dots"></i>
-            </div>
-          </div>
-          
-          <!-- Song 3 -->
-          <div class="song-item" onclick="playMusic('HUMBLE.', 'Kendrick Lamar')">
-            <div class="song-number">03</div>
-            <div class="song-info">
-              <div class="song-thumbnail">
-                <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Song thumbnail">
-              </div>
-              <div class="song-title-artist">
-                <div class="song-title">HUMBLE.</div>
-                <div class="song-artist">Kendrick Lamar</div>
-              </div>
-            </div>
-            <div class="song-duration">2:57</div>
-            <div class="song-actions">
-              <i class="bi bi-heart"></i>
-              <i class="bi bi-plus-circle"></i>
-              <i class="bi bi-three-dots"></i>
-            </div>
-          </div>
-          
-          <!-- Song 4 -->
-          <div class="song-item" onclick="playMusic('Rain On Me', 'Lady Gaga, Ariana Grande')">
-            <div class="song-number">04</div>
-            <div class="song-info">
-              <div class="song-thumbnail">
-                <img src="https://images.unsplash.com/photo-1496293455970-f8581aae0e3b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Song thumbnail">
-              </div>
-              <div class="song-title-artist">
-                <div class="song-title">Rain On Me</div>
-                <div class="song-artist">Lady Gaga, Ariana Grande</div>
-              </div>
-            </div>
-            <div class="song-duration">3:02</div>
-            <div class="song-actions">
-              <i class="bi bi-heart"></i>
-              <i class="bi bi-plus-circle"></i>
-              <i class="bi bi-three-dots"></i>
-            </div>
-          </div>
-          
-          <!-- Song 5 -->
-          <div class="song-item" onclick="playMusic('Watermelon Sugar', 'Harry Styles')">
-            <div class="song-number">05</div>
-            <div class="song-info">
-              <div class="song-thumbnail">
-                <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Song thumbnail">
-              </div>
-              <div class="song-title-artist">
-                <div class="song-title">Watermelon Sugar</div>
-                <div class="song-artist">Harry Styles</div>
-              </div>
-            </div>
-            <div class="song-duration">2:54</div>
-            <div class="song-actions">
-              <i class="bi bi-heart"></i>
-              <i class="bi bi-plus-circle"></i>
-              <i class="bi bi-three-dots"></i>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      <section>
-        <h2 class="section-title">Made For You</h2>
-        <div class="grid-container">
-          <!-- Playlist 1 -->
-          <div class="album-card">
-            <div class="album-image">
-              <img src="https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Playlist cover">
-              <div class="play-overlay">
-                <div class="play-btn">
-                  <i class="bi bi-play-fill"></i>
-                </div>
-              </div>
-            </div>
-            <h4 class="album-title">Daily Mix 1</h4>
-            <p class="album-artist">Based on your listening</p>
-          </div>
-          
-          <!-- Playlist 2 -->
-          <div class="album-card">
-            <div class="album-image">
-              <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Playlist cover">
-              <div class="play-overlay">
-                <div class="play-btn">
-                  <i class="bi bi-play-fill"></i>
-                </div>
-              </div>
-            </div>
-            <h4 class="album-title">Discover Weekly</h4>
-            <p class="album-artist">New music for you</p>
-          </div>
-          
-          <!-- Playlist 3 -->
-          <div class="album-card">
-            <div class="album-image">
-              <img src="https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Playlist cover">
-              <div class="play-overlay">
-                <div class="play-btn">
-                  <i class="bi bi-play-fill"></i>
-                </div>
-              </div>
-            </div>
-            <h4 class="album-title">Release Radar</h4>
-            <p class="album-artist">Latest releases from artists you follow</p>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
+    <section class="songs-section">
+      <h2 class="section-title">Trending Songs</h2>
+      <div class="song-list">
+          {% for song in songs %}
+          <div class="song-item" 
+               data-song-id="{{ song.id }}"
+               data-audio-url="{{ song.audio_file.url }}" 
+               data-title="{{ song.title }}"
+               data-artist="{{ song.artist.artist_name }}"
+               data-cover="{% if song.cover_image %}{{ song.cover_image.url }}{% else %}https://via.placeholder.com/56{% endif %}"
+               data-duration="{% if song.duration %}{{ song.duration }}{% else %}3:00{% endif %}">
+             <div class="song-number">{{ forloop.counter|stringformat:"02d" }}</div>
+             <div class="song-info">
+                 <div class="song-thumbnail">
+                     {% if song.cover_image %}
+                         <img src="{{ song.cover_image.url }}" alt="{{ song.title }}">
+                     {% else %}
+                         <img src="https://via.placeholder.com/40" alt="Song thumbnail">
+                     {% endif %}
+                 </div>
+                 <div class="song-title-artist">
+                     <div class="song-title">{{ song.title }}</div>
+                     <div class="song-artist">{{ song.artist.artist_name }}</div>
+                 </div>
+             </div>
+             <div class="song-duration">{% if song.duration %}{{ song.duration }}{% else %}3:00{% endif %}</div>
+             <div class="song-actions">
+                 <i class="bi bi-heart"></i>
+                 <i class="bi bi-plus-circle"></i>
+                 <i class="bi bi-three-dots"></i>
+             </div>
+         </div>
+          {% endfor %}
+      </div>
+  </section>
 
   <!-- Music Controller (Footer) -->
   <footer class="music-controller">
     <div class="song-info">
       <div class="song-thumb">
-        <img id="current-song-image" src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3" alt="Current song">
+        <img id="current-song-image" src="https://via.placeholder.com/56" alt="Current song">
       </div>
       <div class="song-details">
-        <h4 id="current-song-title">Blinding Lights</h4>
-        <p id="current-song-artist">The Weeknd</p>
+        <h4 id="current-song-title">Select a song to play</h4>
+        <p id="current-song-artist"></p>
       </div>
       <div class="like-button">
         <i class="bi bi-heart"></i>
@@ -908,30 +714,30 @@
     
     <div class="player-center">
       <div class="player-controls">
-        <button class="control-button small">
+        <button class="control-button small shuffle-btn">
           <i class="bi bi-shuffle"></i>
         </button>
-        <button class="control-button medium">
+        <button class="control-button medium prev-btn">
           <i class="bi bi-skip-start-fill"></i>
         </button>
-        <button class="control-button large">
+        <button class="control-button large play-pause-btn">
           <i class="bi bi-play-fill"></i>
         </button>
-        <button class="control-button medium">
+        <button class="control-button medium next-btn">
           <i class="bi bi-skip-end-fill"></i>
         </button>
-        <button class="control-button small">
+        <button class="control-button small repeat-btn">
           <i class="bi bi-repeat"></i>
         </button>
       </div>
       
       <div class="progress-container">
-        <div class="time">1:12</div>
+        <div class="time current-time">0:00</div>
         <div class="progress-bar">
           <div class="progress-fill"></div>
           <div class="progress-handle"></div>
         </div>
-        <div class="time">3:20</div>
+        <div class="time total-time">0:00</div>
       </div>
     </div>
     
@@ -945,202 +751,136 @@
           <div class="volume-handle"></div>
         </div>
       </div>
-      
-      <div class="extra-controls">
-        <div class="extra-button">
-          <i class="bi bi-music-note-list"></i>
-        </div>
-        <div class="extra-button">
-          <i class="bi bi-laptop"></i>
-        </div>
-      </div>
     </div>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-
-    let currentSong = {
-      title: "Blinding Lights",
-      artist: "The Weeknd",
-      image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3",
-      duration: "3:20",
-      progress: 30
-    };
-    
-    let isPlaying = false;
-    let isLiked = false;
-    let volume = 70;
-    
-    // DOM Elements
-    const playButton = document.querySelector('.control-button.large i');
-    const likeButton = document.querySelector('.like-button i');
-    const progressFill = document.querySelector('.progress-fill');
-    const progressHandle = document.querySelector('.progress-handle');
-    const volumeFill = document.querySelector('.volume-fill');
-    const volumeHandle = document.querySelector('.volume-handle');
-    const currentSongTitle = document.getElementById('current-song-title');
-    const currentSongArtist = document.getElementById('current-song-artist');
-    const currentSongImage = document.getElementById('current-song-image');
-    
-    // Initialize UI
-    function initializeUI() {
-      updateSongInfo();
-      updateProgressBar();
-      updateVolumeBar();
-    }
-    
-    // Update song information in the player
-    function updateSongInfo() {
-      currentSongTitle.textContent = currentSong.title;
-      currentSongArtist.textContent = currentSong.artist;
-      currentSongImage.src = currentSong.image;
-    }
-    
-    // Update progress bar
-    function updateProgressBar() {
-      progressFill.style.width = `${currentSong.progress}%`;
-      progressHandle.style.left = `${currentSong.progress}%`;
-    }
-    
-    // Update volume bar
-    function updateVolumeBar() {
-      volumeFill.style.width = `${volume}%`;
-      volumeHandle.style.left = `${volume}%`;
-    }
-    
-    // Play a song
-    function playMusic(title, artist, image = null) {
-      currentSong.title = title;
-      currentSong.artist = artist;
-      
-      if (image) {
-        currentSong.image = image;
-      }
-      
-      isPlaying = true;
-      updateSongInfo();
-      updatePlayButton();
-      
-      // Reset progress
-      currentSong.progress = 0;
-      updateProgressBar();
-      
-      // Simulate progress (for demo purposes)
-      simulateProgress();
-    }
-    
-    // Toggle play/pause
-    function togglePlayPause() {
-      isPlaying = !isPlaying;
-      updatePlayButton();
-      
-      if (isPlaying) {
-        simulateProgress();
-      }
-    }
-    
-    // Update play button icon
-    function updatePlayButton() {
-      if (isPlaying) {
-        playButton.classList.remove('bi-play-fill');
-        playButton.classList.add('bi-pause-fill');
-      } else {
-        playButton.classList.remove('bi-pause-fill');
-        playButton.classList.add('bi-play-fill');
-      }
-    }
-    
-    // Toggle like
-    function toggleLike() {
-      isLiked = !isLiked;
-      
-      if (isLiked) {
-        likeButton.classList.remove('bi-heart');
-        likeButton.classList.add('bi-heart-fill');
-        likeButton.style.color = '#bb86fc';
-      } else {
-        likeButton.classList.remove('bi-heart-fill');
-        likeButton.classList.add('bi-heart');
-        likeButton.style.color = '';
-      }
-    }
-    
-    // Simulate progress (for demo purposes)
-    function simulateProgress() {
-      if (!isPlaying) return;
-      
-      const interval = setInterval(() => {
-        if (!isPlaying || currentSong.progress >= 100) {
-          clearInterval(interval);
-          if (currentSong.progress >= 100) {
-            currentSong.progress = 0;
-            isPlaying = false;
-            updatePlayButton();
-          }
-          return;
-        }
-        
-        currentSong.progress += 0.5;
-        updateProgressBar();
-      }, 500);
-    }
-    
-    // Event Listeners
     document.addEventListener('DOMContentLoaded', () => {
-      initializeUI();
-      
-      // Play button click
-      document.querySelector('.control-button.large').addEventListener('click', togglePlayPause);
-      
-      // Like button click
-      likeButton.addEventListener('click', toggleLike);
-      
-      // Progress bar click
-      document.querySelector('.progress-bar').addEventListener('click', (e) => {
-        const progressBar = e.currentTarget;
+      const audioPlayer = new Audio();
+      const playPauseBtn = document.querySelector('.play-pause-btn');
+      const prevBtn = document.querySelector('.prev-btn');
+      const nextBtn = document.querySelector('.next-btn');
+      const progressBar = document.querySelector('.progress-bar');
+      const progressFill = document.querySelector('.progress-fill');
+      const progressHandle = document.querySelector('.progress-handle');
+      const currentTimeEl = document.querySelector('.current-time');
+      const totalTimeEl = document.querySelector('.total-time');
+      const volumeSlider = document.querySelector('.volume-slider');
+      const volumeFill = document.querySelector('.volume-fill');
+      const volumeHandle = document.querySelector('.volume-handle');
+      const songItems = document.querySelectorAll('.song-item');
+
+      let currentSongIndex = 0;
+      let isPlaying = false;
+
+      // Update song information in footer
+      function updateSongInfo(songElement) {
+        const title = songElement.dataset.title;
+        const artist = songElement.dataset.artist;
+        const coverImage = songElement.dataset.cover;
+
+        document.getElementById('current-song-title').textContent = title;
+        document.getElementById('current-song-artist').textContent = artist;
+        document.getElementById('current-song-image').src = coverImage;
+      }
+
+      // Play/Pause functionality
+      function togglePlayPause() {
+        if (isPlaying) {
+          audioPlayer.pause();
+          playPauseBtn.querySelector('i').classList.replace('bi-pause-fill', 'bi-play-fill');
+        } else {
+          audioPlayer.play();
+          playPauseBtn.querySelector('i').classList.replace('bi-play-fill', 'bi-pause-fill');
+        }
+        isPlaying = !isPlaying;
+      }
+
+      // Play a specific song
+      function playSong(songElement) {
+        const audioUrl = songElement.dataset.audioUrl;
+        
+        // Reset previous song styling
+        songItems.forEach(item => item.classList.remove('active'));
+        songElement.classList.add('active');
+
+        // Update audio source and play
+        audioPlayer.src = audioUrl;
+        audioPlayer.play();
+        
+        // Update UI
+        updateSongInfo(songElement);
+        playPauseBtn.querySelector('i').classList.replace('bi-play-fill', 'bi-pause-fill');
+        isPlaying = true;
+      }
+
+      // Update progress bar
+      function updateProgressBar() {
+        const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+        progressFill.style.width = `${progress}%`;
+        progressHandle.style.left = `${progress}%`;
+        
+        currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
+        totalTimeEl.textContent = formatTime(audioPlayer.duration);
+      }
+
+      // Format time to MM:SS
+      function formatTime(seconds) {
+        if (isNaN(seconds)) return '0:00';
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+        return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+      }
+
+      // Skip to next/previous song
+      function skipSong(direction) {
+        const currentActiveIndex = Array.from(songItems).findIndex(item => item.classList.contains('active'));
+        let newIndex;
+
+        if (direction === 'next') {
+          newIndex = (currentActiveIndex + 1) % songItems.length;
+        } else {
+          newIndex = (currentActiveIndex - 1 + songItems.length) % songItems.length;
+        }
+
+        playSong(songItems[newIndex]);
+      }
+
+      // Event Listeners
+      songItems.forEach(item => {
+        item.addEventListener('click', () => playSong(item));
+      });
+
+      playPauseBtn.addEventListener('click', togglePlayPause);
+      prevBtn.addEventListener('click', () => skipSong('prev'));
+      nextBtn.addEventListener('click', () => skipSong('next'));
+
+      // Progress bar seeking
+      progressBar.addEventListener('click', (e) => {
         const rect = progressBar.getBoundingClientRect();
         const clickPosition = e.clientX - rect.left;
-        const progressPercentage = (clickPosition / rect.width) * 100;
-        
-        currentSong.progress = progressPercentage;
-        updateProgressBar();
+        const progress = (clickPosition / rect.width) * audioPlayer.duration;
+        audioPlayer.currentTime = progress;
       });
-      
-      // Volume bar click
-      document.querySelector('.volume-slider').addEventListener('click', (e) => {
-        const volumeBar = e.currentTarget;
-        const rect = volumeBar.getBoundingClientRect();
-        const clickPosition = e.clientX - rect.left;
-        const volumePercentage = (clickPosition / rect.width) * 100;
-        
-        volume = volumePercentage;
-        updateVolumeBar();
-      });
-      
-      // Song items click
-      document.querySelectorAll('.song-item').forEach(item => {
-        item.addEventListener('click', () => {
-          const title = item.querySelector('.song-title').textContent;
-          const artist = item.querySelector('.song-artist').textContent;
-          const image = item.querySelector('.song-thumbnail img').src;
-          
-          playMusic(title, artist, image);
-        });
-      });
-      
-      // Album cards click
-      document.querySelectorAll('.album-card').forEach(card => {
-        card.addEventListener('click', () => {
-          const title = card.querySelector('.album-title').textContent;
-          const artist = card.querySelector('.album-artist').textContent;
-          const image = card.querySelector('.album-image img').src;
-          
-          playMusic(title, artist, image);
-        });
-      });
-    });
 
+      // Volume control
+      volumeSlider.addEventListener('click', (e) => {
+        const rect = volumeSlider.getBoundingClientRect();
+        const clickPosition = e.clientX - rect.left;
+        const volume = clickPosition / rect.width;
+        
+        audioPlayer.volume = volume;
+        volumeFill.style.width = `${volume * 100}%`;
+        volumeHandle.style.left = `${volume * 100}%`;
+      });
+
+      // Update progress and time
+      audioPlayer.addEventListener('timeupdate', updateProgressBar);
+
+      // Auto play next song
+      audioPlayer.addEventListener('ended', () => skipSong('next'));
+    });
   </script>
 </body>
 {% endblock content %}

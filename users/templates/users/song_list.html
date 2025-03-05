@@ -1,0 +1,26 @@
+{% extends "users/base.html" %}
+
+{% block title %}All Songs{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>All Songs</h2>
+  <div class="row">
+    {% for song in songs %}
+      <div class="col-md-4 mb-4">
+        <div class="card">
+          <img src="{{ song.cover_image.url }}" class="card-img-top" alt="{{ song.title }}">
+          <div class="card-body">
+            <h5 class="card-title">{{ song.title }}</h5>
+            <p class="card-text">{{ song.artist.artist_name }}</p>
+            <audio controls>
+              <source src="{{ song.audio_file.url }}" type="audio/mpeg">
+              Your browser does not support the audio element.
+            </audio>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

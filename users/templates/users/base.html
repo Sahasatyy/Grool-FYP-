@@ -114,7 +114,7 @@
         border-radius: 50%;
         object-fit: cover;
     }
-    
+
     /* Ensures navbar does not get covered by content */
     body {
         padding-top: 5px; /* Pushes content down so it doesn't overlap with navbar */
@@ -140,7 +140,7 @@
         {% if user.is_authenticated %}
           {% if user.user_type == 'artist' %}
             <a href="{% url 'artist_profile' %}" class="btn btn-secondary">Artist Dashboard</a>
-            {% comment %} <a href="{% url 'upload_song' %}" class="btn">Upload Music</a> {% endcomment %}
+            <a href="{% url '#' %}" class="btn">Upload Music</a>
           {% else %}
             <a href="{% url 'user_profile' %}" class="btn btn-secondary">My Library</a>
           {% endif %}
