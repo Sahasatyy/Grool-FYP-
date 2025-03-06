@@ -15,8 +15,10 @@ from django.core.paginator import Paginator
 from django.urls import reverse
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
-from .forms import RegisterForm, LoginForm, ArtistVerificationForm, SongUploadForm
+from .forms import RegisterForm, LoginForm, ArtistVerificationForm, SongUploadForm, ProfilePictureForm, EditProfileForm, ChangeEmailForm
 from .models import ArtistProfile, UserProfile, Song
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 
 
 def home(request):
@@ -92,25 +94,27 @@ def artist_profile(request):
 @login_required
 def request_artist_status(request):
     user_profile = request.user.profile
-    artist_profile, created = ArtistProfile.objects.get_or_create(user_profile=user_profile, defaults={'is_verified': False})
-    
+    artist_profile, created = ArtistProfile.objects.get_or_create(
+        user_profile=user_profile,
+        defaults={'is_verified': False}
+    )
+
     if artist_profile.is_verified:
         messages.info(request, "You are already a verified artist.")
         return redirect('artist_profile')
     elif not created:
         messages.info(request, "Your artist verification is pending approval.")
         return redirect('user_profile')
-    
+
     if request.method == 'POST':
-        form = ArtistVerificationForm(request.POST)
+        form = ArtistVerificationForm(request.POST, instance=artist_profile)
         if form.is_valid():
-            artist_profile.bio = form.cleaned_data['bio']
-            artist_profile.save()
+            form.save()
             messages.success(request, "Your artist verification request has been submitted.")
             return redirect('user_profile')
     else:
-        form = ArtistVerificationForm()
-    
+        form = ArtistVerificationForm(instance=artist_profile)
+
     return render(request, 'users/request_artist_status.html', {'form': form})
 
 
@@ -138,6 +142,106 @@ def verify_artist(request, artist_profile_id):
     
     return render(request, 'admin/verify_artist_confirmation.html', {'artist_profile': artist_profile})
 
+@login_required
+def edit_artist_profile(request):
+    user_profile = request.user.profile
+    if not hasattr(user_profile, 'artist_profile'):
+        messages.error(request, "You are not a verified artist.")
+        return redirect('home')
+
+    artist_profile = user_profile.artist_profile
+
+    if request.method == 'POST':
+        form = ArtistVerificationForm(request.POST, instance=artist_profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your profile has been updated.")
+            return redirect('artist_profile')
+    else:
+        form = ArtistVerificationForm(instance=artist_profile)
+
+    return render(request, 'users/edit_artist_profile.html', {'form': form})
+
+@login_required
+def edit_profile(request):
+    user_profile = request.user.profile
+
+    if request.method == 'POST':
+        form = EditProfileForm(request.POST, instance=user_profile)
+        if form.is_valid():
+            form.save()
+
+            request.user.first_name = form.cleaned_data['first_name']
+            request.user.last_name = form.cleaned_data['last_name']
+            request.user.save()
+
+            messages.success(request, "Your profile has been updated.")
+            return redirect('user_profile')
+    else:
+        form = EditProfileForm(instance=user_profile)
+
+    return render(request, 'users/edit_profile.html', {'form': form})
+
+@login_required
+def upload_profile_picture(request):
+    user_profile = request.user.profile
+
+    if request.method == 'POST':
+        form = ProfilePictureForm(request.POST, request.FILES, instance=user_profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your profile picture has been updated.")
+            
+            if user_profile.user_type == 'artist':
+                return redirect('artist_profile')
+            else:
+                return redirect('user_profile')
+    else:
+        form = ProfilePictureForm(instance=user_profile)
+
+    return render(request, 'users/upload_profile_picture.html', {'form': form})
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)  # Use PasswordChangeForm
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Keep the user logged in
+            messages.success(request, "Your password has been changed successfully.")
+            return redirect('user_profile')  # Redirect to the user profile page
+    else:
+        form = PasswordChangeForm(request.user)  # Initialize the form
+
+    return render(request, 'users/change_password.html', {'form': form})
+
+@login_required
+def change_email(request):
+    if request.method == 'POST':
+        form = ChangeEmailForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your email has been updated.")
+            return redirect('user_profile')
+    else:
+        form = ChangeEmailForm(instance=request.user)
+
+    return render(request, 'users/change_email.html', {'form': form})
+
+@login_required
+def upload_profile_picture(request):
+    user_profile = request.user.profile
+
+    if request.method == 'POST':
+        form = ProfilePictureForm(request.POST, request.FILES, instance=user_profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your profile picture has been updated.")
+            return redirect('user_profile')
+    else:
+        form = ProfilePictureForm(instance=user_profile)
+
+    return render(request, 'users/upload_profile_picture.html', {'form': form})
 
 # CRUD Operations for Songs
 @login_required
@@ -158,13 +262,15 @@ def upload_song(request):
         messages.error(request, "Error uploading song. Please check the form.")
     else:
         form = SongUploadForm()
-    
     return render(request, 'users/artist_profile.html', {'form': form})
 
 
 def song_list(request):
     songs = Song.objects.filter(is_public=True).select_related('artist')
-    return render(request, 'users/song_list.html', {'songs': songs})
+    paginator = Paginator(songs, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'users/song_list.html', {'page_obj': page_obj})
 
 
 def get_songs(request):

@@ -51,11 +51,19 @@
     object-fit: cover;
   }
   
+  .unverified-badge {
+    color: #ff5252; /* Red color for unverified badge */
+    margin-left: 0.5rem;
+    font-size: 1.2rem;
+  }
+  
   /* Form Controls */
   .form-control {
     border-radius: 10px;
     padding: 12px 15px;
     border: 1px solid #444;
+    background-color: var(--input-bg);
+    color: var(--text-color);
   }
   
   .form-control:focus {
@@ -211,35 +219,40 @@
     <div class="card profile-card border-0">
       <div class="card-body">
         <div class="row">
+          <!-- Profile Image -->
           <div class="col-md-3 text-center">
             <div class="profile-image-container mx-auto mb-3">
-              <img src="https://via.placeholder.com/200" class="profile-image" alt="Profile Image">
+              {% if user.profile.profile_picture %}
+                <img src="{{ user.profile.profile_picture.url }}" class="profile-image" alt="Profile Image">
+              {% else %}
+                <img src="https://via.placeholder.com/200" class="profile-image" alt="Profile Image">
+              {% endif %}
             </div>
-            <button class="btn btn-outline-primary rounded-pill px-4 mb-3">
+            <a href="{% url 'upload_profile_picture' %}" class="btn btn-outline-primary rounded-pill px-4 mb-3">
               <i class="bi bi-camera me-2"></i>Change photo
-            </button>
+            </a>
           </div>
-          <div class="col-md-6">
-            <div class="mb-3">
-              <input type="text" class="form-control" placeholder="Your first name" value="{{ user_profile.user.first_name }}">
-            </div>
-            <div class="mb-3">
-              <input type="text" class="form-control" placeholder="Your last name" value="{{ user_profile.user.last_name }}">
-            </div>
-            <div class="mb-3">
-              <textarea class="form-control" rows="3" placeholder="Your description">{{ user_profile.bio|default:'' }}</textarea>
-            </div>
-          </div>
+
+<!-- user_profile_details -->
+<div class="col-md-6">
+  <h2 class="mb-2">{{ user.username }} <i class="bi bi-x-circle unverified-badge"></i></h2>
+  <p class="text-muted mb-3">Unverified User</p>
+  <p class="mb-3"><strong>First Name:</strong> {{ user.first_name }}</p>
+  <p class="mb-3"><strong>Last Name:</strong> {{ user.last_name }}</p>
+  <p class="mb-3"><strong>Bio:</strong> {{ user.profile.bio|default:"No bio available" }}</p>
+</div>
+
+          <!-- Action Buttons -->
           <div class="col-md-3 text-end">
-            <button class="btn btn-outline-secondary rounded-pill mb-3 w-100">
+            <a href="{% url 'edit_profile' %}" class="btn btn-outline-secondary rounded-pill mb-3 w-100">
+              <i class="bi bi-pencil me-2"></i>Edit profile
+            </a>
+            <a href="{% url 'change_password' %}" class="btn btn-outline-secondary rounded-pill mb-3 w-100">
               <i class="bi bi-key me-2"></i>Change password
-            </button>
-            <button class="btn btn-outline-secondary rounded-pill mb-3 w-100">
+            </a>
+            <a href="{% url 'change_email' %}" class="btn btn-outline-secondary rounded-pill mb-3 w-100">
               <i class="bi bi-envelope me-2"></i>Change email
-            </button>
-            <button class="btn btn-primary rounded-pill mt-4">
-              <i class="bi bi-check2 me-2"></i>Save
-            </button>
+            </a>
           </div>
         </div>
       </div>

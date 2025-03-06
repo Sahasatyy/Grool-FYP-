@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import ArtistProfile, Song
+from .models import ArtistProfile, UserProfile, Song, Genre
 from django.core.exceptions import ValidationError
 
 class RegisterForm(UserCreationForm):
@@ -62,15 +62,46 @@ class LoginForm(AuthenticationForm):
 class ArtistVerificationForm(forms.ModelForm):
     class Meta:
         model = ArtistProfile
-        fields = ['artist_name', 'genre']
+        fields = ['artist_name', 'genre', 'bio']
+
+class ProfilePictureForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['profile_picture']
+
+class EditProfileForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=100, required=False)
+    last_name = forms.CharField(max_length=100, required=False)
+
+    class Meta:
+        model = UserProfile
+        fields = ['bio']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.user:
+            self.fields['first_name'].initial = self.instance.user.first_name
+            self.fields['last_name'].initial = self.instance.user.last_name
+
+class ChangeEmailForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['email']
 
 class SongUploadForm(forms.ModelForm):
     MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB
 
+    # Define the genres field as a class attribute
+    genres = forms.ModelMultipleChoiceField(
+        queryset=Genre.objects.all(),  # Ensure Genre model exists and has data
+        widget=forms.CheckboxSelectMultiple,  # Render as checkboxes
+        required=False  # Optional field
+    )
+
     class Meta:
         model = Song
         fields = [
-            'title', 'album', 'audio_file', 'cover_image', 'genre', 'lyrics', 'duration', 'is_explicit', 'is_public'
+            'title', 'album', 'audio_file', 'cover_image', 'genres', 'lyrics', 'duration', 'is_explicit', 'is_public'
         ]
 
     def clean_audio_file(self):

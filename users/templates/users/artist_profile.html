@@ -154,7 +154,20 @@
     margin-bottom: 1.5rem;
     color: var(--light-color);
   }
-  
+  .badge.bg-success {
+    background-color: #28a745; 
+    color: white;
+    padding: 0.25rem 0.5rem; 
+    border-radius: 50%; 
+    font-size: 0.875rem;
+    margin-left: 0.5rem;
+    width: 1.5rem; 
+    height: 1.5rem; 
+    display: inline-flex;
+    align-items: center; 
+    justify-content: center; 
+  }
+
   /* Song list */
   .song-list {
     background-color: var(--card-bg);
@@ -244,102 +257,81 @@
     gap: 20px;
   }
   
-  /* Upload Modal Styles */
-  .modal-content {
+  /* Upload Song Modal Styles */
+  #uploadSongModal .modal-content {
     background-color: var(--card-bg);
     border-radius: var(--border-radius);
-    border: 1px solid #2a2a34;
+    border: 1px solid var(--card-secondary-bg);
     color: var(--text-color);
   }
   
-  .modal-header {
-    border-bottom: 1px solid #2a2a34;
+  #uploadSongModal .modal-header {
+    border-bottom: 1px solid var(--card-secondary-bg);
     background-color: var(--profile-card-bg);
   }
   
-  .modal-footer {
-    border-top: 1px solid #2a2a34;
+  #uploadSongModal .modal-title {
+    color: var(--primary-color);
+    font-weight: 600;
   }
   
-  .modal-title {
-    color: var(--light-color);
-  }
-  
-  .close {
+  #uploadSongModal .btn-close {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
     color: var(--text-color);
   }
-
-  .modal-content {
-    background-color: #1a1a2e;
-    color: #e0e0e0;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-.modal-header {
-    border-bottom: 1px solid #2f2f4f;
-}
-
-.modal-title {
-    color: #4cc9f0;
-    font-weight: 600;
-}
-
-.btn-close {
-    background-color: rgba(255,255,255,0.1);
-    border-radius: 50%;
-}
-
-.form-label {
-    color: #4cc9f0;
+  
+  #uploadSongModal .form-label {
+    color: var(--primary-color);
     font-weight: 500;
-}
-
-.form-control {
-    background-color: #16213e;
-    border-color: #0f3460;
-    color: #e0e0e0;
-}
-
-.form-control:focus {
-    background-color: #0f3460;
-    border-color: #4cc9f0;
-    color: #e0e0e0;
-    box-shadow: 0 0 0 0.2rem rgba(76, 201, 240, 0.25);
-}
-
-.form-text {
-    color: #7a7a7a;
-}
-
-.form-check-label {
-    color: #e0e0e0;
-}
-
-.btn-secondary {
-    background-color: #2f2f4f;
-    border-color: #2f2f4f;
-}
-
-.btn-primary {
-    background-color: #4cc9f0;
-    border-color: #4cc9f0;
-    color: #16213e;
+  }
+  
+  #uploadSongModal .form-control {
+    background-color: var(--input-bg);
+    border-color: var(--card-secondary-bg);
+    color: var(--text-color);
+  }
+  
+  #uploadSongModal .form-control:focus {
+    background-color: var(--input-bg);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(255, 112, 67, 0.25);
+  }
+  
+  #uploadSongModal .form-text {
+    color: var(--accent-color);
+  }
+  
+  #uploadSongModal .form-check-label {
+    color: var(--text-color);
+  }
+  
+  #uploadSongModal .btn-secondary {
+    background-color: var(--card-secondary-bg);
+    border-color: var(--card-secondary-bg);
+    color: var(--text-color);
+  }
+  
+  #uploadSongModal .btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--light-color);
     transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-    background-color: #5dd5ff;
+  }
+  
+  #uploadSongModal .btn-primary:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
     transform: translateY(-2px);
-}
-
-.text-danger {
+  }
+  
+  #uploadSongModal .text-danger {
     color: #ff6b6b !important;
-}
-
-.modal-body {
-    background-color: #16213e;
-}
+  }
+  
+  #uploadSongModal .modal-body {
+    background-color: var(--card-bg);
+  }
   
   /* Responsive Adjustments */
   @media (max-width: 992px) {
@@ -397,44 +389,54 @@
         <div class="row">
           <div class="col-md-3 text-center">
             <div class="profile-image-container mx-auto mb-3">
-              {% if user.profile_image %}
-                <img src="{{ user.profile_image.url }}" class="profile-image" alt="{{ user.artist_name }}">
+              {% if user.profile.profile_picture %}
+                <img src="{{ user.profile.profile_picture.url }}" class="profile-image" alt="{{ user.artist_name }}">
               {% else %}
                 <img src="https://via.placeholder.com/200" class="profile-image" alt="Profile Image">
               {% endif %}
             </div>
-            <button class="btn btn-outline-primary rounded-pill px-4 mb-3">
+            <a href="{% url 'upload_profile_picture' %}" class="btn btn-outline-primary rounded-pill px-4 mb-3">
               <i class="bi bi-camera me-2"></i>Change photo
-            </button>
+            </a>
           </div>
           <div class="col-md-6">
-            <h2 class="mb-2">{{ user.artist_name }}
-              {% if user.is_verified %}
+            <h2 class="mb-2">{{ user.profile.artist_profile.artist_name }}
+              {% if user.profile.artist_profile.is_verified %}
                 <i class="bi bi-patch-check-fill verified-badge"></i>
               {% endif %}
             </h2>
-            <p class="text-muted mb-3">Verified Artist</p>
-            <p class="mb-3"><strong>Genre:</strong> {{ user.genre }}</p>
-            {% if user.bio %}
-              <p class="mb-3">{{ user.bio }}</p>
-            {% else %}
-              <p class="text-muted mb-3">No bio available</p>
-            {% endif %}
+            <p class="text-muted mb-3">
+              Verified Artist <span class="badge bg-success">&#10004;</span>
+            </p>
+            <p class="mb-3"><strong>Genre:</strong> {{ user.profile.artist_profile.genre }}</p>
+            <p class="mb-3"><strong>Bio:</strong> {{ user.profile.artist_profile.bio }}</p>
           </div>
+
           <div class="col-md-3 text-end">
-            <button class="btn btn-outline-secondary rounded-pill mb-3 w-100">
+            <a href="{% url 'edit_artist_profile' %}" class="btn btn-outline-secondary rounded-pill mb-3 w-100">
               <i class="bi bi-pencil me-2"></i>Edit profile
-            </button>
-            <button class="btn btn-outline-secondary rounded-pill mb-3 w-100" data-bs-toggle="modal" data-bs-target="#uploadSongModal">
-              <i class="bi bi-upload me-2"></i>Upload music
-            </button>
-            <button class="btn btn-primary rounded-pill mt-4">
-              <i class="bi bi-music-note-beamed me-2"></i>Manage catalog
-            </button>
+            </a>
+            <button class="btn btn-outline-secondary rounded-pill mb-3 w-100 position-relative overflow-hidden" 
+            data-bs-toggle="modal" 
+            data-bs-target="#uploadSongModal"
+            style="
+              background: linear-gradient(45deg, #ff7043, #ff5722);
+              border: none;
+              color: white;
+              transition: all 0.3s ease;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            "
+            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0, 0, 0, 0.2)';"
+            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0, 0, 0, 0.1)';">
+      <i class="bi bi-upload me-2" style="transition: transform 0.3s ease;"></i>
+      Upload music
+    </button>
           </div>
         </div>
       </div>
     </div>
+  </div>
+</div>
 
     <!-- Analytics Section -->
     <div class="section mt-4">
@@ -511,97 +513,96 @@
 <!-- Upload Song Modal -->
 <div class="modal fade" id="uploadSongModal" tabindex="-1" aria-labelledby="uploadSongModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-          <div class="modal-header">
-              <h5 class="modal-title" id="uploadSongModalLabel">
-                  <i class="bi bi-music-note-beamed me-2"></i>Upload New Song
-              </h5>
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-              {% if messages %}
-                  {% for message in messages %}
-                      <div class="alert alert-{{ message.tags }}">
-                          {{ message }}
-                      </div>
-                  {% endfor %}
-              {% endif %}
-              
-              <form method="post" enctype="multipart/form-data" action="{% url 'upload_song' %}">
-                  {% csrf_token %}
-                  
-                  <div class="mb-3">
-                      <label for="{{ form.title.id_for_label }}" class="form-label">Song Title</label>
-                      {{ form.title }}
-                      {% if form.title.errors %}
-                          <div class="text-danger">{{ form.title.errors }}</div>
-                      {% endif %}
-                  </div>
-                  
-                  <div class="mb-3">
-                      <label for="{{ form.album.id_for_label }}" class="form-label">Album (Optional)</label>
-                      {{ form.album }}
-                      {% if form.album.errors %}
-                          <div class="text-danger">{{ form.album.errors }}</div>
-                      {% endif %}
-                  </div>
-                  
-                  <div class="mb-3">
-                      <label for="{{ form.audio_file.id_for_label }}" class="form-label">
-                          <i class="bi bi-file-earmark-music me-2"></i>Audio File (MP3, WAV, OGG, M4A)
-                      </label>
-                      {{ form.audio_file }}
-                      {% if form.audio_file.errors %}
-                          <div class="text-danger">{{ form.audio_file.errors }}</div>
-                      {% endif %}
-                      <div class="form-text">Maximum file size: 20MB</div>
-                  </div>
-                  
-                  <div class="mb-3">
-                      <label for="{{ form.cover_image.id_for_label }}" class="form-label">
-                          <i class="bi bi-image me-2"></i>Cover Image (Optional)
-                      </label>
-                      {{ form.cover_image }}
-                      {% if form.cover_image.errors %}
-                          <div class="text-danger">{{ form.cover_image.errors }}</div>
-                      {% endif %}
-                  </div>
-                  
-                  <div class="mb-3">
-                      <label for="{{ form.genres.id_for_label }}" class="form-label">
-                          <i class="bi bi-tags me-2"></i>Genres
-                      </label>
-                      {{ form.genres }}
-                      {% if form.genres.errors %}
-                          <div class="text-danger">{{ form.genres.errors }}</div>
-                      {% endif %}
-                  </div>
-                  
-                  <div class="mb-3 form-check">
-                      {{ form.is_explicit }}
-                      <label class="form-check-label" for="{{ form.is_explicit.id_for_label }}">
-                          Contains Explicit Content
-                      </label>
-                  </div>
-                  
-                  <div class="mb-3 form-check">
-                      {{ form.is_public }}
-                      <label class="form-check-label" for="{{ form.is_public.id_for_label }}">
-                          Make this song public
-                      </label>
-                  </div>
-                  
-                  <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                      <button type="button" class="btn btn-secondary me-md-2" data-bs-dismiss="modal">
-                          <i class="bi bi-x-circle me-2"></i>Cancel
-                      </button>
-                      <button type="submit" class="btn btn-primary">
-                          <i class="bi bi-upload me-2"></i>Upload Song
-                      </button>
-                  </div>
-              </form>
-          </div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="uploadSongModalLabel">
+          <i class="bi bi-music-note-beamed me-2"></i>Upload New Song
+        </h5>
       </div>
+      <div class="modal-body">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+        
+        <form method="post" enctype="multipart/form-data" action="{% url 'upload_song' %}">
+          {% csrf_token %}
+          
+          <div class="mb-3">
+            <label for="{{ form.title.id_for_label }}" class="form-label">Song Title</label>
+            {{ form.title }}
+            {% if form.title.errors %}
+              <div class="text-danger">{{ form.title.errors }}</div>
+            {% endif %}
+          </div>
+          
+          <div class="mb-3">
+            <label for="{{ form.album.id_for_label }}" class="form-label">Album (Optional)</label>
+            {{ form.album }}
+            {% if form.album.errors %}
+              <div class="text-danger">{{ form.album.errors }}</div>
+            {% endif %}
+          </div>
+          
+          <div class="mb-3">
+            <label for="{{ form.audio_file.id_for_label }}" class="form-label">
+              <i class="bi bi-file-earmark-music me-2"></i>Audio File (MP3, WAV, OGG, M4A)
+            </label>
+            {{ form.audio_file }}
+            {% if form.audio_file.errors %}
+              <div class="text-danger">{{ form.audio_file.errors }}</div>
+            {% endif %}
+            <div class="form-text">Maximum file size: 20MB</div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="{{ form.cover_image.id_for_label }}" class="form-label">
+              <i class="bi bi-image me-2"></i>Cover Image (Optional)
+            </label>
+            {{ form.cover_image }}
+            {% if form.cover_image.errors %}
+              <div class="text-danger">{{ form.cover_image.errors }}</div>
+            {% endif %}
+          </div>
+          
+          <div class="mb-3">
+            <label for="{{ form.genres.id_for_label }}" class="form-label">
+              <i class="bi bi-tags me-2"></i>Genres
+            </label>
+            {{ form.genres }}
+            {% if form.genres.errors %}
+              <div class="text-danger">{{ form.genres.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3 form-check">
+            {{ form.is_explicit }}
+            <label class="form-check-label" for="{{ form.is_explicit.id_for_label }}">
+              Contains Explicit Content
+            </label>
+          </div>
+          
+          <div class="mb-3 form-check">
+            {{ form.is_public }}
+            <label class="form-check-label" for="{{ form.is_public.id_for_label }}">
+              Make this song public
+            </label>
+          </div>
+          
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <button type="button" class="btn btn-secondary me-md-2" data-bs-dismiss="modal">
+              <i class="bi bi-x-circle me-2"></i>Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-upload me-2"></i>Upload Song
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </div>
 

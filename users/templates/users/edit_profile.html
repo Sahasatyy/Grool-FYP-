@@ -1,0 +1,28 @@
+<!-- edit_profile.html -->
+{% extends "users/base.html" %}
+
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Edit Profile</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
+      {{ form.first_name }}
+    </div>
+    <div class="mb-3">
+      <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
+      {{ form.last_name }}
+    </div>
+    <div class="mb-3">
+      <label for="{{ form.bio.id_for_label }}" class="form-label">Bio</label>
+      {{ form.bio }}
+    </div>
+    <button type="submit" class="btn btn-primary">
+      <i class="bi bi-save me-2"></i>Save Changes
+    </button>
+  </form>
+</div>
+{% endblock %}

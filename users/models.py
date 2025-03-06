@@ -18,9 +18,11 @@ class UserProfile(models.Model):
 
 class ArtistProfile(models.Model):
     user_profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='artist_profile')
+    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
     artist_name = models.CharField(max_length=100)
     genre = models.CharField(max_length=50)
     verification_date = models.DateField(auto_now_add=True)
+    bio = models.TextField(blank=True) 
     is_verified = models.BooleanField(default=False)
     
     def __str__(self):
@@ -35,6 +37,12 @@ class Album(models.Model):
     def __str__(self):
         return f"{self.title} by {self.artist.artist_name}"
 
+class Genre(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
 class Song(models.Model):
     title = models.CharField(max_length=200)
     artist = models.ForeignKey(ArtistProfile, on_delete=models.CASCADE, related_name='songs')
@@ -47,10 +55,11 @@ class Song(models.Model):
     cover_image = models.ImageField(upload_to='song_covers/', blank=True, null=True)
     duration = models.DurationField(blank=True, null=True)
     release_date = models.DateField(auto_now_add=True)
-    genre = models.CharField(max_length=50, blank=True)
+    genres = models.ManyToManyField(Genre, blank=True)
     lyrics = models.TextField(blank=True)
     is_explicit = models.BooleanField(default=False)
     is_public = models.BooleanField(default=True)
     
     def __str__(self):
         return f"{self.title} by {self.artist.artist_name}"
+
