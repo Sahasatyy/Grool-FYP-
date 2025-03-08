@@ -143,6 +143,38 @@
     color: var(--primary-color);
     line-height: 1.2;
   }
+
+  /* Edit and Delete Buttons */
+.edit-song-btn, .delete-song-btn {
+  padding: 5px 10px;
+  font-size: 0.875rem;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.edit-song-btn {
+  background-color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  color: var(--light-color);
+}
+
+.edit-song-btn:hover {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+  transform: translateY(-2px);
+}
+
+.delete-song-btn {
+  background-color: #dc3545;
+  border: 1px solid #dc3545;
+  color: var(--light-color);
+}
+
+.delete-song-btn:hover {
+  background-color: #c82333;
+  border-color: #c82333;
+  transform: translateY(-2px);
+}
   
   /* Content sections */
   .section {
@@ -167,7 +199,43 @@
     align-items: center; 
     justify-content: center; 
   }
-
+  /* Song Cards */
+  .song-card {
+    background-color: var(--card-bg); /* Use the dark theme card background */
+    border: 1px solid var(--card-secondary-bg); /* Add a subtle border */
+    border-radius: var(--border-radius); /* Rounded corners */
+    overflow: hidden; /* Ensure content doesn't overflow */
+    transition: all 0.3s ease; /* Smooth hover effect */
+  }
+  
+  .song-card:hover {
+    transform: translateY(-5px); /* Lift the card on hover */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); /* Add a shadow on hover */
+  }
+  
+  .song-card img {
+    width: 100%;
+    height: 200px; /* Fixed height for the image */
+    object-fit: cover; /* Crop the image to fit */
+  }
+  
+  .song-card .card-body {
+    padding: 1rem;
+  }
+  
+  .song-card .card-title {
+    color: var(--light-color); /* Light text for the title */
+    font-weight: 500;
+  }
+  
+  .song-card .card-text {
+    color: #aaa; /* Lighter text for the artist name */
+  }
+  
+  .song-card audio {
+    width: 100%;
+    margin-top: 1rem;
+  }
   /* Song list */
   .song-list {
     background-color: var(--card-bg);
@@ -380,7 +448,7 @@
   }
 
 </style>
-
+<body>
 <div class="container-fluid p-0">
   <!-- Artist Profile Section -->
   <div class="container mt-4">
@@ -466,49 +534,82 @@
       </div>
     </div>
 
-    <!-- Songs Section -->
-   <!-- Songs Section -->
-   <div class="section mt-4">
-    <h3 class="section-title">Your Songs</h3>
-    <div class="songs-grid" id="songs-grid">
-      <!-- Songs will be dynamically loaded here -->
-    </div>
-  </div>
+<!-- Your Songs Section -->
+<div class="section mt-4">
+  <h3 class="section-title">Your Songs</h3>
   
-    <!-- Albums Section -->
-    <div class="section mt-4 mb-4">
-      <h3 class="section-title">Your Albums</h3>
-      {% if albums %}
-        <div class="album-grid">
-          {% for album in albums %}
-            <div class="album-card">
-              <div class="album-image">
-                <img src="{{ album.cover_image.url }}" alt="{{ album.title }}">
-              </div>
-              <div class="album-details">
-                <h5 class="album-title">{{ album.title }}</h5>
-                <p class="album-info">{{ album.release_date|date:"Y" }} • {{ album.songs.count }} songs</p>
+<!-- Genre Filter Form -->
+<form method="get" class="mb-4">
+  <label for="genre" class="form-label">Filter by Genre:</label>
+  <select name="genre" id="genre" class="form-select">
+    <option value="">All Genres</option>
+    {% for genre in genres %}
+      <option value="{{ genre }}" {% if selected_genre == genre %}selected{% endif %}>{{ genre }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn btn-primary mt-2">Apply</button>
+</form>
+
+<!-- Song List -->
+{% if page_obj %}
+  <div class="row">
+    {% for song in page_obj %}
+      <div class="col-md-4 mb-4">
+        <div class="card song-card">
+          <img src="{{ song.cover_image.url }}" class="card-img-top" alt="{{ song.title }}">
+          <div class="card-body">
+            <h5 class="card-title">{{ song.title }}</h5>
+            <p class="card-text">{{ song.artist.artist_name }}</p>
+            <audio controls>
+              <source src="{{ song.audio_file.url }}" type="audio/mpeg">
+              Your browser does not support the audio element.
+            </audio>
+              <!-- Edit and Delete Buttons -->
+              <div class="mt-3">
+                {% if song.artist == request.user.profile.artist_profile %}
+                  <a href="{% url 'edit_song' song.id %}" class="btn btn-sm btn-outline-primary edit-song-btn">
+                    <i class="bi bi-pencil"></i> Edit
+                  </a>
+                  <a href="{% url 'delete_song' song.id %}" class="btn btn-sm btn-outline-danger delete-song-btn">
+                    <i class="bi bi-trash"></i> Delete
+                  </a>
+                {% endif %}
               </div>
             </div>
-          {% endfor %}
-        </div>
-      {% else %}
-        <div class="feature-card p-4 text-center">
-          <div class="feature-icon mx-auto">
-            <i class="bi bi-disc fs-3"></i>
-          </div>
-          <h5 class="feature-title">No albums yet</h5>
-          <p class="feature-text">Create your first album to organize your music</p>
-          <div class="mt-3">
-            <button class="btn btn-outline-primary btn-sm rounded-pill">
-              <i class="bi bi-plus-lg me-1"></i>Create Album
-            </button>
           </div>
         </div>
-      {% endif %}
+      {% endfor %}
     </div>
-  </div>
+
+ <!-- Pagination -->
+ <nav aria-label="Page navigation">
+  <ul class="pagination">
+    {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page=1&genre={{ selected_genre }}">&laquo; First</a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&genre={{ selected_genre }}">Previous</a>
+      </li>
+    {% endif %}
+    <li class="page-item disabled">
+      <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    </li>
+    {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.next_page_number }}&genre={{ selected_genre }}">Next</a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&genre={{ selected_genre }}">Last &raquo;</a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+{% else %}
+<div class="alert alert-info" role="alert">
+  No songs found.
 </div>
+{% endif %}
 
 <!-- Upload Song Modal -->
 <div class="modal fade" id="uploadSongModal" tabindex="-1" aria-labelledby="uploadSongModalLabel" aria-hidden="true">
@@ -606,39 +707,8 @@
   </div>
 </div>
 
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // Add hover effects to feature and analytics cards
-    const cards = document.querySelectorAll('.feature-card, .analytics-card, .album-card');
-    cards.forEach(card => {
-      card.addEventListener('mouseenter', () => {
-        card.style.transform = 'translateY(-5px)';
-        card.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';
-      });
-      
-      card.addEventListener('mouseleave', () => {
-        card.style.transform = 'translateY(0)';
-        card.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.1)';
-      });
-    });
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 
 
-    document.addEventListener('DOMContentLoaded', () => {
-      // Button functionality - excluding upload music button which now opens modal
-      const actionButtons = document.querySelectorAll('.btn-outline-primary:not([data-bs-toggle]), .btn-primary:not([data-bs-toggle]):not(.upload-song-button)');
-      actionButtons.forEach(button => {
-        button.addEventListener('click', (e) => {
-          if (!e.currentTarget.hasAttribute('data-bs-toggle')) {
-            e.preventDefault();
-            const buttonText = e.currentTarget.textContent.trim();
-            alert(`The "${buttonText}" feature will be available soon!`);
-          }
-        });
-      });
-    });
-
-
-</script>
 {% endblock %}
+</body>

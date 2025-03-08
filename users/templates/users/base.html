@@ -8,119 +8,14 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" crossorigin="anonymous" />
 
-    <!-- Font awesome icons -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" crossorigin="anonymous" />
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-      header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.8rem 2rem;
-        background-color: rgba(30, 30, 30, 0.95);
-        backdrop-filter: blur(10px);
-        width: 100%;
-        position: fixed;  /* Ensures it stays fixed on all pages */
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 1000;
-        border-bottom: 1px solid #333;
-        height: 70px; /* Fixed height to prevent shifting */
-    }
-    
-    .logo-container {
-        display: flex;
-        align-items: center;
-    }
-    
-    .logo-placeholder {
-        width: 40px;
-        height: 50px;
-        border-radius: 8px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .logo-placeholder img {
-        height: 50px;
-        width: auto;
-        margin: 0;
-        padding: 0;
-    }
-    
-    .search-bar {
-        flex: 1;
-        max-width: 400px;
-        margin: 0 2rem;
-        position: relative;
-    }
-    
-    .search-bar input {
-        padding: 0.7rem 1rem 0.7rem 2.5rem;
-        border-radius: 20px;
-        border: none;
-        width: 100%;
-        background-color: #2e2e2e;
-        color: white;
-    }
-    
-    .search-bar i {
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #888;
-    }
-    
-    .user-actions {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        flex-shrink: 0; /* Prevents shrinking */
-    }
-    
-    .user-actions .btn {
-        padding: 0.5rem 1rem;
-        background-color: #bb86fc;
-        color: #121212;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        flex-shrink: 0; /* Prevents shrinking */
-    }
-    
-    .user-actions .btn-secondary {
-        background-color: transparent;
-        color: #bb86fc;
-        border: 1px solid #bb86fc;
-    }
-    
-    .user-profile {
-        width: 36px;
-        height: 36px;
-        background-color: #3e3e3e;
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .user-profile img {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        object-fit: cover;
-    }
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
 
-    /* Ensures navbar does not get covered by content */
-    body {
-        padding-top: 5px; /* Pushes content down so it doesn't overlap with navbar */
-    }
-    
-    </style>
+    <!-- SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
   <body>
     {% if not hide_navbar %}
@@ -131,7 +26,7 @@
                 <img src="{% static 'images/logo.png' %}" alt="Logo" class="navbar-logo">
             </div>
         </a>
-    </div>
+      </div>
       <div class="search-bar">
         <i class="fas fa-search"></i>
         <input type="text" placeholder="Search songs, artists, albums...">
@@ -148,13 +43,6 @@
             {% csrf_token %}
             <button type="submit" class="btn btn-secondary" id="logout-btn">Logout</button>
           </form>
-          {% comment %} <div class="user-profile">
-            {% if user.profile_image %}
-              <img src="{{ user.profile_image.url }}" alt="{{ user.username }}">
-            {% else %}
-              <i class="fas fa-user"></i>
-            {% endif %} {% endcomment %}
-          </div>
         {% else %}
           <a href="{% url 'login' %}" class="btn btn-secondary">Sign Up</a>
           <a href="{% url 'login' %}" class="btn">Log In</a>
@@ -162,7 +50,7 @@
       </div>
     </header>
     {% endif %}
-    
+
     <div class="container p-3 my-3">
       <div class="row">
         <div class="col-md-12">
@@ -170,7 +58,7 @@
         </div>
       </div>
     </div>
-    
+
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" crossorigin="anonymous"></script>

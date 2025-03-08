@@ -50,7 +50,6 @@ class Song(models.Model):
     audio_file = models.FileField(
         upload_to='songs/', 
         validators=[FileExtensionValidator(allowed_extensions=['mp3', 'wav', 'ogg', 'm4a'])],
-        help_text="Allowed formats: MP3, WAV, OGG, M4A"
     )
     cover_image = models.ImageField(upload_to='song_covers/', blank=True, null=True)
     duration = models.DurationField(blank=True, null=True)

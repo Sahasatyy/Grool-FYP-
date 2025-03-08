@@ -90,8 +90,6 @@ class ChangeEmailForm(forms.ModelForm):
 
 class SongUploadForm(forms.ModelForm):
     MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB
-
-    # Define the genres field as a class attribute
     genres = forms.ModelMultipleChoiceField(
         queryset=Genre.objects.all(),  # Ensure Genre model exists and has data
         widget=forms.CheckboxSelectMultiple,  # Render as checkboxes

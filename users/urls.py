@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import home, RegisterView 
 from . import views
-from .views import upload_song
+from .views import upload_song, edit_song, delete_song
 from .views import song_list, get_songs
 from django.conf import settings
 from django.conf.urls.static import static
@@ -15,6 +15,8 @@ urlpatterns = [
     path('become-artist/', views.request_artist_status, name='request_artist_status'),
     path('admin/verify-artist/<int:artist_profile_id>/', views.verify_artist, name='verify_artist'),
     path('upload-song/', upload_song, name='upload_song'),
+    path('edit-song/<int:song_id>/', edit_song, name='edit_song'),
+    path('delete-song/<int:song_id>/', delete_song, name='delete_song'),
     path('songs/', views.song_list, name='song_list'),
     path('get-songs/', get_songs, name='get_songs'),
     path('edit-artist-profile/', views.edit_artist_profile, name='edit_artist_profile'),
