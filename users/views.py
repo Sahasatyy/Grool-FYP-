@@ -15,19 +15,28 @@ from django.core.paginator import Paginator
 from django.urls import reverse
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
-from .forms import RegisterForm, LoginForm, ArtistVerificationForm, SongUploadForm, ProfilePictureForm, EditProfileForm, ChangeEmailForm
-from .models import ArtistProfile, UserProfile, Song, Favorite
+from .forms import RegisterForm, LoginForm, ArtistVerificationForm, SongUploadForm, ProfilePictureForm, EditProfileForm, ChangeEmailForm, PlaylistForm
+from .models import ArtistProfile, UserProfile, Song, Favorite, Playlist
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.views.decorators.csrf import csrf_exempt
 
 
 def home(request):
+    # Fetch trending songs
     songs = Song.objects.filter(is_public=True).select_related('artist')
     user_favorite_ids = []
     if request.user.is_authenticated:
         user_favorite_ids = Favorite.objects.filter(user=request.user).values_list('song_id', flat=True)
-    return render(request, 'users/home.html', {'songs': songs, 'user_favorite_ids': user_favorite_ids})
+
+    # Fetch public playlists
+    public_playlists = Playlist.objects.filter(is_public=True).select_related('user')
+
+    return render(request, 'users/home.html', {
+        'songs': songs,
+        'user_favorite_ids': user_favorite_ids,
+        'public_playlists': public_playlists,
+    })
 
 class RegisterView(View):
     form_class = RegisterForm
@@ -365,3 +374,108 @@ def song_list(request):
 def get_songs(request):
     songs = Song.objects.filter(is_public=True).values('id', 'title', 'artist__name', 'audio_file', 'cover_image')
     return JsonResponse(list(songs), safe=False)
+
+
+#CRUD Operations for Playlists
+
+def create_playlist(request):
+    if request.method == 'POST':
+        form = PlaylistForm(request.POST)
+        if form.is_valid():
+            # Create the playlist
+            playlist = form.save(commit=False)
+            playlist.user = request.user  # Set the playlist owner
+            playlist.save()
+
+            # Add selected songs to the playlist
+            song_ids = request.POST.getlist('songs')  # Get selected song IDs
+            for song_id in song_ids:
+                try:
+                    song = Song.objects.get(id=song_id, is_public=True)  # Ensure the song is public
+                    playlist.songs.add(song)
+                except Song.DoesNotExist:
+                    messages.warning(request, f'Song with ID {song_id} does not exist or is not public.')
+
+            messages.success(request, 'Playlist created successfully!')
+            return redirect('playlist_detail', playlist_id=playlist.id)
+        else:
+            messages.error(request, 'Failed to create the playlist. Please check the form.')
+    else:
+        form = PlaylistForm()
+
+    # Fetch all public songs for the form
+    songs = Song.objects.filter(is_public=True)
+    return render(request, 'users/create_playlist.html', {
+        'form': form,
+        'songs': songs,
+    })
+
+@login_required
+def edit_playlist(request, playlist_id):
+    playlist = get_object_or_404(Playlist, id=playlist_id, user=request.user)
+
+    if request.method == 'POST':
+        form = PlaylistForm(request.POST, instance=playlist)
+        if form.is_valid():
+            form.save()  # Save changes to the playlist
+            messages.success(request, 'Playlist updated successfully!')
+            return redirect('playlist_detail', playlist_id=playlist.id)
+        else:
+            messages.error(request, 'Failed to update the playlist. Please check the form.')
+    else:
+        form = PlaylistForm(instance=playlist)
+
+    return render(request, 'users/edit_playlist.html', {
+        'form': form,
+        'playlist': playlist,
+    })
+@login_required
+def delete_playlist(request, playlist_id):
+    playlist = get_object_or_404(Playlist, id=playlist_id, user=request.user)
+    if request.method == "POST":
+        playlist.delete()
+        return redirect('users-home')
+    return render(request, 'users/confirm_delete.html', {'playlist': playlist})
+
+@login_required
+def playlist_detail(request, playlist_id):
+    playlist = get_object_or_404(Playlist, id=playlist_id, user=request.user)
+    songs = playlist.songs.all()
+    return render(request, 'users/playlist_detail.html', {'playlist': playlist, 'songs': songs})
+
+@login_required
+def add_song_to_playlist(request, song_id):
+    if request.method == 'POST':
+        playlist_id = request.POST.get('playlist_id')
+        song = get_object_or_404(Song, id=song_id)
+        playlist = get_object_or_404(Playlist, id=playlist_id)
+
+        # Check if the song is already in the playlist
+        if song in playlist.songs.all():
+            messages.warning(request, f'"{song.title}" is already in "{playlist.name}".')
+        else:
+            playlist.songs.add(song)
+            messages.success(request, f'"{song.title}" added to "{playlist.name}" successfully!')
+
+        return redirect('explore')
+
+@login_required
+def remove_song_from_playlist(request, playlist_id, song_id):
+    if request.method == 'POST':
+        playlist = get_object_or_404(Playlist, id=playlist_id, user=request.user)
+        song = get_object_or_404(Song, id=song_id)
+
+        # Check if the song is in the playlist
+        if song in playlist.songs.all():
+            playlist.songs.remove(song)  # Remove only the specified song
+            messages.success(request, f'"{song.title}" removed from "{playlist.name}".')
+        else:
+            messages.warning(request, f'"{song.title}" is not in "{playlist.name}".')
+
+        # Redirect back to the edit playlist page
+        return redirect('edit_playlist', playlist_id=playlist.id)
+def explore(request):
+    # Fetch all public songs or other content for the explore page
+    songs = Song.objects.filter(is_public=True)
+    return render(request, 'users/explore.html', {'songs': songs})
+

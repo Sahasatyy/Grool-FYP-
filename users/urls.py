@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import home, RegisterView 
 from . import views
-from .views import upload_song, edit_song, delete_song, toggle_favorite
+from .views import upload_song, edit_song, delete_song, toggle_favorite, create_playlist, edit_playlist, delete_playlist, add_song_to_playlist, remove_song_from_playlist
 from .views import song_list, get_songs
 from django.conf import settings
 from django.conf.urls.static import static
@@ -25,6 +25,14 @@ urlpatterns = [
     path('change-password/', views.change_password, name='change_password'),
     path('change-email/', views.change_email, name='change_email'),
     path('toggle-favorite/<int:song_id>/', toggle_favorite, name='toggle_favorite'),
+    path('create-playlist/', views.create_playlist, name='create_playlist'),
+    path('explore/', views.explore, name='explore'),
+    path('edit-playlist/<int:playlist_id>/', edit_playlist, name='edit_playlist'),
+    path('delete-playlist/<int:playlist_id>/', views.delete_playlist, name='delete_playlist'),
+    path('add-song-to-playlist/<int:song_id>/', add_song_to_playlist, name='add_song_to_playlist'),
+    path('remove-song-from-playlist/<int:playlist_id>/<int:song_id>/', remove_song_from_playlist, name='remove_song_from_playlist'),
+    path('playlist/<int:playlist_id>/', views.playlist_detail, name='playlist_detail'),
+    
     
 ]
 if settings.DEBUG:

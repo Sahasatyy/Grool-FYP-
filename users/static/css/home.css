@@ -21,89 +21,6 @@ body {
     height: calc(100vh - 90px);
 }
 
-.sidebar {
-    width: 250px;
-    background-color: #1a1a1a;
-    padding: 1.5rem;
-    overflow-y: auto;
-    border-right: 1px solid #333;
-    flex-shrink: 0;
-    position: fixed;
-    left: 0;
-    top: 20px;
-    /* Ensure it starts from the top */
-    height: calc(100vh - 90px);
-    z-index: 100;
-    /* Higher z-index to stay on top */
-}
-
-
-.sidebar::-webkit-scrollbar {
-    width: 5px;
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-    background-color: #444;
-    border-radius: 5px;
-}
-
-.sidebar-section {
-    margin-bottom: 2rem;
-}
-
-.sidebar h3 {
-    color: #bb86fc;
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
-    font-weight: 600;
-}
-
-.sidebar ul {
-    list-style: none;
-}
-
-.sidebar li {
-    padding: 0.7rem 0.8rem;
-    margin-bottom: 0.3rem;
-    cursor: pointer;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-}
-
-.sidebar li i {
-    margin-right: 10px;
-    font-size: 1.1rem;
-}
-
-.sidebar li:hover {
-    background-color: #2e2e2e;
-}
-
-.sidebar li.active {
-    background-color: #3e3e3e;
-    font-weight: 500;
-}
-
-.create-playlist {
-    margin-top: 1rem;
-    display: flex;
-    align-items: center;
-    color: #aaa;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.create-playlist:hover {
-    color: #bb86fc;
-}
-
-.create-playlist i {
-    margin-right: 8px;
-    font-size: 1.2rem;
-}
-
 .main-content {
     flex: 1;
     padding: 2rem;
@@ -431,6 +348,12 @@ body {
 .like-button:hover,
 .like-button.active {
     color: #bb86fc;
+}
+
+.repeat-btn.active,
+.shuffle-btn.active {
+    color: var(--primary-color);
+    /* Change to your theme color */
 }
 
 .player-center {

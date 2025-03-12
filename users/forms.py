@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import ArtistProfile, UserProfile, Song, Genre
+from .models import ArtistProfile, UserProfile, Song, Genre, Playlist
 from django.core.exceptions import ValidationError
 
 class RegisterForm(UserCreationForm):
@@ -116,3 +116,20 @@ class SongUploadForm(forms.ModelForm):
                 raise ValidationError('Unsupported audio file type.')
         
         return audio_file
+
+class PlaylistForm(forms.ModelForm):
+    is_public = forms.BooleanField(
+        required=False,
+        label="Make playlist public",
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+
+    class Meta:
+        model = Playlist
+        fields = ['name', 'is_public']  # Only include name and is_public
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter playlist name'
+            }),
+        }
