@@ -356,6 +356,15 @@ body {
     opacity: 1;
 }
 
+.bi-heart {
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.bi-heart.text-danger {
+    color: red;
+}
+
 /* Music Controller (Footer) */
 .music-controller {
     display: flex;

@@ -324,6 +324,140 @@
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 20px;
   }
+
+  /* Feature Cards */
+  .feature-card {
+    background-color: var(--feature-card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid #2a2a34;
+    transition: all 0.3s ease;
+    height: 100%;
+  }
+  
+  .feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  }
+  
+  .feature-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-bottom: 15px;
+    background-color: rgba(255, 112, 67, 0.2);
+    color: var(--primary-color);
+  }
+  
+  .feature-title {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--light-color);
+  }
+  
+  .feature-text {
+    color: #aaa;
+  }
+  
+  /* Artist verification banner */
+  .artist-verification {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    background-color: var(--card-secondary-bg);
+  }
+  
+  .alert {
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin-top: 20px;
+  }
+
+  /* Horizontal Grid Container */
+.favorites-grid-container {
+  overflow-x: auto; /* Enable horizontal scrolling */
+  padding: 1rem 0;
+  margin-top: 1rem;
+}
+
+.favorites-grid {
+  display: flex;
+  gap: 1rem; /* Space between cards */
+  padding-bottom: 1rem; /* Add padding to prevent scrollbar overlap */
+}
+
+/* Favorite Song Card */
+.favorite-song-card {
+  flex: 0 0 auto; /* Prevent flex items from shrinking */
+  width: 150px; /* Fixed width for each card */
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.favorite-song-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Song Thumbnail */
+.favorite-song-card .song-thumbnail {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 0.5rem;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.favorite-song-card .song-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Song Details */
+.favorite-song-card .song-details {
+  margin-bottom: 0.5rem;
+}
+
+.favorite-song-card .song-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 0.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.favorite-song-card .song-artist {
+  font-size: 0.8rem;
+  color: #aaa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Song Actions */
+.favorite-song-card .song-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.favorite-song-card .song-actions i {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.favorite-song-card .song-actions i:hover {
+  color: var(--primary-color);
+}
+
   
   /* Upload Song Modal Styles */
   #uploadSongModal .modal-content {
@@ -531,6 +665,13 @@
           <h5 class="analytics-title text-center">Followers</h5>
           <div class="analytics-value text-center">{{ followers|default:"0" }}</div>
         </div>
+        <div class="analytics-card p-4">
+          <div class="analytics-icon mx-auto">
+            <i class="bi bi-people fs-3"></i>
+          </div>
+          <h5 class="analytics-title text-center">Total revenue</h5>
+          <div class="analytics-value text-center">{{ total_revenue|default:"0" }}</div>
+        </div>
       </div>
     </div>
 
@@ -610,6 +751,95 @@
   No songs found.
 </div>
 {% endif %}
+    <!-- User Features Section -->
+    <div class="row mt-4 mb-4">
+      <div class="col-lg-3 col-md-6 mb-4">
+        <div class="feature-card p-4">
+          <div class="feature-icon mx-auto">
+            <i class="bi bi-collection-play fs-3"></i>
+          </div>
+          <h5 class="feature-title text-center">My Playlists</h5>
+          <p class="feature-text text-center">Create and manage your custom playlists</p>
+          <div class="text-center mt-3">
+            <button class="btn btn-outline-primary btn-sm rounded-pill">
+              <i class="bi bi-plus-lg me-1"></i>Create New
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 mb-4">
+        <div class="feature-card p-4">
+          <div class="feature-icon mx-auto">
+            <i class="bi bi-heart fs-3"></i>
+          </div>
+          <div class="section mt-4">
+            <h5 class="feature-title text-center">Favorites</h5>
+            <p class="feature-text text-center">Access your liked songs and albums</p>
+            <div class="text-center mt-3">
+              <button class="btn btn-outline-primary btn-sm rounded-pill">
+                <i class="bi bi-music-note-list me-1"></i>View All
+              </button>
+            </div>
+          
+            <!-- Horizontal Grid Stack for Favorite Songs -->
+            <div class="favorites-grid-container">
+              <div class="favorites-grid">
+                {% for favorite in request.user.favorites.all %}
+                <div class="favorite-song-card">
+                  <div class="song-thumbnail">
+                    {% if favorite.song.cover_image %}
+                      <img src="{{ favorite.song.cover_image.url }}" alt="{{ favorite.song.title }}">
+                    {% else %}
+                      <img src="https://via.placeholder.com/100" alt="Song thumbnail">
+                    {% endif %}
+                  </div>
+                  <div class="song-details">
+                    <h6 class="song-title">{{ favorite.song.title }}</h6>
+                    <p class="song-artist">{{ favorite.song.artist.artist_name }}</p>
+                  </div>
+                  <div class="song-actions">
+                    <i class="bi bi-heart text-danger" 
+                       data-song-id="{{ favorite.song.id }}" 
+                       onclick="toggleFavorite(this)"></i>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 mb-4">
+        <div class="feature-card p-4">
+          <div class="feature-icon mx-auto">
+            <i class="bi bi-clock-history fs-3"></i>
+          </div>
+          <h5 class="feature-title text-center">Recently Played</h5>
+          <p class="feature-text text-center">See your listening history</p>
+          <div class="text-center mt-3">
+            <button class="btn btn-outline-primary btn-sm rounded-pill">
+              <i class="bi bi-arrow-clockwise me-1"></i>View History
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 mb-4">
+        <div class="feature-card p-4">
+          <div class="feature-icon mx-auto">
+            <i class="bi bi-gear fs-3"></i>
+          </div>
+          <h5 class="feature-title text-center">Settings</h5>
+          <p class="feature-text text-center">Customize your listening experience</p>
+          <div class="text-center mt-3">
+            <button class="btn btn-outline-primary btn-sm rounded-pill">
+              <i class="bi bi-sliders me-1"></i>Preferences
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Upload Song Modal -->
 <div class="modal fade" id="uploadSongModal" tabindex="-1" aria-labelledby="uploadSongModalLabel" aria-hidden="true">

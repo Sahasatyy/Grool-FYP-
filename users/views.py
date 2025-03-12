@@ -16,7 +16,7 @@ from django.urls import reverse
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
 from .forms import RegisterForm, LoginForm, ArtistVerificationForm, SongUploadForm, ProfilePictureForm, EditProfileForm, ChangeEmailForm
-from .models import ArtistProfile, UserProfile, Song
+from .models import ArtistProfile, UserProfile, Song, Favorite
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.views.decorators.csrf import csrf_exempt
@@ -24,8 +24,10 @@ from django.views.decorators.csrf import csrf_exempt
 
 def home(request):
     songs = Song.objects.filter(is_public=True).select_related('artist')
-    return render(request, 'users/home.html', {'songs': songs})
-
+    user_favorite_ids = []
+    if request.user.is_authenticated:
+        user_favorite_ids = Favorite.objects.filter(user=request.user).values_list('song_id', flat=True)
+    return render(request, 'users/home.html', {'songs': songs, 'user_favorite_ids': user_favorite_ids})
 
 class RegisterView(View):
     form_class = RegisterForm
@@ -277,6 +279,19 @@ def upload_profile_picture(request):
         form = ProfilePictureForm(instance=user_profile)
 
     return render(request, 'users/upload_profile_picture.html', {'form': form})
+
+@login_required
+def toggle_favorite(request, song_id):
+    song = Song.objects.get(id=song_id)
+    favorite, created = Favorite.objects.get_or_create(user=request.user, song=song)
+
+    if not created:
+        favorite.delete()
+        is_favorited = False
+    else:
+        is_favorited = True
+
+    return JsonResponse({'is_favorited': is_favorited})
 
 # CRUD Operations for Songs
 @login_required

@@ -18,7 +18,7 @@
         <h3>Menu</h3>
         <ul>
           <li class="active"><i class="bi bi-house-door"></i> Home</li>
-          <li><i class="bi bi-collection"></i> Favorites</li>
+          <li><i class="bi bi-collection"></i> Explore </li>
         </ul>
       </div>
       
@@ -39,36 +39,38 @@
     <section class="songs-section">
       <h2 class="section-title">Trending Songs</h2>
       <div class="song-list">
-          {% for song in songs %}
-          <div class="song-item" 
-               data-song-id="{{ song.id }}"
-               data-audio-url="{{ song.audio_file.url }}" 
-               data-title="{{ song.title }}"
-               data-artist="{{ song.artist.artist_name }}"
-               data-cover="{% if song.cover_image %}{{ song.cover_image.url }}{% else %}https://via.placeholder.com/56{% endif %}"
-               data-duration="{% if song.duration %}{{ song.duration }}{% else %}3:00{% endif %}">
-             <div class="song-number">{{ forloop.counter|stringformat:"02d" }}</div>
-             <div class="song-info">
-                 <div class="song-thumbnail">
-                     {% if song.cover_image %}
-                         <img src="{{ song.cover_image.url }}" alt="{{ song.title }}">
-                     {% else %}
-                         <img src="https://via.placeholder.com/40" alt="Song thumbnail">
-                     {% endif %}
-                 </div>
-                 <div class="song-title-artist">
-                     <div class="song-title">{{ song.title }}</div>
-                     <div class="song-artist">{{ song.artist.artist_name }}</div>
-                 </div>
-             </div>
-             <div class="song-duration">{% if song.duration %}{{ song.duration }}{% else %}3:00{% endif %}</div>
-             <div class="song-actions">
-                 <i class="bi bi-heart"></i>
-                 <i class="bi bi-plus-circle"></i>
-                 <i class="bi bi-three-dots"></i>
-             </div>
-         </div>
-          {% endfor %}
+        {% for song in songs %}
+        <div class="song-item" 
+             data-song-id="{{ song.id }}"
+             data-audio-url="{{ song.audio_file.url }}" 
+             data-title="{{ song.title }}"
+             data-artist="{{ song.artist.artist_name }}"
+             data-cover="{% if song.cover_image %}{{ song.cover_image.url }}{% else %}https://via.placeholder.com/56{% endif %}"
+             data-duration="{% if song.duration %}{{ song.duration }}{% else %}3:00{% endif %}">
+            <div class="song-number">{{ forloop.counter|stringformat:"02d" }}</div>
+            <div class="song-info">
+                <div class="song-thumbnail">
+                    {% if song.cover_image %}
+                        <img src="{{ song.cover_image.url }}" alt="{{ song.title }}">
+                    {% else %}
+                        <img src="https://via.placeholder.com/40" alt="Song thumbnail">
+                    {% endif %}
+                </div>
+                <div class="song-title-artist">
+                    <div class="song-title">{{ song.title }}</div>
+                    <div class="song-artist">{{ song.artist.artist_name }}</div>
+                </div>
+            </div>
+            <div class="song-duration">{% if song.duration %}{{ song.duration }}{% else %}3:00{% endif %}</div>
+            <div class="song-actions">
+                <i class="bi bi-heart{% if song.id in user_favorite_ids %} text-danger{% endif %}" 
+                   data-song-id="{{ song.id }}" 
+                   onclick="toggleFavorite(this)"></i>
+                <i class="bi bi-plus-circle"></i>
+                <i class="bi bi-three-dots"></i>
+            </div>
+        </div>
+        {% endfor %}
       </div>
   </section>
 
@@ -81,9 +83,6 @@
       <div class="song-details">
         <h4 id="current-song-title">Select a song to play</h4>
         <p id="current-song-artist"></p>
-      </div>
-      <div class="like-button">
-        <i class="bi bi-heart"></i>
       </div>
     </div>
     
@@ -129,6 +128,28 @@
     </div>
   </footer>
 
+  <script>
+    function toggleFavorite(heartIcon) {
+        const songId = heartIcon.getAttribute('data-song-id');
+        fetch(`/toggle-favorite/${songId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin',
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.is_favorited) {
+                heartIcon.classList.add('text-danger');  // Change heart color to red
+            } else {
+                heartIcon.classList.remove('text-danger');  // Revert heart color
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+</script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
