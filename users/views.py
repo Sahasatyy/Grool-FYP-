@@ -443,6 +443,13 @@ def playlist_detail(request, playlist_id):
     songs = playlist.songs.all()
     return render(request, 'users/playlist_detail.html', {'playlist': playlist, 'songs': songs})
 
+def song_detail(request, song_id):
+    song = get_object_or_404(Song, id=song_id)
+    context = {
+        'song': song,
+    }
+    return render(request, 'users/song_detail_modal.html', context)
+
 @login_required
 def add_song_to_playlist(request, song_id):
     if request.method == 'POST':

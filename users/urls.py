@@ -29,11 +29,12 @@ urlpatterns = [
     path('explore/', views.explore, name='explore'),
     path('edit-playlist/<int:playlist_id>/', edit_playlist, name='edit_playlist'),
     path('delete-playlist/<int:playlist_id>/', views.delete_playlist, name='delete_playlist'),
-    path('add-song-to-playlist/<int:song_id>/', add_song_to_playlist, name='add_song_to_playlist'),
+    path('add-song-to-playlist/<int:song_id>/', views.add_song_to_playlist, name='add_song_to_playlist'),
     path('remove-song-from-playlist/<int:playlist_id>/<int:song_id>/', remove_song_from_playlist, name='remove_song_from_playlist'),
     path('playlist/<int:playlist_id>/', views.playlist_detail, name='playlist_detail'),
-    
-    
+    path('song/<int:song_id>/', views.song_detail, name='song_detail'),
+
+
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

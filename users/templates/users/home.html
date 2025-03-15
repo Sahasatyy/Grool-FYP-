@@ -181,6 +181,126 @@
     color: inherit; /* Keeps the default color on hover */
     text-decoration: none; /* Ensures no underline on hover */
   }
+
+  /* song-details Styling */
+.modal-content {
+  background-color: #181818; /* Match album-card background color */
+  color: white; /* Match main content text color */
+  border-radius: 8px; /* Match album-card border-radius */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  border-bottom: 1px solid #333;
+  padding: 1rem;
+}
+
+.modal-title {
+  color: #bb86fc; /* Keep your accent color */
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-body img {
+  border-radius: 6px; /* Match album-image border-radius */
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1/1; /* Match album-image aspect ratio */
+  object-fit: cover; /* Match album-image object-fit */
+}
+
+.modal-body h3 {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #fff; /* Match album-title color */
+}
+
+.modal-body p {
+  color: #aaa; /* Match album-artist color */
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.modal-body .btn {
+  margin-right: 0.8rem;
+  font-weight: 500;
+  transition: all 0.3s ease; /* Match transition effects */
+}
+
+.modal-footer {
+  border-top: 1px solid #333;
+  padding: 1rem;
+}
+
+.list-group-item {
+  background-color: #282828; /* Match album-card:hover background */
+  border: none;
+  color: white;
+  margin-bottom: 0.5rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease; /* Match transition effects */
+}
+
+.list-group-item:hover {
+  background-color: #3a3a3a; /* Match song-item:hover background */
+}
+
+.btn-close {
+  filter: invert(1); /* Makes the close button visible on dark background */
+}
+
+/* Button styling to match your theme */
+.btn-primary {
+  background-color: transparent; /* Match play-btn background */
+  border-color: #bb86fc;
+  transition: all 0.2s ease;
+  border-radius: 4px; 
+  
+}
+
+.btn-primary:hover {
+  background-color: #a56efc; /* Slightly darker on hover */
+  transform: scale(1.05); /* Match transform effects */
+}
+
+.btn-outline-primary {
+  border-color: #bb86fc;
+  color: #bb86fc;
+}
+
+.btn-outline-primary:hover {
+  background-color: #bb86fc;
+  color: #121212; /* Match play-btn i color */
+  transform: scale(1.05);
+}
+
+.btn-secondary {
+  background-color: #333;
+  border-color: #333;
+  
+}
+
+.btn-secondary:hover {
+  background-color: #444;
+  border-color: #444;
+}
+
+.btn-success {
+  background-color: #bb86fc; /* Keep consistent with primary color */
+  border-color: #bb86fc;
+}
+
+.btn-success:hover {
+  background-color: #a56efc;
+  border-color: #a56efc;
+}
   
   /* Responsive sidebar */
   @media (max-width: 992px) {
@@ -232,8 +352,6 @@
           <li>
             <a href="{% url 'explore' %}"><i class="bi bi-collection"></i> Explore</a>
           </li>
-          
-          
         </ul>
       </div>
 
@@ -291,8 +409,86 @@
               <i class="bi bi-heart{% if song.id in user_favorite_ids %} text-danger{% endif %}"
                  data-song-id="{{ song.id }}"
                  onclick="toggleFavorite(this)"></i>
-              <i class="bi bi-plus-circle"></i>
-              <i class="bi bi-three-dots"></i>
+              <!-- Add a button to open the modal -->
+              <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#songDetailsModal{{ song.id }}">
+                <i class="bi bi-info-circle"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Song Details Modal -->
+          <div class="modal fade" id="songDetailsModal{{ song.id }}" tabindex="-1" aria-labelledby="songDetailsModalLabel{{ song.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="songDetailsModalLabel{{ song.id }}">Song Details</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <!-- Song Details -->
+                  <div class="row">
+                    <!-- Song Cover Image -->
+                    <div class="col-md-4">
+                      <img src="{{ song.cover_image.url }}" class="img-fluid rounded" alt="{{ song.title }}">
+                    </div>
+                    <!-- Song Information -->
+                    <div class="col-md-8">
+                      <h3>{{ song.title }}</h3>
+                      <p class="text-muted">{{ song.artist.artist_name }}</p>
+                      <p><strong>Genre:</strong> {{ song.genres.all|join:", " }}</p>
+                      <p><strong>Release Date:</strong> {{ song.release_date }}</p>
+                      <p><strong>Duration:</strong> {{ song.duration }}</p>
+                      <p><strong>Explicit:</strong> {% if song.is_explicit %}Yes{% else %}No{% endif %}</p>
+                      <p><strong>Description:</strong> {{ song.description|default:"No description available." }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="mt-4">
+                    <!-- Add to Playlist Button -->
+                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addToPlaylistModal{{ song.id }}">
+                      <i class="bi bi-plus-circle"></i> Add to Playlist
+                    </button>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add to Playlist Modal -->
+          <div class="modal fade" id="addToPlaylistModal{{ song.id }}" tabindex="-1" aria-labelledby="addToPlaylistModalLabel{{ song.id }}" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="addToPlaylistModalLabel{{ song.id }}">Add to Playlist</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <h6>Select a playlist:</h6>
+                  <ul class="list-group">
+                    {% for playlist in request.user.playlists.all %}
+                      <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ playlist.name }}
+                        <form method="post" action="{% url 'add_song_to_playlist' song.id %}">
+                          {% csrf_token %}
+                          <input type="hidden" name="playlist_id" value="{{ playlist.id }}">
+                          <button type="submit" class="btn btn-sm btn-success">
+                            <i class="bi bi-plus"></i> Add
+                          </button>
+                        </form>
+                      </li>
+                    {% empty %}
+                      <li class="list-group-item">No playlists found.</li>
+                    {% endfor %}
+                  </ul>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
             </div>
           </div>
         {% endfor %}
