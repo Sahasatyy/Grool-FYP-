@@ -28,7 +28,7 @@ header {
 .logo-container {
     display: flex;
     align-items: center;
-    
+
 }
 
 .logo-placeholder {
@@ -111,6 +111,37 @@ header {
     border-radius: 50%;
     object-fit: cover;
 }
+
+/* search bar */
+.search-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 300px;
+
+}
+
+.search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.suggestion-item {
+    padding: 10px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.suggestion-item:hover {
+    background: rgba(187, 134, 252, 0.1);
+}
+
 
 /* Ensures navbar does not get covered by content */
 body {

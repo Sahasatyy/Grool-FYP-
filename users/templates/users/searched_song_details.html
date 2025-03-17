@@ -1,0 +1,193 @@
+{% extends "users/base.html" %}
+
+{% block title %}{{ song.title }} - Song Details{% endblock %}
+
+{% block content %}
+<style>
+  :root {
+    --primary-color: #bb86fc;
+    --primary-light: #d4b6ff;
+    --primary-dark: #9d55fc;
+    --text-color: #e9e9e9;
+    --light-color: #f8f9fa;
+    --dark-color: #1a1a1e;
+    --card-bg: #1e1e24;
+    --card-secondary-bg: #2d2d34;
+    --border-radius: 12px;
+  }
+
+  body {
+    background-color: var(--dark-color);
+    color: var(--text-color);
+  }
+
+  .song-details-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  .song-cover {
+    width: 100%;
+    max-width: 300px;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+  }
+
+  .song-title {
+    font-size: 2rem;
+    color: var(--light-color);
+    margin-bottom: 10px;
+  }
+
+  .song-artist {
+    font-size: 1.2rem;
+    color: var(--primary-light);
+    margin-bottom: 20px;
+  }
+
+  .song-info {
+    margin-bottom: 20px;
+  }
+
+  .song-info p {
+    font-size: 1rem;
+    color: var(--text-color);
+    margin-bottom: 10px;
+  }
+
+  .song-info p strong {
+    color: var(--primary-color);
+  }
+
+  .audio-player {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary {
+    background-color: var(--primary-color);
+    border: none;
+    color: var(--dark-color);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(187, 134, 252, 0.3);
+  }
+
+  .btn-outline-primary {
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+  }
+
+  .btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: var(--dark-color);
+  }
+</style>
+
+<div class="song-details-container">
+  <!-- Song Cover Image -->
+  <img src="{{ song.cover_image.url }}" class="song-cover" alt="{{ song.title }}">
+
+  <!-- Song Title -->
+  <h1 class="song-title">{{ song.title }}</h1>
+
+  <!-- Song Artist -->
+  <p class="song-artist">By {{ song.artist.artist_name }}</p>
+
+  <!-- Song Information -->
+  <div class="song-info">
+    <p><strong>Genre:</strong> {{ song.genres.all|join:", " }}</p>
+    <p><strong>Release Date:</strong> {{ song.release_date }}</p>
+    <p><strong>Duration:</strong> {{ song.duration }}</p>
+    <p><strong>Explicit:</strong> {% if song.is_explicit %}Yes{% else %}No{% endif %}</p>
+    <p><strong>Description:</strong> {{ song.description|default:"No description available." }}</p>
+  </div>
+
+  <!-- Audio Player -->
+  <audio controls class="audio-player">
+    <source src="{{ song.audio_file.url }}" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <!-- Actions -->
+  <div class="actions">
+    <!-- Add to Playlist Button -->
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addToPlaylistModal{{ song.id }}">
+      <i class="bi bi-plus-circle"></i> Add to Playlist
+    </button>
+
+    <!-- Back Button -->
+    <a href="{% url 'search' %}" class="btn btn-outline-primary">
+      <i class="bi bi-arrow-left"></i> Back to Search
+    </a>
+  </div>
+</div>
+
+<!-- Add to Playlist Modal -->
+<div class="modal fade" id="addToPlaylistModal{{ song.id }}" tabindex="-1" aria-labelledby="addToPlaylistModalLabel{{ song.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addToPlaylistModalLabel{{ song.id }}">Add to Playlist</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h6>Select a playlist:</h6>
+          <ul class="list-group">
+            {% for playlist in request.user.playlists.all %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ playlist.name }}
+                <form method="post" action="{% url 'add_song_to_playlist' song.id %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="playlist_id" value="{{ playlist.id }}">
+                  <button type="submit" class="btn btn-sm btn-success">
+                    <i class="bi bi-plus"></i> Add
+                  </button>
+                </form>
+              </li>
+            {% empty %}
+              <li class="list-group-item">No playlists found.</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Play button functionality
+    document.querySelectorAll('.play-btn').forEach(button => {
+      button.addEventListener('click', function () {
+        const audioUrl = this.getAttribute('data-audio-url');
+        const audioPlayer = new Audio(audioUrl);
+        audioPlayer.play();
+      });
+    });
+  });
+</script>
+{% endblock %}

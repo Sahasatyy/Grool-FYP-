@@ -2,7 +2,7 @@ from django.urls import path
 from .views import home, RegisterView 
 from . import views
 from .views import upload_song, edit_song, delete_song, toggle_favorite, create_playlist, edit_playlist, delete_playlist, add_song_to_playlist, remove_song_from_playlist
-from .views import song_list, get_songs
+from .views import song_list, get_songs, search, search_suggestions, song_detail
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -11,7 +11,7 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='users-register'),
     path('profile/', views.profile_view, name='profile'),
     path('profile/normal/', views.normal_profile, name='user_profile'),
-    path('profile/artist/', views.artist_profile, name='artist_profile'),
+    path('artist/<int:artist_id>/', views.artist_profile, name='artist_profile'), 
     path('become-artist/', views.request_artist_status, name='request_artist_status'),
     path('admin/verify-artist/<int:artist_profile_id>/', views.verify_artist, name='verify_artist'),
     path('upload-song/', upload_song, name='upload_song'),
@@ -33,6 +33,9 @@ urlpatterns = [
     path('remove-song-from-playlist/<int:playlist_id>/<int:song_id>/', remove_song_from_playlist, name='remove_song_from_playlist'),
     path('playlist/<int:playlist_id>/', views.playlist_detail, name='playlist_detail'),
     path('song/<int:song_id>/', views.song_detail, name='song_detail'),
+    path('search/', search, name='search'),
+    path('search-suggestions/', search_suggestions, name='search_suggestions'),
+    path('song/<int:song_id>/', song_detail, name='song_details_modal')
 
 
 ]

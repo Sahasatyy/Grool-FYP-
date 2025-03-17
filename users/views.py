@@ -20,6 +20,7 @@ from .models import ArtistProfile, UserProfile, Song, Favorite, Playlist
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
 
 
 def home(request):
@@ -92,22 +93,25 @@ def normal_profile(request):
 
 
 @login_required
-def artist_profile(request):
-    # Get the user's profile
-    user_profile = request.user.profile
-
-    # Redirect if the user is not an artist
-    if user_profile.user_type != 'artist':
-        messages.error(request, "You don't have artist privileges yet.")
-        return redirect('user_profile')
-
-    # Get the artist profile
-    artist_profile = get_object_or_404(ArtistProfile, user_profile=user_profile)
+def artist_profile(request, artist_id=None):
+    # If artist_id is provided, view another artist's profile
+    if artist_id:
+        artist_profile = get_object_or_404(ArtistProfile, user_profile__user__id=artist_id, is_verified=True)
+        user_profile = artist_profile.user_profile
+        is_owner = request.user.id == artist_profile.user_profile.user.id
+    else:
+        # If artist_id is not provided, view the logged-in artist's profile
+        user_profile = request.user.profile
+        if user_profile.user_type != 'artist':
+            messages.error(request, "You don't have artist privileges yet.")
+            return redirect('user_profile')
+        artist_profile = get_object_or_404(ArtistProfile, user_profile=user_profile)
+        is_owner = True  # The logged-in user is the artist
 
     # Fetch the artist's songs (filter by artist and public status)
     songs = Song.objects.filter(artist=artist_profile, is_public=True)
 
-        # Handle genre filtering
+    # Handle genre filtering
     selected_genre = request.GET.get('genre')
     if selected_genre:
         songs = songs.filter(genres__name=selected_genre)
@@ -121,8 +125,8 @@ def artist_profile(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Pass the form for uploading songs
-    form = SongUploadForm()
+    # Pass the form for uploading songs (only if the user is the artist)
+    form = SongUploadForm() if is_owner else None
 
     # Context to pass to the template
     context = {
@@ -131,11 +135,11 @@ def artist_profile(request):
         'songs': songs,  # Pass all songs (optional, if not using pagination)
         'page_obj': page_obj,  # Pass paginated songs
         'genres': genres,  # Pass genres for the filter dropdown
-        'form': form,  # Pass the song upload form
+        'form': form,  # Pass the song upload form (only for the artist)
+        'is_owner': is_owner,  # Pass whether the user is the artist
     }
 
     return render(request, 'users/artist_profile.html', context)
-
 
 @login_required
 def request_artist_status(request):
@@ -481,8 +485,77 @@ def remove_song_from_playlist(request, playlist_id, song_id):
 
         # Redirect back to the edit playlist page
         return redirect('edit_playlist', playlist_id=playlist.id)
+    
 def explore(request):
     # Fetch all public songs or other content for the explore page
     songs = Song.objects.filter(is_public=True)
     return render(request, 'users/explore.html', {'songs': songs})
 
+#search system
+
+# views.py
+from django.db.models import Q, Count
+
+def search(request):
+    query = request.GET.get('q', '')
+    results = {
+        'songs': [],
+        'artists': [],
+        'playlists': [],
+    }
+
+    if query:
+        # Search for songs
+        results['songs'] = Song.objects.filter(
+            Q(title__icontains=query) | Q(artist__artist_name__icontains=query),
+            is_public=True
+        ).select_related('artist')
+
+        # Search for artists
+        results['artists'] = ArtistProfile.objects.filter(
+            Q(artist_name__icontains=query) | Q(user_profile__user__username__icontains=query),
+            is_verified=True
+        ).select_related('user_profile__user')
+
+        # Search for playlists
+        results['playlists'] = Playlist.objects.filter(
+            Q(name__icontains=query) | Q(user__username__icontains=query),
+            is_public=True
+        ).select_related('user')
+
+    # Random recommendations
+    random_artists = list(ArtistProfile.objects.filter(is_verified=True).annotate(song_count=Count('songs')).order_by('?')[:3])
+    random_songs = list(Song.objects.filter(is_public=True).order_by('?')[:3])
+    random_playlists = list(Playlist.objects.filter(is_public=True).annotate(song_count=Count('songs')).order_by('?')[:3])
+
+    return render(request, 'users/search_results.html', {
+        'query': query,
+        'results': results,
+        'random_artists': random_artists,
+        'random_songs': random_songs,
+        'random_playlists': random_playlists,
+    })
+
+
+def search_suggestions(request):
+    query = request.GET.get('q', '')
+    suggestions = []
+
+    if query:
+        # Add song titles
+        songs = Song.objects.filter(title__icontains=query, is_public=True).values_list('title', flat=True)[:5]
+        suggestions.extend(songs)
+
+        # Add artist names
+        artists = ArtistProfile.objects.filter(artist_name__icontains=query, is_verified=True).values_list('artist_name', flat=True)[:5]
+        suggestions.extend(artists)
+
+        # Add playlist names
+        playlists = Playlist.objects.filter(name__icontains=query, is_public=True).values_list('name', flat=True)[:5]
+        suggestions.extend(playlists)
+
+    return JsonResponse({'suggestions': suggestions})
+
+def song_detail(request, song_id):
+    song = get_object_or_404(Song, id=song_id)
+    return render(request, 'users/searched_song_details.html', {'song': song})  
