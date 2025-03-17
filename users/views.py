@@ -89,7 +89,15 @@ def profile_view(request):
 def normal_profile(request):
     user_profile = request.user.profile
     has_artist_request = ArtistProfile.objects.filter(user_profile=user_profile, is_verified=False).exists()
-    return render(request, 'users/user_profile.html', {'user_profile': user_profile, 'has_artist_request': has_artist_request})
+
+    # Ensure that you're passing the correct artist_id if needed
+    artist_id = user_profile.id if user_profile.user_type == 'artist' else None
+
+    return render(request, 'users/user_profile.html', {
+        'user_profile': user_profile,
+        'has_artist_request': has_artist_request,
+        'artist_id': artist_id  # Pass artist_id if needed
+    })
 
 
 @login_required

@@ -40,23 +40,23 @@
         <button id="search-button" class="btn btn-primary">Search</button>
         <div id="search-suggestions" class="search-suggestions"></div>
     </div>
-      <div class="user-actions">
-        {% if user.is_authenticated %}
-          {% if user.user_type == 'artist' %}
-            <a href="{% url 'artist_profile' %}" class="btn btn-secondary">Artist Dashboard</a>
-            <a href="{% url '#' %}" class="btn">Upload Music</a>
+    <div class="user-actions">
+      {% if user.is_authenticated %}
+          {% if user.profile.user_type == 'artist' %}
+              <a href="{% url 'artist_profile' user.id %}" class="btn btn-secondary">Artist Dashboard</a>
           {% else %}
-            <a href="{% url 'user_profile' %}" class="btn btn-secondary">My Library</a>
+              <a href="{% url 'user_profile' %}" class="btn btn-secondary">My Library</a>
           {% endif %}
           <form id="logout-form" method="POST" action="{% url 'logout' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-secondary" id="logout-btn">Logout</button>
+              {% csrf_token %}
+              <button type="submit" class="btn btn-secondary" id="logout-btn">Logout</button>
           </form>
-        {% else %}
+      {% else %}
           <a href="{% url 'login' %}" class="btn btn-secondary">Sign Up</a>
           <a href="{% url 'login' %}" class="btn">Log In</a>
-        {% endif %}
-      </div>
+      {% endif %}
+    </div>
+    
     </header>
     {% endif %}
 
