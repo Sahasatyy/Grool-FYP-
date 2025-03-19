@@ -165,25 +165,36 @@ def artist_profile(request, artist_id=None):
 
 @login_required
 def request_artist_status(request):
-    user_profile = request.user.profile
+    # Ensure the user has a profile
+    try:
+        user_profile = request.user.profile
+    except UserProfile.DoesNotExist:
+        messages.error(request, "User profile does not exist.")
+        return redirect('home')  # Redirect to a safe page
+
+    # Get or create the artist profile
     artist_profile, created = ArtistProfile.objects.get_or_create(
         user_profile=user_profile,
         defaults={'is_verified': False}
     )
 
+    # Check if the artist is already verified
     if artist_profile.is_verified:
         messages.info(request, "You are already a verified artist.")
-        return redirect('artist_profile')
+        return redirect('artist_profile')  # Redirect to the artist profile page
+
+    # Check if the artist profile already exists (pending verification)
     elif not created:
         messages.info(request, "Your artist verification is pending approval.")
-        return redirect('user_profile')
+        return redirect('user_profile')  # Redirect to the user profile page
 
+    # Handle form submission
     if request.method == 'POST':
-        form = ArtistVerificationForm(request.POST, instance=artist_profile)
+        form = ArtistVerificationForm(request.POST, request.FILES, instance=artist_profile)
         if form.is_valid():
             form.save()
             messages.success(request, "Your artist verification request has been submitted.")
-            return redirect('user_profile')
+            return redirect('user_profile')  # Redirect to the user profile page
     else:
         form = ArtistVerificationForm(instance=artist_profile)
 
@@ -196,11 +207,15 @@ def verify_artist(request, artist_profile_id):
     artist_profile = get_object_or_404(ArtistProfile, id=artist_profile_id)
     
     if request.method == 'POST':
+        # Verify the artist
         artist_profile.is_verified = True
         artist_profile.save()
+
+        # Update the user profile
         artist_profile.user_profile.user_type = 'artist'
         artist_profile.user_profile.save()
-        
+
+        # Update the user's session (if needed)
         user = artist_profile.user_profile.user
         for session in Session.objects.all():
             session_data = session.get_decoded()
@@ -208,9 +223,9 @@ def verify_artist(request, artist_profile_id):
                 session_data['user_type'] = 'artist'
                 session.session_data = Session.objects.encode(session_data)
                 session.save()
-        
+
         messages.success(request, f"Artist {user.username} has been verified.")
-        return redirect('admin:app_artistprofile_changelist')
+        return redirect('admin:app_artistprofile_changelist')  # Redirect to the admin panel
     
     return render(request, 'admin/verify_artist_confirmation.html', {'artist_profile': artist_profile})
 
@@ -223,6 +238,10 @@ def edit_artist_profile(request):
 
     artist_profile = user_profile.artist_profile
 
+    # Debugging: Print the artist_profile and its associated user ID
+    print(f"Artist Profile: {artist_profile}")
+    print(f"User ID: {artist_profile.user_profile.user.id}")
+
     if request.method == 'POST':
         form = ArtistVerificationForm(request.POST, instance=artist_profile)
         if form.is_valid():
@@ -232,7 +251,7 @@ def edit_artist_profile(request):
     else:
         form = ArtistVerificationForm(instance=artist_profile)
 
-    return render(request, 'users/edit_artist_profile.html', {'form': form})
+    return render(request, 'users/edit_artist_profile.html', {'form': form, 'artist_profile': artist_profile})
 
 @login_required
 def edit_profile(request):
@@ -340,6 +359,10 @@ def upload_song(request):
         return redirect('home')
 
     artist_profile = request.user.profile.artist_profile
+    if not hasattr(artist_profile, 'user_profile'):
+        messages.error(request, "Artist profile is incomplete.")
+        return redirect('home')
+
     if request.method == 'POST':
         form = SongUploadForm(request.POST, request.FILES, artist=artist_profile)
         if form.is_valid():
@@ -350,7 +373,12 @@ def upload_song(request):
                 song.album.update_total_tracks()
                 song.album.update_duration()
             messages.success(request, "Song uploaded successfully!")
-            return redirect('artist_profile')
+            # Fallback to home if artist_id is missing
+            if hasattr(artist_profile.user_profile.user, 'id'):
+                return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
+            else:
+                messages.error(request, "Invalid artist profile.")
+                return redirect('home')
     else:
         form = SongUploadForm(artist=artist_profile)
     return render(request, 'users/upload_song.html', {'form': form})
@@ -370,7 +398,7 @@ def edit_song(request, song_id):
         if form.is_valid():
             form.save()
             messages.success(request, "Song updated successfully!")
-            return redirect('artist_profile')
+            return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
         else:
             messages.error(request, "Error updating song. Please check the form.")
     else:
@@ -386,12 +414,12 @@ def delete_song(request, song_id):
     # Ensure the logged-in user is the owner of the song
     if song.artist != request.user.profile.artist_profile:
         messages.error(request, "You do not have permission to delete this song.")
-        return redirect('artist_profile')
+        return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
 
     if request.method == 'POST':
         song.delete()
         messages.success(request, "Song deleted successfully!")
-        return redirect('artist_profile')
+        return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
 
     return render(request, 'users/confirm_delete_song.html', {'song': song})
 
@@ -676,3 +704,30 @@ def follow_artist(request, artist_id):
         user_profile.followed_artists.add(artist_profile)
 
     return redirect('artist_profile', artist_id=artist_id)
+
+
+@login_required
+def update_merchandise(request):
+    # Get the artist profile for the currently logged-in user
+    artist_profile = get_object_or_404(ArtistProfile, user_profile=request.user.profile)
+
+    if request.method == 'POST':
+        artist_profile.merchandise_url = request.POST.get('merchandise_url')
+        artist_profile.save()
+        messages.success(request, 'Merchandise URL updated successfully!')
+
+    # Corrected redirect using the related user object
+    return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
+
+@login_required
+def update_events(request):
+    # Get the artist profile for the currently logged-in user
+    artist_profile = get_object_or_404(ArtistProfile, user_profile=request.user.profile)
+
+    if request.method == 'POST':
+        artist_profile.events_url = request.POST.get('events_url')
+        artist_profile.save()
+        messages.success(request, 'Events URL updated successfully!')
+
+    # Corrected redirect using the related user object
+    return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)

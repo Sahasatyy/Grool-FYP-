@@ -488,6 +488,8 @@
   text-align: center;
 }
 
+
+
   
   /* Upload Song Modal Styles */
   #uploadSongModal .modal-content {
@@ -766,6 +768,90 @@
   </div>
 </div>
 {% endif %}
+<!-- Add this section below the Analytics section -->
+{% if is_owner %}
+<!-- Merchandise and Events Section (Artist View) -->
+<div class="section mt-4">
+  <h3 class="section-title">Merchandise & Events</h3>
+  <div class="row">
+    <!-- Merchandise Banner -->
+    <div class="col-md-6 mb-4">
+      <div class="card feature-card">
+        <div class="card-body">
+          <h5 class="feature-title">Merchandise</h5>
+          <p class="feature-text">Add a link to your merchandise store.</p>
+          <form method="post" action="{% url 'update_merchandise' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="merchandise-url" class="form-label">Merchandise URL</label>
+              <input type="url" class="form-control" id="merchandise-url" name="merchandise_url" placeholder="https://example.com" value="{{ artist_profile.merchandise_url|default:'' }}">
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Events Banner -->
+    <div class="col-md-6 mb-4">
+      <div class="card feature-card">
+        <div class="card-body">
+          <h5 class="feature-title">Events</h5>
+          <p class="feature-text">Add a link to your upcoming events page.</p>
+          <form method="post" action="{% url 'update_events' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="events-url" class="form-label">Events URL</label>
+              <input type="url" class="form-control" id="events-url" name="events_url" placeholder="https://example.com" value="{{ artist_profile.events_url|default:'' }}">
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% else %}
+<!-- Merchandise and Events Section (Normal User View) -->
+<div class="section mt-4">
+  <h3 class="section-title">Merchandise & Events</h3>
+  <div class="row">
+    <!-- Merchandise Banner -->
+    <div class="col-md-6 mb-4">
+      <div class="card feature-card">
+        <div class="card-body">
+          <h5 class="feature-title">Merchandise</h5>
+          <p class="feature-text">Check out the artist's merchandise!</p>
+          {% if artist_profile.merchandise_url %}
+            <a href="{{ artist_profile.merchandise_url }}" class="btn btn-primary" target="_blank">
+              <i class="bi bi-cart"></i> Visit Store
+            </a>
+          {% else %}
+            <p class="text-muted">No merchandise link available.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Events Banner -->
+    <div class="col-md-6 mb-4">
+      <div class="card feature-card">
+        <div class="card-body">
+          <h5 class="feature-title">Events</h5>
+          <p class="feature-text">Check out the artist's upcoming events!</p>
+          {% if artist_profile.events_url %}
+            <a href="{{ artist_profile.events_url }}" class="btn btn-primary" target="_blank">
+              <i class="bi bi-calendar-event"></i> View Events
+            </a>
+          {% else %}
+            <p class="text-muted">No events link available.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
 
     <!-- artist_profile.html -->
 <section class="mt-4">
@@ -780,15 +866,15 @@
   <div class="album-details">
     <h5 class="album-title">{{ album.title }}</h5>
     <p class="album-info">{{ album.total_tracks }} songs · {{ album.release_date|date:"Y" }}</p>
-    <a href="{% url 'album_detail' album.id %}" class="btn btn-sm btn-primary">
-      <i class="bi bi-play-fill"></i> View Album
+    <a href="{% url 'album_detail' album.id %}" class="btn btn-sm btn-outline-primary edit-song-btn">
+      <i class="bi bi-play-fill"></i> View
     </a>
     <!-- Add Edit and Delete buttons for the artist -->
     {% if is_owner %}
-      <a href="{% url 'edit_album' album.id %}" class="btn btn-sm btn-outline-warning">
+      <a href="{% url 'edit_album' album.id %}" class="btn btn-sm btn-outline-primary edit-song-btn">
         <i class="bi bi-pencil"></i> Edit
       </a>
-      <a href="{% url 'delete_album' album.id %}" class="btn btn-sm btn-outline-danger">
+      <a href="{% url 'delete_album' album.id %}" class="btn btn-sm btn-outline-danger delete-song-btn">
         <i class="bi bi-trash"></i> Delete
       </a>
     {% endif %}
@@ -802,19 +888,7 @@
 
     <!-- Your Songs Section -->
     <div class="section mt-4">
-      <h3 class="section-title">Your Songs</h3>
-      
-      <!-- Genre Filter Form -->
-      <form method="get" class="mb-4">
-        <label for="genre" class="form-label">Filter by Genre:</label>
-        <select name="genre" id="genre" class="form-select">
-          <option value="">All Genres</option>
-          {% for genre in genres %}
-            <option value="{{ genre }}" {% if selected_genre == genre %}selected{% endif %}>{{ genre }}</option>
-          {% endfor %}
-        </select>
-        <button type="submit" class="btn btn-primary mt-2">Apply</button>
-      </form>
+      <h3 class="section-title">Songs</h3>
 
       <!-- Song List -->
       {% if page_obj %}

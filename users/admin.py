@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import UserProfile, ArtistProfile, Song, Genre, Album, Playlist
+from .models import UserProfile, ArtistProfile, Song, Genre
 from django.urls import path
 
 # Register your models here.
@@ -54,5 +54,3 @@ admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(ArtistProfile, ArtistProfileAdmin)
 admin.site.register(Song)
 admin.site.register(Genre)
-admin.site.register(Album)
-admin.site.register(Playlist)

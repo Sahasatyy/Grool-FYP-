@@ -208,7 +208,7 @@ body {
               <button type="submit" class="btn btn-secondary" id="logout-btn">Logout</button>
           </form>
       {% else %}
-          <a href="{% url 'login' %}" class="btn btn-secondary">Sign Up</a>
+          <a href="{% url 'users-register' %}" class="btn btn-secondary">Sign Up</a>
           <a href="{% url 'login' %}" class="btn">Log In</a>
       {% endif %}
     </div>

@@ -20,18 +20,29 @@ class UserProfile(models.Model):
 
 class ArtistProfile(models.Model):
     user_profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='artist_profile')
-    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
-    artist_name = models.CharField(max_length=100)
-    genre = models.CharField(max_length=50)
-    verification_date = models.DateField(auto_now_add=True)
-    bio = models.TextField(blank=True) 
-    is_verified = models.BooleanField(default=False)
-    
-
-      # Add analytics fields
+    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True, verbose_name="Profile Picture", help_text="Upload a profile picture.")
+    artist_name = models.CharField(max_length=100, verbose_name="Artist Name", help_text="Enter your artist name.")
+    genre = models.CharField(max_length=50, verbose_name="Genre", help_text="Enter your music genre.")
+    verification_date = models.DateField(auto_now_add=True, verbose_name="Verification Date")
+    bio = models.TextField(blank=True, verbose_name="Biography", help_text="Tell us about yourself.")
+    is_verified = models.BooleanField(default=False, verbose_name="Verified Status")
+    description_about_yourself = models.TextField(blank=True, null=True, verbose_name="Description", help_text="Describe yourself in detail.")
+    social_links = models.URLField(blank=True, null=True, verbose_name="Social Links", help_text="Provide links to your social media profiles.")
+    popular_songs_1 = models.CharField(max_length=255, blank=True, null=True, verbose_name="Popular Song 1", help_text="Enter one of your popular songs.")
+    popular_songs_2 = models.CharField(max_length=255, blank=True, null=True, verbose_name="Popular Song 2", help_text="Enter another popular song.")
     monthly_listeners = models.PositiveIntegerField(default=0)  # Number of monthly listeners
     total_plays = models.PositiveIntegerField(default=0)        # Total plays of all songs
     total_revenue = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # Total revenue in dollars
+
+
+    merchandise_url = models.URLField(blank=True, null=True, verbose_name="Merchandise URL")
+    events_url = models.URLField(blank=True, null=True, verbose_name="Events URL")
+
+    class Meta:
+        verbose_name = "Artist Profile"
+        verbose_name_plural = "Artist Profiles"
+        ordering = ['-verification_date']
+
     def __str__(self):
         return f"{self.artist_name}'s artist profile"
 

@@ -62,7 +62,7 @@ class LoginForm(AuthenticationForm):
 class ArtistVerificationForm(forms.ModelForm):
     class Meta:
         model = ArtistProfile
-        fields = ['artist_name', 'genre', 'bio']
+        fields = ['artist_name', 'description_about_yourself', 'social_links', 'popular_songs_1', 'popular_songs_2', 'profile_picture', 'genre', 'bio']
 
 class ProfilePictureForm(forms.ModelForm):
     class Meta:

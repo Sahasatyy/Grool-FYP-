@@ -143,6 +143,73 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
+
+  /* Modal styling for dark theme */
+.modal-content {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-secondary-bg);
+  border-radius: var(--border-radius);
+  color: var(--text-color);
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--card-secondary-bg);
+}
+
+.modal-footer {
+  border-top: 1px solid var(--card-secondary-bg);
+}
+
+.modal-title {
+  color: var(--light-color);
+}
+
+/* Dark theme for list groups */
+.list-group-item {
+  background-color: var(--card-secondary-bg);
+  color: var(--text-color);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.list-group-item:hover {
+  background-color: #3a3a45;
+}
+
+/* Close button styling */
+.btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Create new playlist button in modal */
+.modal-body .btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-dark);
+  color: var(--light-color);
+}
+
+.modal-body .btn-primary:hover {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(187, 134, 252, 0.3);
+}
+
+/* Success button styling in list */
+.btn-success {
+  background-color: #2e7d32;
+  border-color: #2e7d32;
+}
+
+.btn-success:hover {
+  background-color: #1b5e20;
+  border-color: #1b5e20;
+  transform: translateY(-2px);
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.7);
+}
   
   /* Alert styling */
   .alert {

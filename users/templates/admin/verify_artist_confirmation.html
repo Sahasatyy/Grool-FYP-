@@ -5,15 +5,15 @@
 <div class="module">
     <h2>Confirm Artist Verification</h2>
     <div class="form-row">
-        <p>Are you sure you want to verify {{ artist_profile.artist_name }} ({{ artist_profile.user_profile.user.username }}) as an artist?</p>
+        <p>Are you sure you want to verify {{ artist_profile.artist_name|default:"Unknown Artist" }} ({{ artist_profile.user_profile.user.username|default:"Unknown User" }}) as an artist?</p>
         <p>This will grant the user artist privileges on the platform.</p>
     </div>
     
-    <form method="post">
+    <form method="post" action="{% url 'verify_artist' artist_profile.id %}">
         {% csrf_token %}
         <div class="submit-row">
             <input type="submit" value="Verify Artist" class="default" />
-            <a href="{% url 'admin:app_artistprofile_changelist' %}" class="button cancel-link">Cancel</a>
+            <a href="{% url 'admin:app_artistprofile_changelist' %}" class="button">Cancel</a>
         </div>
     </form>
 </div>

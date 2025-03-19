@@ -2,13 +2,302 @@
 {% extends "users/base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-  <h2>Edit Album: {{ album.title }}</h2>
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Save Changes</button>
-    <a href="{% url 'artist_profile' user.id %}" class="btn btn-secondary">Cancel</a>
-  </form>
+<div class="container py-4">
+    <style>
+        /* Enhanced color scheme with darker background */
+        :root {
+            --primary-color: #ff7043;
+            --secondary-color: #ff5722;
+            --accent-color: #ff9e80;
+            --light-color: #f8f9fa;
+            --dark-color: #0f0f13;
+            --darker-color: #08080a;
+            --text-color: #e9e9e9;
+            --border-radius: 16px;
+            --card-bg: #1a1a22;
+            --card-secondary-bg: #2d2d34;
+            --profile-card-bg: #252530;
+            --feature-card-bg: #1e1e24;
+            --input-bg: #2d2d34;
+            --input-border: #3d3d45;
+            --hover-color: #ff7043;
+        }
+        
+        body {
+            background-color: var(--darker-color);
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .container {
+            background-color: var(--dark-color);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Form Section Design */
+        .form-section {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--card-secondary-bg);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .form-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary-color), var(--accent-color));
+        }
+        
+        /* Form Title */
+        h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--light-color);
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: inline-block;
+        }
+
+        /* Form Controls */
+        form p {
+            margin-bottom: 20px;
+        }
+        
+        form label {
+            font-weight: 500;
+            color: var(--accent-color);
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        form input[type="text"],
+        form input[type="number"],
+        form input[type="file"],
+        form input[type="date"],
+        form select,
+        form textarea,
+        .flatpickr-input {
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid var(--input-border);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        form input[type="text"]:focus,
+        form input[type="number"]:focus,
+        form input[type="file"]:focus,
+        form input[type="date"]:focus,
+        form select:focus,
+        form textarea:focus,
+        .flatpickr-input:focus {
+            box-shadow: 0 0 0 3px rgba(255, 112, 67, 0.2);
+            border-color: var(--primary-color);
+            background-color: rgba(45, 45, 52, 0.8);
+            outline: none;
+        }
+        
+        /* File Input Styling */
+        input[type="file"]::file-selector-button {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            margin-right: 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="file"]::file-selector-button:hover {
+            background: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        /* Button Styling */
+        .btn {
+            padding: 12px 24px;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(255, 112, 67, 0.4);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--accent-color);
+            color: var(--accent-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: rgba(255, 112, 67, 0.1);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(255, 112, 67, 0.2);
+        }
+        
+        /* Help Text */
+        .help-text, .form-text {
+            color: #aaa;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        
+        /* Error Messages */
+        .errorlist {
+            color: #ff6b6b;
+            list-style-type: none;
+            padding: 0;
+            margin-top: 5px;
+            font-size: 0.85rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h2 {
+                font-size: 2rem;
+                margin-bottom: 20px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .form-section {
+                border-radius: 12px;
+            }
+            
+            form input[type="text"],
+            form input[type="number"],
+            form input[type="file"],
+            form input[type="date"],
+            form select,
+            form textarea {
+                padding: 12px;
+            }
+        }
+    </style>
+
+    <div class="form-section">
+        <h2><i class="bi bi-pencil-square"></i> Edit Album: {{ album.title }}</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.title.id_for_label }}">Album Title</label>
+                    {{ form.title }}
+                    {% if form.title.help_text %}
+                        <div class="help-text">{{ form.title.help_text }}</div>
+                    {% endif %}
+                    {{ form.title.errors }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.artist.id_for_label }}">Artist</label>
+                    {{ form.artist }}
+                    {% if form.artist.help_text %}
+                        <div class="help-text">{{ form.artist.help_text }}</div>
+                    {% endif %}
+                    {{ form.artist.errors }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.genre.id_for_label }}">Genre</label>
+                    {{ form.genre }}
+                    {% if form.genre.help_text %}
+                        <div class="help-text">{{ form.genre.help_text }}</div>
+                    {% endif %}
+                    {{ form.genre.errors }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.release_date.id_for_label }}">Release Date</label>
+                    {{ form.release_date }}
+                    {% if form.release_date.help_text %}
+                        <div class="help-text">{{ form.release_date.help_text }}</div>
+                    {% endif %}
+                    {{ form.release_date.errors }}
+                </div>
+                <div class="col-12 mb-3">
+                    <label for="{{ form.cover_image.id_for_label }}">Album Cover</label>
+                    {{ form.cover_image }}
+                    {% if form.cover_image.help_text %}
+                        <div class="help-text">{{ form.cover_image.help_text }}</div>
+                    {% endif %}
+                    {{ form.cover_image.errors }}
+                </div>
+                <div class="col-12 mb-3">
+                    <label for="{{ form.description.id_for_label }}">Description</label>
+                    {{ form.description }}
+                    {% if form.description.help_text %}
+                        <div class="help-text">{{ form.description.help_text }}</div>
+                    {% endif %}
+                    {{ form.description.errors }}
+                </div>
+                <div class="col-12 mt-4 d-flex gap-3 justify-content-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Save Changes
+                    </button>
+                    <a href="{% url 'artist_profile' user.id %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
+
+<script>
+    // Initialize Flatpickr for the release_date field if it exists
+    if (document.querySelector('input[name="release_date"]')) {
+        flatpickr('input[name="release_date"]', {
+            dateFormat: 'Y-m-d',
+            defaultDate: 'today',
+            minDate: '1900-01-01',
+            maxDate: 'today',
+        });
+    }
+
+    // Add form-control class to all form elements
+    document.addEventListener('DOMContentLoaded', function() {
+        const formElements = document.querySelectorAll('input, select, textarea');
+        formElements.forEach(element => {
+            if (!element.classList.contains('btn')) {
+                element.classList.add('form-control');
+            }
+        });
+    });
+</script>
 {% endblock %}

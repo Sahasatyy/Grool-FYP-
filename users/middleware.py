@@ -21,5 +21,5 @@ class ArtistRedirectMiddleware:
                 
                 if user_profile.user_type == 'artist':
                     messages.info(request, "You've been redirected to your artist dashboard.")
-                    return redirect('artist_profile')
+                    return redirect('artist_profile', artist_id=user_profile.id)
         return None

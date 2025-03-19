@@ -2,7 +2,7 @@ from django.urls import path
 from .views import home, RegisterView 
 from . import views
 from .views import upload_song, edit_song, delete_song, toggle_favorite, create_playlist, edit_playlist, delete_playlist, add_song_to_playlist, remove_song_from_playlist
-from .views import song_list, get_songs, search, search_suggestions, song_detail, create_album, album_detail, follow_artist, edit_album, delete_album
+from .views import song_list, get_songs, search, search_suggestions, song_detail, create_album, album_detail, follow_artist, edit_album, delete_album, update_merchandise, update_events
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -11,7 +11,7 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='users-register'),
     path('profile/', views.profile_view, name='profile'),
     path('profile/normal/', views.normal_profile, name='user_profile'),
-    path('artist/<int:artist_id>/', views.artist_profile, name='artist_profile'), 
+    path('artist/<int:artist_id>/', views.artist_profile, name='artist_profile'),
     path('become-artist/', views.request_artist_status, name='request_artist_status'),
     path('admin/verify-artist/<int:artist_profile_id>/', views.verify_artist, name='verify_artist'),
     path('upload-song/', upload_song, name='upload_song'),
@@ -41,6 +41,8 @@ urlpatterns = [
     path('delete-album/<int:album_id>/', delete_album, name='delete_album'),
     path('album/<int:album_id>/', views.album_detail, name='album_detail'),
     path('follow-artist/<int:artist_id>/', follow_artist, name='follow_artist'),
+    path('update-merchandise/', update_merchandise, name='update_merchandise'),
+    path('update-events/', update_events, name='update_events'),
 
 ]
 if settings.DEBUG:

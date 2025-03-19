@@ -37,22 +37,18 @@ body {
     flex-direction: column;
     height: 100vh;
     margin: 0;
-    overflow-y: auto; /* Allow vertical scrolling */
-    overflow-x: hidden; /* Prevent horizontal scrolling */
+    margin-left: 350px;
+    overflow-y: auto; 
+    overflow-x: hidden; 
 }
 body::-webkit-scrollbar {
   display: none; /* Hide scrollbar */
 }
 
-body, .content-wrapper, .main-content {
-    scrollbar-width: none; /* For Firefox */
-    -ms-overflow-style: none; /* For Internet Explorer and Edge */
-}
-
 body::-webkit-scrollbar, 
 .content-wrapper::-webkit-scrollbar, 
 .main-content::-webkit-scrollbar {
-    display: none; /* For Chrome, Safari, and Edge */
+    display: none;
 }
 
 .content-wrapper {
@@ -1092,7 +1088,7 @@ body::-webkit-scrollbar,
         </div>
         <div class="grid-item-actions">
           <a href="{% url 'album_detail' album.id %}" class="btn btn-primary btn-sm">
-            <i class="bi bi-play-fill"></i> Play
+            <i class="bi bi-play-fill"></i> View
           </a>
         </div>
       </div>
