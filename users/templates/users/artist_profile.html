@@ -2,7 +2,6 @@
 
 {% block title %}{{ user.artist_name }} - Artist Profile{% endblock %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
 {% block content %}
 <style>
@@ -565,6 +564,50 @@
   #uploadSongModal .modal-body {
     background-color: var(--card-bg);
   }
+
+  .album-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.album-card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.album-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.album-image {
+    width: 100%;
+    aspect-ratio: 1/1;
+    overflow: hidden;
+}
+
+.album-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.album-details {
+    padding: 15px;
+}
+
+.album-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.album-info {
+    font-size: 0.9rem;
+    color: #aaa;
+}
   
   /* Responsive Adjustments */
   @media (max-width: 992px) {
@@ -648,68 +691,114 @@
               <p class="mb-3"><strong>Bio:</strong> {{ artist_profile.bio }}</p>
             </div>
 
-            <!-- Display "Edit Profile" and "Upload Music" buttons only for the artist -->
+        <!-- Inside the profile-card div -->
+        <div class="col-md-3 text-end">
+          {% if is_owner %}
+            <!-- Artist-specific buttons -->
+            <a href="{% url 'edit_artist_profile' %}" class="btn btn-outline-secondary rounded-pill mb-3 w-100">
+              <i class="bi bi-pencil me-2"></i>Edit profile
+            </a>
+            <button class="btn btn-outline-secondary rounded-pill mb-3 w-100" data-bs-toggle="modal" data-bs-target="#uploadSongModal">
+              <i class="bi bi-upload me-2"></i>Upload music
+            </button>
             {% if is_owner %}
-              <div class="col-md-3 text-end">
-                <a href="{% url 'edit_artist_profile' %}" class="btn btn-outline-secondary rounded-pill mb-3 w-100">
-                  <i class="bi bi-pencil me-2"></i>Edit profile
-                </a>
-                <button class="btn btn-outline-secondary rounded-pill mb-3 w-100 position-relative overflow-hidden" 
-                  data-bs-toggle="modal" 
-                  data-bs-target="#uploadSongModal"
-                  style="
-                    background: linear-gradient(45deg, #ff7043, #ff5722);
-                    border: none;
-                    color: white;
-                    transition: all 0.3s ease;
-                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                  "
-                  onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0, 0, 0, 0.2)';"
-                  onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0, 0, 0, 0.1)';">
-                  <i class="bi bi-upload me-2" style="transition: transform 0.3s ease;"></i>
-                  Upload music
-                </button>
-              </div>
+            <div class="text-end">
+              <a href="{% url 'create_album' %}" class="btn btn-outline-secondary rounded-pill mb-3 w-100">
+                <i class="bi bi-upload me-2"></i>Create Album
+              </a>
+            </div>
             {% endif %}
+          {% else %}
+            <!-- Follow button for normal users -->
+            <form method="post" action="{% url 'follow_artist' artist_profile.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary rounded-pill mb-3 w-100">
+                {% if is_following %}
+                  <i class="bi bi-person-dash me-2"></i>Unfollow
+                {% else %}
+                  <i class="bi bi-person-plus me-2"></i>Follow
+                {% endif %}
+              </button>
+            </form>
+          {% endif %}
+        </div>
+
+            <!-- artist_profile.html -->
+
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Analytics Section -->
-    <div class="section mt-4">
-      <h3 class="section-title">Analytics</h3>
-      <div class="analytics-container">
-        <div class="analytics-card p-4">
-          <div class="analytics-icon mx-auto">
-            <i class="bi bi-headphones fs-3"></i>
-          </div>
-          <h5 class="analytics-title text-center">Monthly Listeners</h5>
-          <div class="analytics-value text-center">{{ monthly_listeners|default:"0" }}</div>
-        </div>
-        <div class="analytics-card p-4">
-          <div class="analytics-icon mx-auto">
-            <i class="bi bi-play-circle fs-3"></i>
-          </div>
-          <h5 class="analytics-title text-center">Total Plays</h5>
-          <div class="analytics-value text-center">{{ total_plays|default:"0" }}</div>
-        </div>
-        <div class="analytics-card p-4">
-          <div class="analytics-icon mx-auto">
-            <i class="bi bi-people fs-3"></i>
-          </div>
-          <h5 class="analytics-title text-center">Followers</h5>
-          <div class="analytics-value text-center">{{ followers|default:"0" }}</div>
-        </div>
-        <div class="analytics-card p-4">
-          <div class="analytics-icon mx-auto">
-            <i class="bi bi-people fs-3"></i>
-          </div>
-          <h5 class="analytics-title text-center">Total revenue</h5>
-          <div class="analytics-value text-center">{{ total_revenue|default:"0" }}</div>
-        </div>
+ <!-- Analytics Section -->
+{% if is_owner %}
+<div class="section mt-4">
+  <h3 class="section-title">Analytics</h3>
+  <div class="analytics-container">
+    <div class="analytics-card p-4">
+      <div class="analytics-icon mx-auto">
+        <i class="bi bi-headphones fs-3"></i>
       </div>
+      <h5 class="analytics-title text-center">Monthly Listeners</h5>
+      <div class="analytics-value text-center">{{ monthly_listeners|default:"0" }}</div>
     </div>
+    <div class="analytics-card p-4">
+      <div class="analytics-icon mx-auto">
+        <i class="bi bi-play-circle fs-3"></i>
+      </div>
+      <h5 class="analytics-title text-center">Total Plays</h5>
+      <div class="analytics-value text-center">{{ total_plays|default:"0" }}</div>
+    </div>
+    <div class="analytics-card p-4">
+      <div class="analytics-icon mx-auto">
+        <i class="bi bi-people fs-3"></i>
+      </div>
+      <h5 class="analytics-title text-center">Followers</h5>
+      <div class="analytics-value text-center">{{ followers|default:"0" }}</div>
+    </div>
+    <div class="analytics-card p-4">
+      <div class="analytics-icon mx-auto">
+        <i class="bi bi-cash fs-3"></i>
+      </div>
+      <h5 class="analytics-title text-center">Total Revenue</h5>
+      <div class="analytics-value text-center">${{ total_revenue|default:"0" }}</div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+    <!-- artist_profile.html -->
+<section class="mt-4">
+  <h3 class="section-title">Albums</h3>
+  <div class="album-grid">
+    {% for album in artist_profile.albums.all %}
+<!-- Inside the album-card div -->
+<div class="album-card">
+  <div class="album-image">
+    <img src="{{ album.cover_image.url }}" alt="{{ album.title }}">
+  </div>
+  <div class="album-details">
+    <h5 class="album-title">{{ album.title }}</h5>
+    <p class="album-info">{{ album.total_tracks }} songs · {{ album.release_date|date:"Y" }}</p>
+    <a href="{% url 'album_detail' album.id %}" class="btn btn-sm btn-primary">
+      <i class="bi bi-play-fill"></i> View Album
+    </a>
+    <!-- Add Edit and Delete buttons for the artist -->
+    {% if is_owner %}
+      <a href="{% url 'edit_album' album.id %}" class="btn btn-sm btn-outline-warning">
+        <i class="bi bi-pencil"></i> Edit
+      </a>
+      <a href="{% url 'delete_album' album.id %}" class="btn btn-sm btn-outline-danger">
+        <i class="bi bi-trash"></i> Delete
+      </a>
+    {% endif %}
+  </div>
+</div>
+    {% empty %}
+      <p class="text-muted">No albums found.</p>
+    {% endfor %}
+  </div>
+</section>
 
     <!-- Your Songs Section -->
     <div class="section mt-4">

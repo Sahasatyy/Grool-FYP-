@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from .models import ArtistProfile, UserProfile, Song, Genre, Playlist
+from .models import ArtistProfile, UserProfile, Song, Genre, Playlist, Album
 from django.core.exceptions import ValidationError
 
 class RegisterForm(UserCreationForm):
@@ -89,11 +89,17 @@ class ChangeEmailForm(forms.ModelForm):
         fields = ['email']
 
 class SongUploadForm(forms.ModelForm):
-    MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB
+    MAX_FILE_SIZE = 20 * 1024 * 1024 
     genres = forms.ModelMultipleChoiceField(
-        queryset=Genre.objects.all(),  # Ensure Genre model exists and has data
-        widget=forms.CheckboxSelectMultiple,  # Render as checkboxes
-        required=False  # Optional field
+        queryset=Genre.objects.all(),
+        widget=forms.CheckboxSelectMultiple, 
+        required=False 
+    )
+
+    album = forms.ModelChoiceField(
+    queryset=Album.objects.none(),
+    required=False,
+    label="Select Album"
     )
 
     class Meta:
@@ -101,6 +107,12 @@ class SongUploadForm(forms.ModelForm):
         fields = [
             'title', 'album', 'audio_file', 'cover_image', 'genres', 'lyrics', 'duration', 'is_explicit', 'is_public'
         ]
+
+    def __init__(self, *args, **kwargs):
+        artist = kwargs.pop('artist', None)
+        super().__init__(*args, **kwargs)
+        if artist:
+            self.fields['album'].queryset = Album.objects.filter(artist=artist)
 
     def clean_audio_file(self):
         audio_file = self.cleaned_data.get('audio_file')
@@ -132,4 +144,12 @@ class PlaylistForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Enter playlist name'
             }),
+        }
+
+class AlbumForm(forms.ModelForm):
+    class Meta:
+        model = Album
+        fields = ['title', 'release_date', 'genre', 'cover_image', 'label', 'description']
+        widgets = {
+            'release_date': forms.DateInput(attrs={'class': 'flatpickr', 'placeholder': 'Select a date'}),
         }

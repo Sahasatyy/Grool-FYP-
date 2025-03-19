@@ -2,7 +2,7 @@ from django.urls import path
 from .views import home, RegisterView 
 from . import views
 from .views import upload_song, edit_song, delete_song, toggle_favorite, create_playlist, edit_playlist, delete_playlist, add_song_to_playlist, remove_song_from_playlist
-from .views import song_list, get_songs, search, search_suggestions, song_detail
+from .views import song_list, get_songs, search, search_suggestions, song_detail, create_album, album_detail, follow_artist, edit_album, delete_album
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -35,8 +35,12 @@ urlpatterns = [
     path('song/<int:song_id>/', views.song_detail, name='song_detail'),
     path('search/', search, name='search'),
     path('search-suggestions/', search_suggestions, name='search_suggestions'),
-    path('song/<int:song_id>/', song_detail, name='song_details_modal')
-
+    path('song/<int:song_id>/', song_detail, name='song_details_modal'),
+    path('create-album/', views.create_album, name='create_album'),
+    path('edit-album/<int:album_id>/', edit_album, name='edit_album'),
+    path('delete-album/<int:album_id>/', delete_album, name='delete_album'),
+    path('album/<int:album_id>/', views.album_detail, name='album_detail'),
+    path('follow-artist/<int:artist_id>/', follow_artist, name='follow_artist'),
 
 ]
 if settings.DEBUG:

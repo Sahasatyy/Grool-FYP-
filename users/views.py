@@ -15,28 +15,30 @@ from django.core.paginator import Paginator
 from django.urls import reverse
 from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
-from .forms import RegisterForm, LoginForm, ArtistVerificationForm, SongUploadForm, ProfilePictureForm, EditProfileForm, ChangeEmailForm, PlaylistForm
-from .models import ArtistProfile, UserProfile, Song, Favorite, Playlist
+from .forms import RegisterForm, LoginForm, ArtistVerificationForm, SongUploadForm
+from .forms import ProfilePictureForm, EditProfileForm, ChangeEmailForm, PlaylistForm, AlbumForm, SongUploadForm
+from .models import ArtistProfile, UserProfile, Song, Favorite, Playlist, Album
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 
 
 def home(request):
-    # Fetch trending songs
     songs = Song.objects.filter(is_public=True).select_related('artist')
     user_favorite_ids = []
     if request.user.is_authenticated:
         user_favorite_ids = Favorite.objects.filter(user=request.user).values_list('song_id', flat=True)
 
-    # Fetch public playlists
     public_playlists = Playlist.objects.filter(is_public=True).select_related('user')
+    popular_albums = Album.objects.annotate(num_songs=Count('songs')).order_by('-num_songs')[:5]
 
     return render(request, 'users/home.html', {
         'songs': songs,
         'user_favorite_ids': user_favorite_ids,
         'public_playlists': public_playlists,
+        'popular_albums': popular_albums,
     })
 
 class RegisterView(View):
@@ -118,6 +120,7 @@ def artist_profile(request, artist_id=None):
 
     # Fetch the artist's songs (filter by artist and public status)
     songs = Song.objects.filter(artist=artist_profile, is_public=True)
+    albums = artist_profile.albums.all()  # Fetch albums for the artist
 
     # Handle genre filtering
     selected_genre = request.GET.get('genre')
@@ -136,6 +139,12 @@ def artist_profile(request, artist_id=None):
     # Pass the form for uploading songs (only if the user is the artist)
     form = SongUploadForm() if is_owner else None
 
+    # Analytics data
+    monthly_listeners = artist_profile.monthly_listeners
+    total_plays = artist_profile.total_plays
+    followers = artist_profile.followers.count()
+    total_revenue = artist_profile.total_revenue
+
     # Context to pass to the template
     context = {
         'user_profile': user_profile,
@@ -144,7 +153,12 @@ def artist_profile(request, artist_id=None):
         'page_obj': page_obj,  # Pass paginated songs
         'genres': genres,  # Pass genres for the filter dropdown
         'form': form,  # Pass the song upload form (only for the artist)
+        'albums': albums,  # Pass albums to the template
         'is_owner': is_owner,  # Pass whether the user is the artist
+        'monthly_listeners': monthly_listeners,
+        'total_plays': total_plays,
+        'followers': followers,
+        'total_revenue': total_revenue,
     }
 
     return render(request, 'users/artist_profile.html', context)
@@ -214,7 +228,7 @@ def edit_artist_profile(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Your profile has been updated.")
-            return redirect('artist_profile')
+            return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
     else:
         form = ArtistVerificationForm(instance=artist_profile)
 
@@ -251,7 +265,7 @@ def upload_profile_picture(request):
             messages.success(request, "Your profile picture has been updated.")
             
             if user_profile.user_type == 'artist':
-                return redirect('artist_profile')
+                return redirect('artist_profile', artist_id=user_profile.artist_profile.user_profile.user.id)
             else:
                 return redirect('user_profile')
     else:
@@ -302,17 +316,21 @@ def upload_profile_picture(request):
     return render(request, 'users/upload_profile_picture.html', {'form': form})
 
 @login_required
+@csrf_exempt
 def toggle_favorite(request, song_id):
-    song = Song.objects.get(id=song_id)
-    favorite, created = Favorite.objects.get_or_create(user=request.user, song=song)
-
-    if not created:
-        favorite.delete()
-        is_favorited = False
-    else:
-        is_favorited = True
-
-    return JsonResponse({'is_favorited': is_favorited})
+    if request.method == "POST":
+        song = get_object_or_404(Song, id=song_id)
+        favorite, created = Favorite.objects.get_or_create(user=request.user, song=song)
+        
+        if not created:
+            # If the favorite already exists, remove it
+            favorite.delete()
+            return JsonResponse({"is_favorited": False})
+        
+        # If the favorite was created, return success
+        return JsonResponse({"is_favorited": True})
+    
+    return JsonResponse({"error": "Invalid request"}, status=400)
 
 # CRUD Operations for Songs
 @login_required
@@ -320,20 +338,22 @@ def upload_song(request):
     if not hasattr(request.user, 'profile') or request.user.profile.user_type != 'artist':
         messages.error(request, "You must be a verified artist to upload songs.")
         return redirect('home')
-    
+
     artist_profile = request.user.profile.artist_profile
     if request.method == 'POST':
-        form = SongUploadForm(request.POST, request.FILES)
+        form = SongUploadForm(request.POST, request.FILES, artist=artist_profile)
         if form.is_valid():
             song = form.save(commit=False)
             song.artist = artist_profile
             song.save()
+            if song.album:
+                song.album.update_total_tracks()
+                song.album.update_duration()
             messages.success(request, "Song uploaded successfully!")
             return redirect('artist_profile')
-        messages.error(request, "Error uploading song. Please check the form.")
     else:
-        form = SongUploadForm()
-    return render(request, 'users/artist_profile.html', {'form': form})
+        form = SongUploadForm(artist=artist_profile)
+    return render(request, 'users/upload_song.html', {'form': form})
 
 @login_required
 def edit_song(request, song_id):
@@ -567,3 +587,92 @@ def search_suggestions(request):
 def song_detail(request, song_id):
     song = get_object_or_404(Song, id=song_id)
     return render(request, 'users/searched_song_details.html', {'song': song})  
+
+#Album CRUD
+
+def create_album(request):
+    if not hasattr(request.user, 'profile') or request.user.profile.user_type != 'artist':
+        messages.error(request, "You must be a verified artist to create albums.")
+        return redirect('home')
+
+    artist_profile = request.user.profile.artist_profile
+    if request.method == 'POST':
+        form = AlbumForm(request.POST, request.FILES)
+        if form.is_valid():
+            album = form.save(commit=False)
+            album.artist = artist_profile
+            album.save()
+            messages.success(request, "Album created successfully! You can now add songs to it.")
+            return redirect('album_detail', album_id=album.id)  # Redirect to album detail page
+    else:
+        form = AlbumForm()
+    return render(request, 'users/create_album.html', {'form': form})
+
+def album_detail(request, album_id):
+    album = get_object_or_404(Album, id=album_id)
+    songs = album.songs.all()
+
+    if request.method == 'POST':
+        song_form = SongUploadForm(request.POST, request.FILES, artist=album.artist)
+        if song_form.is_valid():
+            song = song_form.save(commit=False)
+            song.artist = album.artist
+            song.album = album
+            song.save()
+            album.update_total_tracks()  # Update total tracks in the album
+            album.update_duration()  # Update total duration of the album
+            messages.success(request, "Song added to the album successfully!")
+            return redirect('album_detail', album_id=album.id)
+    else:
+        song_form = SongUploadForm(artist=album.artist)
+
+    return render(request, 'users/album_detail.html', {
+        'album': album,
+        'songs': songs,
+        'song_form': song_form,  # Pass the song upload form to the template
+    })
+
+@login_required
+def edit_album(request, album_id):
+    album = get_object_or_404(Album, id=album_id)
+    
+    # Ensure only the album's artist can edit it
+    if request.user.profile.artist_profile != album.artist:
+        messages.error(request, "You do not have permission to edit this album.")
+        return redirect('artist_profile', artist_id=album.artist.user_profile.user.id)
+
+    if request.method == 'POST':
+        form = AlbumForm(request.POST, request.FILES, instance=album)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Album updated successfully!")
+            return redirect('artist_profile', artist_id=album.artist.user_profile.user.id)  # Pass artist_id
+    else:
+        form = AlbumForm(instance=album)
+
+    return render(request, 'users/edit_album.html', {'form': form, 'album': album})
+
+@login_required
+def delete_album(request, album_id):
+    album = get_object_or_404(Album, id=album_id)
+    
+    # Ensure only the album's artist can delete it
+    if request.user.profile.artist_profile != album.artist:
+        messages.error(request, "You do not have permission to delete this album.")
+        return redirect('artist_profile', artist_id=album.artist.user_profile.user.id)
+
+    album.delete()
+    messages.success(request, "Album deleted successfully!")
+    return redirect('artist_profile', artist_id=album.artist.user_profile.user.id)
+
+@login_required
+def follow_artist(request, artist_id):
+    artist_profile = get_object_or_404(ArtistProfile, id=artist_id)
+    user_profile = request.user.profile
+
+    if artist_profile in user_profile.followed_artists.all():
+        user_profile.followed_artists.remove(artist_profile)
+    else:
+        user_profile.followed_artists.add(artist_profile)
+
+    return redirect('artist_profile', artist_id=artist_id)

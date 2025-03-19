@@ -21,6 +21,328 @@
     --danger-color: #dc3545;
   }
 
+  /* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Ensure the body spans the full width */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #121212;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    margin: 0;
+    overflow-y: auto; /* Allow vertical scrolling */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+body::-webkit-scrollbar {
+  display: none; /* Hide scrollbar */
+}
+
+body, .content-wrapper, .main-content {
+    scrollbar-width: none; /* For Firefox */
+    -ms-overflow-style: none; /* For Internet Explorer and Edge */
+}
+
+body::-webkit-scrollbar, 
+.content-wrapper::-webkit-scrollbar, 
+.main-content::-webkit-scrollbar {
+    display: none; /* For Chrome, Safari, and Edge */
+}
+
+.content-wrapper {
+    display: flex;
+    flex: 1;
+    overflow-y: auto; /* Allow vertical scrolling */
+    width: 100%; /* Ensure it spans the full width */
+    margin-bottom: 100px;
+}
+
+/* Ensure the main content does not cause horizontal overflow */
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    margin-left: 250px; /* Match sidebar width */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto; /* Allow vertical scrolling */
+    text-align: center;
+    height: calc(100vh - 90px); /* Adjust for footer */
+    width: calc(100% - 250px); /* Adjust for sidebar width */
+    z-index: 1;
+
+}
+
+.main-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.main-content::-webkit-scrollbar-thumb {
+    background-color: #444;
+    border-radius: 8px;
+}
+
+/* Music Controller (Footer) */
+.music-controller {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #1a1a1a;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 90px;
+    border-top: 1px solid #333;
+    z-index: 1000;
+}
+
+.song-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 180px;
+}
+
+.song-thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: 6px;
+    background-color: #333;
+    overflow: hidden;
+}
+
+.song-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.song-details h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+.song-details p {
+    font-size: 0.8rem;
+    color: #aaa;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+.like-button {
+    color: #aaa;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.like-button:hover,
+.like-button.active {
+    color: #bb86fc;
+}
+
+.repeat-btn.active,
+.shuffle-btn.active {
+    color: var(--primary-color);
+    /* Change to your theme color */
+}
+
+.player-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 700px;
+}
+
+.player-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 0.8rem;
+}
+
+.control-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.control-button:hover {
+    color: #bb86fc;
+    transform: scale(1.1);
+}
+
+.control-button.small i {
+    font-size: 1.1rem;
+}
+
+.control-button.medium i {
+    font-size: 1.3rem;
+}
+
+.control-button.large {
+    width: 40px;
+    height: 40px;
+    background-color: #fff;
+    border-radius: 50%;
+}
+
+.control-button.large i {
+    font-size: 1.2rem;
+    color: #121212;
+}
+
+.control-button.large:hover {
+    background-color: #bb86fc;
+}
+
+.progress-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.time {
+    font-size: 0.75rem;
+    color: #aaa;
+    min-width: 35px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 4px;
+    background-color: #4e4e4e;
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+}
+
+.progress-fill {
+    position: absolute;
+    height: 100%;
+    background-color: #bb86fc;
+    border-radius: 2px;
+    width: 30%;
+}
+
+.progress-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background-color: #fff;
+    border-radius: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    left: 30%;
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+.progress-bar:hover .progress-handle {
+    opacity: 1;
+}
+
+.player-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 180px;
+    justify-content: flex-end;
+}
+
+.volume-container {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.volume-icon {
+    color: #aaa;
+    cursor: pointer;
+}
+
+.volume-icon:hover {
+    color: #fff;
+}
+
+.volume-slider {
+    width: 80px;
+    height: 4px;
+    background-color: #4e4e4e;
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+}
+
+.volume-fill {
+    position: absolute;
+    height: 100%;
+    background-color: #aaa;
+    border-radius: 2px;
+    width: 70%;
+}
+
+.volume-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background-color: #fff;
+    border-radius: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    left: 70%;
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+.volume-slider:hover .volume-fill {
+    background-color: #bb86fc;
+}
+
+.volume-slider:hover .volume-handle {
+    opacity: 1;
+}
+
+.extra-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.extra-button {
+    color: #aaa;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.extra-button:hover,
+.extra-button.active {
+    color: #bb86fc;
+}
+
   .sidebar {
     background-color: var(--card-bg);
     border-radius: var(--border-radius);
@@ -301,7 +623,97 @@
   background-color: #a56efc;
   border-color: #a56efc;
 }
-  
+
+/* Grid Container */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+/* Grid Item */
+.grid-item {
+  background-color: #181818;
+  border-radius: 8px;
+  padding: 16px;
+  transition: background-color 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Ensure content is spaced evenly */
+  height: 100%; /* Ensure all grid items have the same height */
+}
+
+.grid-item:hover {
+  background-color: #282828;
+  cursor: pointer;
+}
+
+/* Grid Item Thumbnail */
+.grid-item-thumbnail {
+  position: relative;
+  width: 100%;
+  padding-top: 100%; /* Maintain a 1:1 aspect ratio (square) */
+  overflow: hidden; /* Crop the image if it's larger */
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.grid-item-thumbnail img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Crop the image to fit the container */
+  border-radius: 8px;
+}
+
+/* Grid Item Info */
+.grid-item-info {
+  color: #fff;
+  flex-grow: 1; /* Allow the info section to grow and take up remaining space */
+}
+
+.grid-item-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 4px;
+  white-space: nowrap; /* Prevent text from wrapping */
+  overflow: hidden; /* Hide overflow */
+  text-overflow: ellipsis; /* Add ellipsis for overflow text */
+}
+
+.grid-item-artist {
+  font-size: 14px;
+  color: #b3b3b3;
+  white-space: nowrap; /* Prevent text from wrapping */
+  overflow: hidden; /* Hide overflow */
+  text-overflow: ellipsis; /* Add ellipsis for overflow text */
+}
+
+/* Grid Item Actions */
+.grid-item-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  flex-shrink: 0; /* Prevent the actions section from shrinking */
+}
+
+.grid-item-actions .btn {
+  padding: 4px 8px;
+  font-size: 14px;
+}
+
+.grid-item-actions .bi-heart {
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.grid-item-actions .bi-heart.text-danger {
+  color: #ff4d4d;
+}
   /* Responsive sidebar */
   @media (max-width: 992px) {
     .sidebar {
@@ -337,6 +749,125 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
   }
+
+  
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 200px;
+    }
+
+    .main-content {
+        margin-left: 200px;
+    }
+
+    .grid-container {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+
+    .trending-songs,
+    .songs-section {
+        margin-left: 200px;
+        width: calc(100% - 200px);
+    }
+}
+
+@media (max-width: 768px) {
+    .player-right .volume-container {
+        display: none;
+    }
+
+    .grid-container {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+
+    .player-controls {
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .sidebar {
+        width: 70px;
+        padding: 1rem 0.5rem;
+        transition: all 0.3s ease;
+        /* Added transition for smoother changes */
+    }
+
+    .sidebar h3 {
+        font-size: 0;
+        margin-bottom: 0.5rem;
+    }
+
+    .sidebar li {
+        justify-content: center;
+        padding: 0.7rem 0;
+    }
+
+    .sidebar li i {
+        margin-right: 0;
+        font-size: 1.3rem;
+    }
+
+    .create-playlist {
+        justify-content: center;
+    }
+
+    .create-playlist i {
+        margin-right: 0;
+    }
+
+    .main-content {
+        margin-left: 70px;
+        padding: 1rem;
+    }
+
+    .song-details h4,
+    .song-details p {
+        max-width: 80px;
+    }
+
+    .music-controller {
+        padding: 1rem;
+    }
+
+    .player-controls {
+        gap: 0.8rem;
+    }
+
+    .trending-songs,
+    .songs-section {
+        margin-left: 70px;
+        width: calc(100% - 70px);
+    }
+
+    /* Simplify player for mobile */
+    .control-button.small {
+        display: none;
+    }
+}
+
+/* Add this for very small screens */
+@media (max-width: 480px) {
+    .song-info {
+        min-width: 120px;
+    }
+
+    .song-thumb {
+        width: 48px;
+        height: 48px;
+    }
+
+    .song-details h4,
+    .song-details p {
+        max-width: 60px;
+    }
+
+    .player-right {
+        min-width: 120px;
+    }
+}
 </style>
 
 <body>
@@ -377,400 +908,458 @@
       </div>
     </nav>
 
-    <!-- Main Content -->
-    <!-- Trending Songs Section -->
-    <section class="songs-section">
-      <h2 class="section-title">Trending Songs</h2>
-      <div class="song-list">
-        {% for song in songs %}
-          <div class="song-item"
-               data-song-id="{{ song.id }}"
-               data-audio-url="{{ song.audio_file.url }}"
-               data-title="{{ song.title }}"
-               data-artist="{{ song.artist.artist_name }}"
-               data-cover="{% if song.cover_image %}{{ song.cover_image.url }}{% else %}https://via.placeholder.com/56{% endif %}"
-               data-duration="{% if song.duration %}{{ song.duration }}{% else %}3:00{% endif %}">
-            <div class="song-number">{{ forloop.counter|stringformat:"02d" }}</div>
-            <div class="song-info">
-              <div class="song-thumbnail">
-                {% if song.cover_image %}
-                  <img src="{{ song.cover_image.url }}" alt="{{ song.title }}">
-                {% else %}
-                  <img src="https://via.placeholder.com/40" alt="Song thumbnail">
-                {% endif %}
-              </div>
-              <div class="song-title-artist">
-                <div class="song-title">{{ song.title }}</div>
-                <div class="song-artist">{{ song.artist.artist_name }}</div>
-              </div>
-            </div>
-            <div class="song-duration">{% if song.duration %}{{ song.duration }}{% else %}3:00{% endif %}</div>
-            <div class="song-actions">
-              <i class="bi bi-heart{% if song.id in user_favorite_ids %} text-danger{% endif %}"
-                 data-song-id="{{ song.id }}"
-                 onclick="toggleFavorite(this)"></i>
-              <!-- Add a button to open the modal -->
-              <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#songDetailsModal{{ song.id }}">
-                <i class="bi bi-info-circle"></i>
-              </button>
-            </div>
+<!-- Main Content -->
+<div class="container">
+  <!-- Trending Songs Section -->
+  <section class="songs-section">
+    <h2 class="section-title">Trending Songs</h2>
+    <div class="grid-container">
+      {% for song in songs %}
+        <!-- Grid Item for Song -->
+        <div class="grid-item"
+             data-song-id="{{ song.id }}"
+             data-audio-url="{{ song.audio_file.url }}"
+             data-title="{{ song.title }}"
+             data-artist="{{ song.artist.artist_name }}"
+             data-cover="{% if song.cover_image %}{{ song.cover_image.url }}{% else %}https://via.placeholder.com/56{% endif %}"
+             data-duration="{% if song.duration %}{{ song.duration }}{% else %}3:00{% endif %}">
+          <div class="grid-item-thumbnail">
+            {% if song.cover_image %}
+              <img src="{{ song.cover_image.url }}" alt="{{ song.title }}">
+            {% else %}
+              <img src="https://via.placeholder.com/150" alt="Song thumbnail">
+            {% endif %}
           </div>
+          <div class="grid-item-info">
+            <div class="grid-item-title">{{ song.title }}</div>
+            <div class="grid-item-artist">{{ song.artist.artist_name }}</div>
+          </div>
+          <div class="grid-item-actions">
+            <!-- Play Button -->
+            <button class="btn btn-sm btn-success play-button" data-audio-url="{{ song.audio_file.url }}">
+              <i class="bi bi-play-fill"></i>
+            </button>
+            <!-- Favorite Button -->
+            <i class="bi bi-heart favorite-button{% if song.id in user_favorite_ids %} text-danger{% endif %}"
+            data-song-id="{{ song.id }}"
+            onclick="toggleFavorite(this)"></i>
+            <!-- Info Button -->
+            <button type="button" class="btn btn-sm btn-primary info-button" data-bs-toggle="modal" data-bs-target="#songDetailsModal{{ song.id }}">
+              <i class="bi bi-info-circle"></i>
+            </button>
+          </div>
+        </div>
 
-          <!-- Song Details Modal -->
-          <div class="modal fade" id="songDetailsModal{{ song.id }}" tabindex="-1" aria-labelledby="songDetailsModalLabel{{ song.id }}" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="songDetailsModalLabel{{ song.id }}">Song Details</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                  <!-- Song Details -->
-                  <div class="row">
-                    <!-- Song Cover Image -->
-                    <div class="col-md-4">
-                      <img src="{{ song.cover_image.url }}" class="img-fluid rounded" alt="{{ song.title }}">
-                    </div>
-                    <!-- Song Information -->
-                    <div class="col-md-8">
-                      <h3>{{ song.title }}</h3>
-                      <p class="text-muted">{{ song.artist.artist_name }}</p>
-                      <p><strong>Genre:</strong> {{ song.genres.all|join:", " }}</p>
-                      <p><strong>Release Date:</strong> {{ song.release_date }}</p>
-                      <p><strong>Duration:</strong> {{ song.duration }}</p>
-                      <p><strong>Explicit:</strong> {% if song.is_explicit %}Yes{% else %}No{% endif %}</p>
-                      <p><strong>Description:</strong> {{ song.description|default:"No description available." }}</p>
-                    </div>
+        <!-- Song Details Modal -->
+        <div class="modal fade" id="songDetailsModal{{ song.id }}" tabindex="-1" aria-labelledby="songDetailsModalLabel{{ song.id }}" aria-hidden="true">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="songDetailsModalLabel{{ song.id }}">Song Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <!-- Song Details -->
+                <div class="row">
+                  <!-- Song Cover Image -->
+                  <div class="col-md-4">
+                    <img src="{{ song.cover_image.url }}" class="img-fluid rounded" alt="{{ song.title }}">
                   </div>
-
-                  <!-- Actions -->
-                  <div class="mt-4">
-                    <!-- Add to Playlist Button -->
-                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addToPlaylistModal{{ song.id }}">
-                      <i class="bi bi-plus-circle"></i> Add to Playlist
-                    </button>
+                  <!-- Song Information -->
+                  <div class="col-md-8">
+                    <h3>{{ song.title }}</h3>
+                    <p class="text-muted">{{ song.artist.artist_name }}</p>
+                    <p><strong>Genre:</strong> {{ song.genres.all|join:", " }}</p>
+                    <p><strong>Release Date:</strong> {{ song.release_date }}</p>
+                    <p><strong>Duration:</strong> {{ song.duration }}</p>
+                    <p><strong>Explicit:</strong> {% if song.is_explicit %}Yes{% else %}No{% endif %}</p>
+                    <p><strong>Description:</strong> {{ song.description|default:"No description available." }}</p>
                   </div>
                 </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <!-- Add to Playlist Modal -->
-          <div class="modal fade" id="addToPlaylistModal{{ song.id }}" tabindex="-1" aria-labelledby="addToPlaylistModalLabel{{ song.id }}" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="addToPlaylistModalLabel{{ song.id }}">Add to Playlist</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <!-- Actions -->
+                <div class="mt-4">
+                  <!-- Button to open Add to Playlist Modal -->
+                  <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addToPlaylistModal{{ song.id }}">
+                    <i class="bi bi-plus-circle"></i> Add to Playlist
+                  </button>
                 </div>
-                <div class="modal-body">
-                  <h6>Select a playlist:</h6>
-                  <ul class="list-group">
-                    {% for playlist in request.user.playlists.all %}
-                      <li class="list-group-item d-flex justify-content-between align-items-center">
-                        {{ playlist.name }}
-                        <form method="post" action="{% url 'add_song_to_playlist' song.id %}">
-                          {% csrf_token %}
-                          <input type="hidden" name="playlist_id" value="{{ playlist.id }}">
-                          <button type="submit" class="btn btn-sm btn-success">
-                            <i class="bi bi-plus"></i> Add
-                          </button>
-                        </form>
-                      </li>
-                    {% empty %}
-                      <li class="list-group-item">No playlists found.</li>
-                    {% endfor %}
-                  </ul>
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
               </div>
             </div>
           </div>
-        {% endfor %}
-      </div>
-    </section>
+        </div>
 
-    <!-- Public Playlists Section -->
-    <section class="songs-section mt-5">
-      <h2 class="section-title">Public Playlists</h2>
-      <div class="song-list">
-        {% for playlist in public_playlists %}
-          <div class="song-item"
-               data-playlist-id="{{ playlist.id }}"
-               data-playlist-name="{{ playlist.name }}"
-               data-playlist-owner="{{ playlist.user.username }}"
-               data-playlist-song-count="{{ playlist.songs.count }}">
-            <div class="song-number">{{ forloop.counter|stringformat:"02d" }}</div>
-            <div class="song-info">
-              <div class="song-thumbnail">
-                {% if playlist.songs.first and playlist.songs.first.cover_image %}
-                  <img src="{{ playlist.songs.first.cover_image.url }}" alt="{{ playlist.name }}">
-                {% else %}
-                  <img src="https://via.placeholder.com/40" alt="Playlist thumbnail">
-                {% endif %}
+        <!-- Add to Playlist Modal -->
+        <div class="modal fade" id="addToPlaylistModal{{ song.id }}" tabindex="-1" aria-labelledby="addToPlaylistModalLabel{{ song.id }}" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="addToPlaylistModalLabel{{ song.id }}">Add to Playlist</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
-              <div class="song-title-artist">
-                <div class="song-title">{{ playlist.name }}</div>
-                <div class="song-artist">By {{ playlist.user.username }}</div>
+              <div class="modal-body">
+                <h6>Select a playlist:</h6>
+                <ul class="list-group">
+                  {% for playlist in request.user.playlists.all %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                      {{ playlist.name }}
+                      <form method="post" action="{% url 'add_song_to_playlist' song.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="playlist_id" value="{{ playlist.id }}">
+                        <button type="submit" class="btn btn-sm btn-success">
+                          <i class="bi bi-plus"></i> Add
+                        </button>
+                      </form>
+                    </li>
+                  {% empty %}
+                    <li class="list-group-item">No playlists found.</li>
+                  {% endfor %}
+                </ul>
               </div>
-            </div>
-            <div class="song-duration">{{ playlist.songs.count }} songs</div>
-            <div class="song-actions">
-              <a href="{% url 'playlist_detail' playlist.id %}" class="btn btn-primary btn-sm">
-                <i class="bi bi-play-fill"></i> Play
-              </a>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              </div>
             </div>
           </div>
-        {% empty %}
-          <div class="text-muted">No public playlists available.</div>
-        {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Audio Element (Hidden) -->
+  <audio id="audio-player" controls style="display: none;">
+    Your browser does not support the audio element.
+  </audio>
+
+  <!-- Public Playlists Section -->
+  <section class="songs-section mt-5">
+    <h2 class="section-title">Public Playlists</h2>
+    <div class="grid-container">
+      {% for playlist in public_playlists %}
+        <!-- Grid Item for Playlist -->
+        <div class="grid-item"
+             data-playlist-id="{{ playlist.id }}"
+             data-playlist-name="{{ playlist.name }}"
+             data-playlist-owner="{{ playlist.user.username }}"
+             data-playlist-song-count="{{ playlist.songs.count }}">
+          <div class="grid-item-thumbnail">
+            {% if playlist.songs.first and playlist.songs.first.cover_image %}
+              <img src="{{ playlist.songs.first.cover_image.url }}" alt="{{ playlist.name }}">
+            {% else %}
+              <img src="https://via.placeholder.com/150" alt="Playlist thumbnail">
+            {% endif %}
+          </div>
+          <div class="grid-item-info">
+            <div class="grid-item-title">{{ playlist.name }}</div>
+            <div class="grid-item-artist">By {{ playlist.user.username }}</div>
+          </div>
+          <div class="grid-item-actions">
+            <a href="{% url 'playlist_detail' playlist.id %}" class="btn btn-primary btn-sm">
+              <i class="bi bi-play-fill"></i> Play
+            </a>
+          </div>
+        </div>
+      {% empty %}
+        <div class="text-muted">No public playlists available.</div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Popular Albums Section -->
+<section class="songs-section mt-5">
+  <h2 class="section-title">Popular Albums</h2>
+  <div class="grid-container">
+    {% for album in popular_albums %}
+      <!-- Grid Item for Album -->
+      <div class="grid-item"
+           data-album-id="{{ album.id }}"
+           data-album-name="{{ album.name }}"
+           data-album-artist="{{ album.artist.artist_name }}"
+           data-album-song-count="{{ album.songs.count }}">
+        <div class="grid-item-thumbnail">
+          {% if album.cover_image %}
+            <img src="{{ album.cover_image.url }}" alt="{{ album.name }}">
+          {% else %}
+            <img src="https://via.placeholder.com/150" alt="Album thumbnail">
+          {% endif %}
+        </div>
+        <div class="grid-item-info">
+          <div class="grid-item-title">{{ album.name }}</div>
+          <div class="grid-item-artist">By {{ album.artist.artist_name }}</div>
+        </div>
+        <div class="grid-item-actions">
+          <a href="{% url 'album_detail' album.id %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-play-fill"></i> Play
+          </a>
+        </div>
       </div>
-    </section>
+    {% empty %}
+      <div class="text-muted">No popular albums available.</div>
+    {% endfor %}
+  </div>
+</section>
+</div>
+
+<!-- Music Controller (Footer) -->
+<footer class="music-controller">
+  <div class="song-info">
+    <div class="song-thumb">
+      <img id="current-song-image" src="https://via.placeholder.com/56" alt="Current song">
+    </div>
+    <div class="song-details">
+      <h4 id="current-song-title">Select a song to play</h4>
+      <p id="current-song-artist"></p>
+    </div>
   </div>
 
-  <!-- Music Controller (Footer) -->
-  <footer class="music-controller">
-    <div class="song-info">
-      <div class="song-thumb">
-        <img id="current-song-image" src="https://via.placeholder.com/56" alt="Current song">
-      </div>
-      <div class="song-details">
-        <h4 id="current-song-title">Select a song to play</h4>
-        <p id="current-song-artist"></p>
-      </div>
+  <div class="player-center">
+    <div class="player-controls">
+      <button class="control-button small shuffle-btn">
+        <i class="bi bi-shuffle"></i>
+      </button>
+      <button class="control-button medium prev-btn">
+        <i class="bi bi-skip-start-fill"></i>
+      </button>
+      <button class="control-button large play-pause-btn">
+        <i class="bi bi-play-fill"></i>
+      </button>
+      <button class="control-button medium next-btn">
+        <i class="bi bi-skip-end-fill"></i>
+      </button>
+      <button class="control-button small repeat-btn">
+        <i class="bi bi-repeat"></i>
+      </button>
     </div>
 
-    <div class="player-center">
-      <div class="player-controls">
-        <button class="control-button small shuffle-btn">
-          <i class="bi bi-shuffle"></i>
-        </button>
-        <button class="control-button medium prev-btn">
-          <i class="bi bi-skip-start-fill"></i>
-        </button>
-        <button class="control-button large play-pause-btn">
-          <i class="bi bi-play-fill"></i>
-        </button>
-        <button class="control-button medium next-btn">
-          <i class="bi bi-skip-end-fill"></i>
-        </button>
-        <button class="control-button small repeat-btn">
-          <i class="bi bi-repeat"></i>
-        </button>
+    <div class="progress-container">
+      <div class="time current-time">0:00</div>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+        <div class="progress-handle"></div>
       </div>
+      <div class="time total-time">0:00</div>
+    </div>
+  </div>
 
-      <div class="progress-container">
-        <div class="time current-time">0:00</div>
-        <div class="progress-bar">
-          <div class="progress-fill"></div>
-          <div class="progress-handle"></div>
-        </div>
-        <div class="time total-time">0:00</div>
+  <div class="player-right">
+    <div class="volume-container">
+      <div class="volume-icon">
+        <i class="bi bi-volume-up"></i>
+      </div>
+      <div class="volume-slider">
+        <div class="volume-fill"></div>
+        <div class="volume-handle"></div>
       </div>
     </div>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const audioPlayer = new Audio();
+    const playPauseBtn = document.querySelector('.play-pause-btn');
+    const prevBtn = document.querySelector('.prev-btn');
+    const nextBtn = document.querySelector('.next-btn');
+    const progressBar = document.querySelector('.progress-bar');
+    const progressFill = document.querySelector('.progress-fill');
+    const progressHandle = document.querySelector('.progress-handle');
+    const currentTimeEl = document.querySelector('.current-time');
+    const totalTimeEl = document.querySelector('.total-time');
+    const volumeSlider = document.querySelector('.volume-slider');
+    const volumeFill = document.querySelector('.volume-fill');
+    const volumeHandle = document.querySelector('.volume-handle');
+    const songItems = document.querySelectorAll('.grid-item'); // Updated to target grid items
+    const repeatBtn = document.querySelector('.repeat-btn');
+    const shuffleBtn = document.querySelector('.shuffle-btn');
 
-    <div class="player-right">
-      <div class="volume-container">
-        <div class="volume-icon">
-          <i class="bi bi-volume-up"></i>
-        </div>
-        <div class="volume-slider">
-          <div class="volume-fill"></div>
-          <div class="volume-handle"></div>
-        </div>
-      </div>
-    </div>
-  </footer>
+    let currentSongIndex = 0;
+    let isPlaying = false;
+    let isRepeatEnabled = false;
+    let isShuffleEnabled = false;
 
-  <script>
-    function toggleFavorite(heartIcon) {
-      const songId = heartIcon.getAttribute('data-song-id');
-      fetch(`/toggle-favorite/${songId}/`, {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': '{{ csrf_token }}',
-          'Content-Type': 'application/json',
-        },
-        credentials: 'same-origin',
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.is_favorited) {
-            heartIcon.classList.add('text-danger');
-          } else {
-            heartIcon.classList.remove('text-danger');
-          }
-        })
-        .catch(error => console.error('Error:', error));
+    // Update song information in footer
+    function updateSongInfo(songElement) {
+      const title = songElement.dataset.title;
+      const artist = songElement.dataset.artist;
+      const coverImage = songElement.dataset.cover;
+
+      document.getElementById('current-song-title').textContent = title;
+      document.getElementById('current-song-artist').textContent = artist;
+      document.getElementById('current-song-image').src = coverImage;
     }
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const audioPlayer = new Audio();
-      const playPauseBtn = document.querySelector('.play-pause-btn');
-      const prevBtn = document.querySelector('.prev-btn');
-      const nextBtn = document.querySelector('.next-btn');
-      const progressBar = document.querySelector('.progress-bar');
-      const progressFill = document.querySelector('.progress-fill');
-      const progressHandle = document.querySelector('.progress-handle');
-      const currentTimeEl = document.querySelector('.current-time');
-      const totalTimeEl = document.querySelector('.total-time');
-      const volumeSlider = document.querySelector('.volume-slider');
-      const volumeFill = document.querySelector('.volume-fill');
-      const volumeHandle = document.querySelector('.volume-handle');
-      const songItems = document.querySelectorAll('.song-item');
-      const repeatBtn = document.querySelector('.repeat-btn');
-      const shuffleBtn = document.querySelector('.shuffle-btn');
 
-      let currentSongIndex = 0;
-      let isPlaying = false;
-      let isRepeatEnabled = false;
-      let isShuffleEnabled = false;
-
-      // Update song information in footer
-      function updateSongInfo(songElement) {
-        const title = songElement.dataset.title;
-        const artist = songElement.dataset.artist;
-        const coverImage = songElement.dataset.cover;
-
-        document.getElementById('current-song-title').textContent = title;
-        document.getElementById('current-song-artist').textContent = artist;
-        document.getElementById('current-song-image').src = coverImage;
-      }
-
-      // Play/Pause functionality
-      function togglePlayPause() {
-        if (isPlaying) {
-          audioPlayer.pause();
-          playPauseBtn.querySelector('i').classList.replace('bi-pause-fill', 'bi-play-fill');
-        } else {
-          audioPlayer.play();
-          playPauseBtn.querySelector('i').classList.replace('bi-play-fill', 'bi-pause-fill');
-        }
-        isPlaying = !isPlaying;
-      }
-
-      // Toggle Repeat Functionality
-        repeatBtn.addEventListener('click', () => {
-          isRepeatEnabled = !isRepeatEnabled;
-          repeatBtn.classList.toggle('active', isRepeatEnabled);
-          audioPlayer.loop = isRepeatEnabled;
-        });
-
-        // Toggle Shuffle Functionality
-        shuffleBtn.addEventListener('click', () => {
-          isShuffleEnabled = !isShuffleEnabled;
-          shuffleBtn.classList.toggle('active', isShuffleEnabled);
-        });
-
-      // Play a specific song
-      function playSong(songElement) {
-        const audioUrl = songElement.dataset.audioUrl;
-
-        // Reset previous song styling
-        songItems.forEach(item => item.classList.remove('active'));
-        songElement.classList.add('active');
-
-        // Update audio source and play
-        audioPlayer.src = audioUrl;
+    // Play/Pause functionality
+    function togglePlayPause() {
+      if (isPlaying) {
+        audioPlayer.pause();
+        playPauseBtn.querySelector('i').classList.replace('bi-pause-fill', 'bi-play-fill');
+      } else {
         audioPlayer.play();
+        playPauseBtn.querySelector('i').classList.replace('bi-play-fill', 'bi-pause-fill');
+      }
+      isPlaying = !isPlaying;
+    }
 
-        // Update UI
-        updateSongInfo(songElement);
+    // Toggle Repeat Functionality
+    repeatBtn.addEventListener('click', () => {
+      isRepeatEnabled = !isRepeatEnabled;
+      repeatBtn.classList.toggle('active', isRepeatEnabled);
+      audioPlayer.loop = isRepeatEnabled;
+    });
+
+    // Toggle Shuffle Functionality
+    shuffleBtn.addEventListener('click', () => {
+      isShuffleEnabled = !isShuffleEnabled;
+      shuffleBtn.classList.toggle('active', isShuffleEnabled);
+    });
+
+    // Play a specific song
+    function playSong(songElement) {
+      const audioUrl = songElement.dataset.audioUrl;
+
+      // Reset previous song styling
+      songItems.forEach(item => item.classList.remove('active'));
+      songElement.classList.add('active');
+
+      // Update audio source and play
+      audioPlayer.src = audioUrl;
+      audioPlayer.play();
+
+      // Update UI
+      updateSongInfo(songElement);
+      playPauseBtn.querySelector('i').classList.replace('bi-play-fill', 'bi-pause-fill');
+      isPlaying = true;
+    }
+
+    // Update progress bar
+    function updateProgressBar() {
+      const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+      progressFill.style.width = `${progress}%`;
+      progressHandle.style.left = `${progress}%`;
+
+      currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
+      totalTimeEl.textContent = formatTime(audioPlayer.duration);
+    }
+
+    // Format time to MM:SS
+    function formatTime(seconds) {
+      if (isNaN(seconds)) return '0:00';
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = Math.floor(seconds % 60);
+      return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+    }
+
+    // Skip to next/previous song
+    function skipSong(direction) {
+      let newIndex;
+
+      if (isShuffleEnabled) {
+        newIndex = Math.floor(Math.random() * songItems.length); // Random song index
+      } else {
+        const currentActiveIndex = Array.from(songItems).findIndex(item => item.classList.contains('active'));
+        if (direction === 'next') {
+          newIndex = (currentActiveIndex + 1) % songItems.length;
+        } else {
+          newIndex = (currentActiveIndex - 1 + songItems.length) % songItems.length;
+        }
+      }
+
+      playSong(songItems[newIndex]);
+    }
+
+    // Event Listeners for Play, Favorite, and Info Buttons
+    document.querySelectorAll('.play-button').forEach(button => {
+      button.addEventListener('click', function (e) {
+        e.stopPropagation(); // Prevent event bubbling
+        const songElement = this.closest('.grid-item'); // Get the parent song item
+        playSong(songElement); // Play the song
+      });
+    });
+
+    document.querySelectorAll('.favorite-button').forEach(button => {
+      button.addEventListener('click', function (e) {
+        e.stopPropagation(); // Prevent event bubbling
+        const songId = this.getAttribute('data-song-id');
+        toggleFavorite(this); // Call the toggleFavorite function
+      });
+    });
+
+    document.querySelectorAll('.info-button').forEach(button => {
+      button.addEventListener('click', function (e) {
+        e.stopPropagation(); // Prevent event bubbling
+        // Bootstrap modal will handle the rest
+      });
+    });
+
+    // Event Listeners for Player Controls
+    playPauseBtn.addEventListener('click', togglePlayPause);
+    prevBtn.addEventListener('click', () => skipSong('prev'));
+    nextBtn.addEventListener('click', () => skipSong('next'));
+
+    // Progress bar seeking
+    progressBar.addEventListener('click', (e) => {
+      const rect = progressBar.getBoundingClientRect();
+      const clickPosition = e.clientX - rect.left;
+      const progress = (clickPosition / rect.width) * audioPlayer.duration;
+      audioPlayer.currentTime = progress;
+
+      // Ensure the song plays if it was paused
+      if (!isPlaying) {
+        audioPlayer.play();
         playPauseBtn.querySelector('i').classList.replace('bi-play-fill', 'bi-pause-fill');
         isPlaying = true;
       }
-
-      // Update progress bar
-      function updateProgressBar() {
-        const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-        progressFill.style.width = `${progress}%`;
-        progressHandle.style.left = `${progress}%`;
-
-        currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
-        totalTimeEl.textContent = formatTime(audioPlayer.duration);
-      }
-
-      // Format time to MM:SS
-      function formatTime(seconds) {
-        if (isNaN(seconds)) return '0:00';
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = Math.floor(seconds % 60);
-        return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
-      }
-
-      // Skip to next/previous song
-      function skipSong(direction) {
-        let newIndex;
-      
-        if (isShuffleEnabled) {
-          newIndex = Math.floor(Math.random() * songItems.length); // Random song index
-        } else {
-          const currentActiveIndex = Array.from(songItems).findIndex(item => item.classList.contains('active'));
-          if (direction === 'next') {
-            newIndex = (currentActiveIndex + 1) % songItems.length;
-          } else {
-            newIndex = (currentActiveIndex - 1 + songItems.length) % songItems.length;
-          }
-        }
-      
-        playSong(songItems[newIndex]);
-      }
-
-      // Event Listeners
-      songItems.forEach(item => {
-        item.addEventListener('click', () => playSong(item));
-      });
-
-      playPauseBtn.addEventListener('click', togglePlayPause);
-      prevBtn.addEventListener('click', () => skipSong('prev'));
-      nextBtn.addEventListener('click', () => skipSong('next'));
-
-      // Progress bar seeking
-      progressBar.addEventListener('click', (e) => {
-        const rect = progressBar.getBoundingClientRect();
-        const clickPosition = e.clientX - rect.left;
-        const progress = (clickPosition / rect.width) * audioPlayer.duration;
-        audioPlayer.currentTime = progress;
-      
-        // Ensure the song plays if it was paused
-        if (!isPlaying) {
-          audioPlayer.play();
-          playPauseBtn.querySelector('i').classList.replace('bi-play-fill', 'bi-pause-fill');
-          isPlaying = true;
-        }
-      });
-
-      // Volume control
-      volumeSlider.addEventListener('click', (e) => {
-        const rect = volumeSlider.getBoundingClientRect();
-        const clickPosition = e.clientX - rect.left;
-        const volume = clickPosition / rect.width;
-
-        audioPlayer.volume = volume;
-        volumeFill.style.width = `${volume * 100}%`;
-        volumeHandle.style.left = `${volume * 100}%`;
-      });
-
-      // Update progress and time
-      audioPlayer.addEventListener('timeupdate', updateProgressBar);
-
-      // Auto play next song
-      audioPlayer.addEventListener('ended', () => {
-        if (isRepeatEnabled) {
-          audioPlayer.currentTime = 0; // Restart the song
-          audioPlayer.play();
-        } else {
-          skipSong('next'); // Play the next song
-        }
-      });
     });
-  </script>
+
+    // Volume control
+    volumeSlider.addEventListener('click', (e) => {
+      const rect = volumeSlider.getBoundingClientRect();
+      const clickPosition = e.clientX - rect.left;
+      const volume = clickPosition / rect.width;
+
+      audioPlayer.volume = volume;
+      volumeFill.style.width = `${volume * 100}%`;
+      volumeHandle.style.left = `${volume * 100}%`;
+    });
+
+    // Update progress and time
+    audioPlayer.addEventListener('timeupdate', updateProgressBar);
+
+    // Auto play next song
+    audioPlayer.addEventListener('ended', () => {
+      if (isRepeatEnabled) {
+        audioPlayer.currentTime = 0; // Restart the song
+        audioPlayer.play();
+      } else {
+        skipSong('next'); // Play the next song
+      }
+    });
+  });
+
+  function toggleFavorite(heartIcon) {
+    const songId = heartIcon.getAttribute('data-song-id');
+    
+    fetch(`/toggle-favorite/${songId}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value, // Ensure CSRF token is included
+        'Content-Type': 'application/json',
+      },
+      credentials: 'same-origin',
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.is_favorited) {
+          heartIcon.classList.add('text-danger'); // Add red color when favorited
+        } else {
+          heartIcon.classList.remove('text-danger'); // Remove red color when unfavorited
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  }
+</script>
 </body>
 {% endblock content %}

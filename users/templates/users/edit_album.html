@@ -1,0 +1,14 @@
+<!-- templates/users/edit_album.html -->
+{% extends "users/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Edit Album: {{ album.title }}</h2>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <a href="{% url 'artist_profile' user.id %}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}

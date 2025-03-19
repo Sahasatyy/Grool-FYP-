@@ -1,0 +1,501 @@
+{% extends "users/base.html" %}
+{% block content %}
+<div class="container py-4">
+    <style>
+        /* Enhanced color scheme with darker background */
+        :root {
+            --primary-color: #ff7043;
+            --secondary-color: #ff5722;
+            --accent-color: #ff9e80;
+            --light-color: #f8f9fa;
+            --dark-color: #0f0f13;
+            --darker-color: #08080a;
+            --text-color: #e9e9e9;
+            --border-radius: 16px;
+            --card-bg: #1a1a22;
+            --card-secondary-bg: #2d2d34;
+            --profile-card-bg: #252530;
+            --feature-card-bg: #1e1e24;
+            --input-bg: #2d2d34;
+            --input-border: #3d3d45;
+            --hover-color: #ff7043;
+        }
+        
+        body {
+            background-color: var(--darker-color);
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .container {
+            background-color: var(--dark-color);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Album Header Section */
+        .album-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .album-cover {
+            width: 150px;
+            height: 150px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            margin-right: 30px;
+        }
+        
+        .album-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .album-info h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--light-color);
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .album-info p {
+            font-size: 1.1rem;
+            color: #b3b3b3;
+            margin-bottom: 15px;
+        }
+
+        .album-stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .album-stat {
+            background-color: rgba(255, 112, 67, 0.15);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--accent-color);
+        }
+
+        /* Enhanced Form Design */
+        .form-section {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--card-secondary-bg);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .form-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary-color), var(--accent-color));
+        }
+        
+        .form-section h4 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--light-color);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid var(--input-border);
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 0 3px rgba(255, 112, 67, 0.2);
+            border-color: var(--primary-color);
+            background-color: rgba(45, 45, 52, 0.8);
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--accent-color);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* Modern Button Design */
+        .btn {
+            padding: 12px 24px;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(255, 112, 67, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+
+        /* Song List Redesign */
+        .song-list-section {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--card-secondary-bg);
+        }
+
+        .song-list-header {
+            padding: 20px 25px;
+            background-color: rgba(45, 45, 52, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .song-list-header h4 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--light-color);
+            margin: 0;
+        }
+
+        .song-list-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .song-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .song-item:hover {
+            background-color: var(--card-secondary-bg);
+            transform: translateX(5px);
+        }
+
+        .song-info {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .song-number {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-right: 20px;
+            width: 20px;
+        }
+
+        .song-thumbnail {
+            margin-right: 15px;
+        }
+
+        .song-thumbnail img {
+            width: 55px;
+            height: 55px;
+            border-radius: 8px;
+            object-fit: cover;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .song-title-artist {
+            flex: 1;
+        }
+
+        .song-title {
+            font-weight: 600;
+            color: var(--light-color);
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        .song-artist {
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+
+        .song-duration {
+            padding: 0 15px;
+            font-weight: 400;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .song-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .song-actions i {
+            font-size: 1.2rem;
+            color: #aaa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 8px;
+            border-radius: 50%;
+        }
+
+        .song-actions i:hover {
+            color: var(--primary-color);
+            background-color: rgba(255, 112, 67, 0.1);
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            padding: 8px 16px;
+            font-size: 0.8rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .edit-song-btn {
+            background-color: rgba(255, 112, 67, 0.15);
+            color: var(--primary-color);
+            border: none;
+        }
+
+        .edit-song-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .delete-song-btn {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: #ff6b6b;
+            border: none;
+        }
+
+        .delete-song-btn:hover {
+            background-color: #dc3545;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Empty state */
+        .empty-state {
+            padding: 30px;
+            text-align: center;
+            color: #aaa;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: rgba(255, 112, 67, 0.2);
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .album-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .album-cover {
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+            
+            .album-stats {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .song-item {
+                flex-wrap: wrap;
+            }
+            
+            .song-info {
+                margin-bottom: 10px;
+                width: 100%;
+            }
+            
+            .song-duration {
+                margin-left: auto;
+                margin-right: 15px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .form-section, .song-list-section {
+                border-radius: 12px;
+            }
+            
+            .song-thumbnail img {
+                width: 45px;
+                height: 45px;
+            }
+            
+            .song-actions {
+                margin-top: 10px;
+                width: 100%;
+                justify-content: flex-end;
+            }
+            
+            .album-stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+
+    <!-- Album Header Section -->
+    <div class="album-header">
+        <div class="album-cover">
+            <img src="{{ album.cover_image.url|default:'https://via.placeholder.com/150' }}" alt="{{ album.title }}">
+        </div>
+        <div class="album-info">
+            <h2>{{ album.title }}</h2>
+            <p>{{ album.artist.artist_name }}</p>
+            <div class="album-stats">
+                <div class="album-stat">
+                    <i class="bi bi-music-note"></i> {{ album.total_tracks }} songs
+                </div>
+                <div class="album-stat">
+                    <i class="bi bi-calendar3"></i> Released {{ album.release_date|date:"Y" }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Song Form -->
+    <div class="form-section">
+        <h4><i class="bi bi-plus-circle"></i> Add Song to Album</h4>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="id_title" class="form-label">Song Title</label>
+                    {{ song_form.title }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_duration" class="form-label">Duration</label>
+                    {{ song_form.duration }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_audio_file" class="form-label">Audio File</label>
+                    {{ song_form.audio_file }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_cover_image" class="form-label">Cover Image</label>
+                    {{ song_form.cover_image }}
+                </div>
+                <div class="col-12 mb-3">
+                    <label for="id_lyrics" class="form-label">Lyrics (optional)</label>
+                    {{ song_form.lyrics }}
+                </div>
+                <div class="col-12 mt-2 text-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus-lg"></i> Add Song
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- List of Songs in the Album -->
+    <div class="song-list-section">
+        <div class="song-list-header">
+            <h4>Album Tracks</h4>
+            <div class="song-list-controls">
+                <button class="btn btn-sm btn-outline-light">
+                    <i class="bi bi-sort-alpha-down"></i> Sort
+                </button>
+                <button class="btn btn-sm btn-outline-light">
+                    <i class="bi bi-play-fill"></i> Play All
+                </button>
+            </div>
+        </div>
+        
+        {% if songs %}
+            {% for song in songs %}
+                <div class="song-item" data-song-id="{{ song.id }}" data-audio-url="{{ song.audio_file.url }}">
+                    <div class="song-number">{{ forloop.counter }}</div>
+                    <div class="song-info">
+                        <div class="song-thumbnail">
+                            <img src="{{ song.cover_image.url }}" alt="{{ song.title }}">
+                        </div>
+                        <div class="song-title-artist">
+                            <div class="song-title">{{ song.title }}</div>
+                            <div class="song-artist">{{ song.artist.artist_name }}</div>
+                        </div>
+                    </div>
+                    <div class="song-duration">{{ song.duration }}</div>
+                    <div class="song-actions">
+                        <i class="bi bi-play-circle"></i>
+                        <i class="bi bi-heart"></i>
+                        <button class="action-btn edit-song-btn">
+                            <i class="bi bi-pencil"></i> Edit
+                        </button>
+                        <button class="action-btn delete-song-btn">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="bi bi-music-note"></i>
+                <p>No songs in this album yet</p>
+                <button class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> Add Your First Song
+                </button>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
