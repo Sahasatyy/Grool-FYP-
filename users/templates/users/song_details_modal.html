@@ -146,6 +146,7 @@
             <p><strong>Release Date:</strong> {{ song.release_date }}</p>
             <p><strong>Duration:</strong> {{ song.duration }}</p>
             <p><strong>Explicit:</strong> {% if song.is_explicit %}Yes{% else %}No{% endif %}</p>
+            <p><strong>Total Listens:</strong> <span id="total-listens">{{ song.total_listens }}</span></p>
             <p><strong>Description:</strong> {{ song.description|default:"No description available." }}</p>
           </div>
         </div>
@@ -207,7 +208,58 @@
     document.querySelectorAll('.play-btn').forEach(button => {
       button.addEventListener('click', function () {
         const audioUrl = this.getAttribute('data-audio-url');
+        const songId = this.getAttribute('data-song-id');
+  
+        // Create an audio player
         const audioPlayer = new Audio(audioUrl);
+  
+        // Variables to track playback time
+        let playbackTimer;
+        let totalPlayed = 0;
+        let listensIncremented = false; // Flag to track if listens have been incremented
+  
+        // Start tracking playback time
+        audioPlayer.addEventListener('play', () => {
+          totalPlayed = 0; // Reset total played time
+          listensIncremented = false; // Reset listens incremented flag
+          playbackTimer = setInterval(() => {
+            if (!audioPlayer.paused) {
+              totalPlayed += 1; // Increment total played time every second
+            }
+          }, 1000); // Check every second
+        });
+  
+        // Stop tracking when playback ends or is paused
+        audioPlayer.addEventListener('pause', () => {
+          clearInterval(playbackTimer);
+  
+          // Send the total played time to the backend
+          if (totalPlayed >= 5 && !listensIncremented) {
+            fetch(`/increment-listens/${songId}/`, {
+              method: 'POST',
+              headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ duration: totalPlayed }),
+              credentials: 'same-origin',
+            })
+              .then(response => response.json())
+              .then(data => {
+                if (data.success) {
+                  // Update the total listens display
+                  const totalListensElement = document.getElementById('total-listens');
+                  if (totalListensElement) {
+                    totalListensElement.textContent = data.total_listens;
+                  }
+                  listensIncremented = true; // Mark listens as incremented
+                }
+              })
+              .catch(error => console.error('Error:', error));
+          }
+        });
+  
+        // Play the audio
         audioPlayer.play();
       });
     });

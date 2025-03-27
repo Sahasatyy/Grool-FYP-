@@ -712,16 +712,17 @@
             {% endif %}
           {% else %}
             <!-- Follow button for normal users -->
-            <form method="post" action="{% url 'follow_artist' artist_profile.id %}">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-primary rounded-pill mb-3 w-100">
-                {% if is_following %}
-                  <i class="bi bi-person-dash me-2"></i>Unfollow
-                {% else %}
-                  <i class="bi bi-person-plus me-2"></i>Follow
-                {% endif %}
-              </button>
-            </form>
+            {% if not is_owner %}
+              <div class="text-end">
+                <button id="followButton" class="btn btn-primary rounded-pill mb-3 w-100" data-artist-id="{{ artist_profile.id }}">
+                  {% if is_following %}
+                    <i class="bi bi-person-dash me-2"></i>Unfollow
+                  {% else %}
+                    <i class="bi bi-person-plus me-2"></i>Follow
+                  {% endif %}
+                </button>
+              </div>
+            {% endif %}
           {% endif %}
         </div>
 
@@ -732,8 +733,8 @@
       </div>
     </div>
 
- <!-- Analytics Section -->
 {% if is_owner %}
+<!-- Analytics Section -->
 <div class="section mt-4">
   <h3 class="section-title">Analytics</h3>
   <div class="analytics-container">
@@ -742,33 +743,34 @@
         <i class="bi bi-headphones fs-3"></i>
       </div>
       <h5 class="analytics-title text-center">Monthly Listeners</h5>
-      <div class="analytics-value text-center">{{ monthly_listeners|default:"0" }}</div>
+      <div class="analytics-value text-center" data-monthly-listeners>{{ monthly_listeners|default:"0" }}</div>
     </div>
     <div class="analytics-card p-4">
       <div class="analytics-icon mx-auto">
         <i class="bi bi-play-circle fs-3"></i>
       </div>
       <h5 class="analytics-title text-center">Total Plays</h5>
-      <div class="analytics-value text-center">{{ total_plays|default:"0" }}</div>
+      <div class="analytics-value text-center" data-total-plays>{{ total_plays|default:"0" }}</div>
     </div>
     <div class="analytics-card p-4">
       <div class="analytics-icon mx-auto">
         <i class="bi bi-people fs-3"></i>
       </div>
       <h5 class="analytics-title text-center">Followers</h5>
-      <div class="analytics-value text-center">{{ followers|default:"0" }}</div>
+      <div class="analytics-value text-center" data-followers>{{ followers|default:"0" }}</div>
     </div>
     <div class="analytics-card p-4">
       <div class="analytics-icon mx-auto">
         <i class="bi bi-cash fs-3"></i>
       </div>
       <h5 class="analytics-title text-center">Total Revenue</h5>
-      <div class="analytics-value text-center">${{ total_revenue|default:"0" }}</div>
+      <div class="analytics-value text-center" data-total-revenue>${{ total_revenue|default:"0" }}</div>
     </div>
   </div>
 </div>
 {% endif %}
-<!-- Add this section below the Analytics section -->
+
+
 {% if is_owner %}
 <!-- Merchandise and Events Section (Artist View) -->
 <div class="section mt-4">
@@ -1228,6 +1230,56 @@
       })
       .catch(error => console.error('Error:', error));
   }
+
+
+    document.getElementById('followButton').addEventListener('click', function () {
+      const artistId = this.getAttribute('data-artist-id');
+      const followButton = this;
+  
+      fetch(`/follow-artist/${artistId}/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin',
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Toggle button text and icon
+            if (data.is_following) {
+              followButton.innerHTML = `<i class="bi bi-person-dash me-2"></i>Unfollow`;
+              followButton.classList.remove('btn-outline-primary');
+              followButton.classList.add('btn-primary');
+            } else {
+              followButton.innerHTML = `<i class="bi bi-person-plus me-2"></i>Follow`;
+              followButton.classList.remove('btn-primary');
+              followButton.classList.add('btn-outline-primary');
+            }
+  
+            // Update all analytics fields
+            const followersCountElement = document.querySelector('.analytics-value[data-followers]');
+            const monthlyListenersElement = document.querySelector('.analytics-value[data-monthly-listeners]');
+            const totalPlaysElement = document.querySelector('.analytics-value[data-total-plays]');
+            const totalRevenueElement = document.querySelector('.analytics-value[data-total-revenue]');
+  
+            if (followersCountElement) {
+              followersCountElement.textContent = data.followers_count;
+            }
+            if (monthlyListenersElement) {
+              monthlyListenersElement.textContent = data.monthly_listeners;
+            }
+            if (totalPlaysElement) {
+              totalPlaysElement.textContent = data.total_plays;
+            }
+            if (totalRevenueElement) {
+              totalRevenueElement.textContent = `$${data.total_revenue}`;
+            }
+          }
+        })
+        .catch(error => console.error('Error:', error));
+    });
 </script>
 {% endblock %}
 </body>

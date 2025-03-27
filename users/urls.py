@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import home, RegisterView 
 from . import views
-from .views import upload_song, edit_song, delete_song, toggle_favorite, create_playlist, edit_playlist, delete_playlist, add_song_to_playlist, remove_song_from_playlist
+from .views import upload_song, edit_song, delete_song, toggle_favorite, create_playlist, edit_playlist, delete_playlist, add_song_to_playlist, remove_song_from_playlist, increment_listens
 from .views import song_list, get_songs, search, search_suggestions, song_detail, create_album, album_detail, follow_artist, edit_album, delete_album, update_merchandise, update_events
 from django.conf import settings
 from django.conf.urls.static import static
@@ -43,6 +43,7 @@ urlpatterns = [
     path('follow-artist/<int:artist_id>/', follow_artist, name='follow_artist'),
     path('update-merchandise/', update_merchandise, name='update_merchandise'),
     path('update-events/', update_events, name='update_events'),
+    path('increment-listens/<int:song_id>/', increment_listens, name='increment_listens'),
 
 ]
 if settings.DEBUG:

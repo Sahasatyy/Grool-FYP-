@@ -26,6 +26,7 @@
             <div class="card-body">
               <h5 class="card-title">{{ song.title }}</h5>
               <p class="card-text">{{ song.artist.artist_name }}</p>
+              <p class="card-text"><small class="text-muted">Listens: {{ song.total_listens }}</small></p>
               <audio controls>
                 <source src="{{ song.audio_file.url }}" type="audio/mpeg">
                 Your browser does not support the audio element.

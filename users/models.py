@@ -90,6 +90,7 @@ class Song(models.Model):
     lyrics = models.TextField(blank=True)
     is_explicit = models.BooleanField(default=False)
     is_public = models.BooleanField(default=True)
+    total_listens = models.PositiveIntegerField(default=0) 
     
     def __str__(self):
         return f"{self.title} by {self.artist.artist_name}"

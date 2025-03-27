@@ -694,17 +694,32 @@ def delete_album(request, album_id):
     return redirect('artist_profile', artist_id=album.artist.user_profile.user.id)
 
 @login_required
+@require_POST
 def follow_artist(request, artist_id):
     artist_profile = get_object_or_404(ArtistProfile, id=artist_id)
     user_profile = request.user.profile
 
     if artist_profile in user_profile.followed_artists.all():
         user_profile.followed_artists.remove(artist_profile)
+        is_following = False
     else:
         user_profile.followed_artists.add(artist_profile)
+        is_following = True
 
-    return redirect('artist_profile', artist_id=artist_id)
+    # Update analytics data
+    followers_count = artist_profile.followers.count()
+    monthly_listeners = artist_profile.monthly_listeners
+    total_plays = artist_profile.total_plays
+    total_revenue = artist_profile.total_revenue
 
+    return JsonResponse({
+        'success': True,
+        'is_following': is_following,
+        'followers_count': followers_count,
+        'monthly_listeners': monthly_listeners,
+        'total_plays': total_plays,
+        'total_revenue': total_revenue,
+    })
 
 @login_required
 def update_merchandise(request):
@@ -731,3 +746,15 @@ def update_events(request):
 
     # Corrected redirect using the related user object
     return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
+
+@require_POST
+def increment_listens(request, song_id):
+    song = get_object_or_404(Song, id=song_id)
+    duration = float(request.POST.get('duration', 0))  # Get the duration from the request
+
+    # Increment listens only if the user has listened for at least 5 seconds
+    if duration >= 5:
+        song.total_listens += 1
+        song.save()
+
+    return JsonResponse({'success': True, 'total_listens': song.total_listens})
