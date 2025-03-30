@@ -379,6 +379,7 @@ def upload_song(request):
             else:
                 messages.error(request, "Invalid artist profile.")
                 return redirect('home')
+    
     else:
         form = SongUploadForm(artist=artist_profile)
     return render(request, 'users/upload_song.html', {'form': form})
@@ -639,25 +640,46 @@ def create_album(request):
 def album_detail(request, album_id):
     album = get_object_or_404(Album, id=album_id)
     songs = album.songs.all()
-
+    song_form = SongUploadForm()
+    
+    # Get existing songs not in this album
+    existing_songs = Song.objects.none()  # Default empty queryset
+    if request.user.is_authenticated and hasattr(request.user.profile, 'artist_profile'):
+        existing_songs = Song.objects.filter(
+            artist=request.user.profile.artist_profile
+        ).exclude(
+            album=album
+        ).select_related('artist')
+    
     if request.method == 'POST':
-        song_form = SongUploadForm(request.POST, request.FILES, artist=album.artist)
-        if song_form.is_valid():
-            song = song_form.save(commit=False)
-            song.artist = album.artist
-            song.album = album
-            song.save()
-            album.update_total_tracks()  # Update total tracks in the album
-            album.update_duration()  # Update total duration of the album
-            messages.success(request, "Song added to the album successfully!")
+        # Handle adding existing songs
+        if 'add_existing_songs' in request.POST:
+            song_ids = request.POST.getlist('existing_songs')
+            added_count = 0
+            for song_id in song_ids:
+                try:
+                    song = Song.objects.get(id=song_id, artist=request.user.profile.artist_profile)
+                    song.album = album
+                    song.save()
+                    added_count += 1
+                except Song.DoesNotExist:
+                    continue
+            
+            if added_count > 0:
+                album.update_total_tracks()
+                album.update_duration()
+                messages.success(request, f"Added {added_count} songs to album!")
+            else:
+                messages.warning(request, "No songs were added")
             return redirect('album_detail', album_id=album.id)
-    else:
-        song_form = SongUploadForm(artist=album.artist)
-
+        
+        # Rest of your existing form handling...
+    
     return render(request, 'users/album_detail.html', {
         'album': album,
         'songs': songs,
-        'song_form': song_form,  # Pass the song upload form to the template
+        'song_form': song_form,
+        'existing_songs': existing_songs
     })
 
 @login_required
@@ -683,11 +705,9 @@ def edit_album(request, album_id):
 @login_required
 def delete_album(request, album_id):
     album = get_object_or_404(Album, id=album_id)
-    
-    # Ensure only the album's artist can delete it
-    if request.user.profile.artist_profile != album.artist:
-        messages.error(request, "You do not have permission to delete this album.")
-        return redirect('artist_profile', artist_id=album.artist.user_profile.user.id)
+
+    if not hasattr(request.user.profile, 'artist_profile') or request.user.profile.artist_profile != album.artist:
+        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
 
     album.delete()
     messages.success(request, "Album deleted successfully!")
@@ -758,3 +778,32 @@ def increment_listens(request, song_id):
         song.save()
 
     return JsonResponse({'success': True, 'total_listens': song.total_listens})
+
+@require_POST
+@login_required
+def delete_album_song(request, album_id, song_id):
+    try:
+        song = Song.objects.get(id=song_id, album_id=album_id)
+        
+        # Verify the requesting user owns this song
+        if song.artist != request.user.profile.artist_profile:
+            return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+        
+        # Delete the song
+        song.delete()
+        
+        # Update album stats
+        album = Album.objects.get(id=album_id)
+        album.update_total_tracks()
+        album.update_duration()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Song deleted successfully',
+            'album_id': album_id
+        })
+        
+    except Song.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Song not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

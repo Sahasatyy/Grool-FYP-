@@ -61,13 +61,22 @@ class Album(models.Model):
         return self.title
 
     def update_total_tracks(self):
+        """Update the total tracks count"""
         self.total_tracks = self.songs.count()
-        self.save()
-
+        self.save(update_fields=['total_tracks'])
+    
     def update_duration(self):
-        total_duration = sum(song.duration.total_seconds() for song in self.songs.all() if song.duration)
-        self.duration = timedelta(seconds=total_duration)
-        self.save()
+        """Update the total duration"""
+        total_seconds = sum(
+            song.duration.total_seconds() 
+            for song in self.songs.all() 
+            if song.duration
+        )
+        self.duration = timedelta(seconds=total_seconds)
+        self.save(update_fields=['duration'])
+    
+    def get_artist_songs_not_in_album(self):
+        return Song.objects.filter(artist=self.artist).exclude(album=self)
 
 class Genre(models.Model):
     name = models.CharField(max_length=100, unique=True)
