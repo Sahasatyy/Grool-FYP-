@@ -1,0 +1,99 @@
+{% extends "users/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Revenue Details</h2>
+    
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-dark text-white">
+                <div class="card-body">
+                    <h5>Total Plays</h5>
+                    <h3 id="total-plays">{{ total_plays }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-dark text-white">
+                <div class="card-body">
+                    <h5>Qualified Plays</h5>
+                    <h3 id="total-qualified">{{ total_qualified }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-dark text-white">
+                <div class="card-body">
+                    <h5>Play Time</h5>
+                    <h3 id="total-play-time">{{ total_play_time }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5>Total Revenue</h5>
+                    <h3 id="total-revenue">Rs. {{ total_revenue }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Song Table -->
+    <table class="table table-dark table-striped">
+        <thead>
+            <tr>
+                <th>Song</th>
+                <th>Total Plays</th>
+                <th>Qualified Plays</th>
+                <th>Play Time</th>
+                <th>Revenue (Rs.)</th>
+            </tr>
+        </thead>
+        <tbody id="song-table-body">
+            {% for song in songs %}
+            <tr data-song-id="{{ song.id }}">
+                <td>{{ song.title }}</td>
+                <td class="song-plays">{{ song.total_listens }}</td>
+                <td class="song-qualified">{{ song.qualified_plays }}</td>
+                <td class="song-play-time">{{ song.play_duration }}</td>
+                <td class="song-revenue">{{ song.revenue }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- JavaScript for auto-updating -->
+<script>
+// Function to update the stats
+function updateRevenueStats() {
+    fetch('/revenue-stats/')
+        .then(response => response.json())
+        .then(data => {
+            // Update summary cards
+            document.getElementById('total-plays').textContent = data.total_plays;
+            document.getElementById('total-qualified').textContent = data.total_qualified;
+            document.getElementById('total-play-time').textContent = data.total_play_time;
+            document.getElementById('total-revenue').textContent = `Rs. ${data.total_revenue}`;
+            
+            // Update individual song rows
+            data.songs.forEach(song => {
+                const row = document.querySelector(`tr[data-song-id="${song.id}"]`);
+                if (row) {
+                    row.querySelector('.song-plays').textContent = song.total_listens;
+                    row.querySelector('.song-qualified').textContent = song.qualified_plays;
+                    row.querySelector('.song-play-time').textContent = song.play_duration;
+                    row.querySelector('.song-revenue').textContent = song.revenue;
+                }
+            });
+        });
+}
+
+// Update every 30 seconds
+setInterval(updateRevenueStats, 30000);
+
+// Initial update
+document.addEventListener('DOMContentLoaded', updateRevenueStats);
+</script>
+{% endblock %}

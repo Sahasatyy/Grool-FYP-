@@ -23,6 +23,13 @@ from django.contrib.auth import update_session_auth_hash
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
+from django.conf import settings
+import requests
+from .models import SubscriptionPlan, UserSubscription
+from django.utils import timezone
+from datetime import timedelta
+
+
 
 
 def home(request):
@@ -807,3 +814,322 @@ def delete_album_song(request, album_id, song_id):
         return JsonResponse({'success': False, 'error': 'Song not found'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+def subscription_plans(request):
+    plans = SubscriptionPlan.objects.filter(is_active=True)
+    context = {
+        'plans': plans,
+        'current_sub': request.user.subscription if hasattr(request.user, 'subscription') else None
+    }
+    return render(request, 'payments/subscription_plans.html', context)
+
+@login_required
+def initiate_payment(request):
+    if request.method == 'POST':
+        try:
+            plan_id = request.POST.get('plan_id')
+            plan = SubscriptionPlan.objects.get(id=plan_id)
+            
+            # Build absolute URL with HTTPS in production
+            return_url = request.build_absolute_uri(reverse('verify_payment'))
+            if not settings.DEBUG:
+                return_url = return_url.replace('http://', 'https://')
+            
+            print(f"RETURN URL: {return_url}")  # Debug print
+            
+            payload = {
+                "return_url": return_url,
+                "website_url": request.build_absolute_uri('/'),
+                "amount": int(plan.price * 100),
+                "purchase_order_id": f"sub_{request.user.id}_{plan.id}",
+                "purchase_order_name": f"{plan.name} Subscription",
+                "customer_info": {
+                    "name": request.user.get_full_name() or request.user.username,
+                    "email": request.user.email
+                }
+            }
+            
+            headers = {
+                "Authorization": f"Key {settings.KHALTI_SECRET_KEY}",
+                "Content-Type": "application/json",
+            }
+            
+            response = requests.post(
+                settings.KHALTI_INITIATE_URL,
+                json=payload,
+                headers=headers,
+                timeout=10
+            )
+            response.raise_for_status()
+            data = response.json()
+            
+            if not data.get('payment_url'):
+                raise ValueError("Missing payment URL in response")
+            
+            return JsonResponse({
+                'payment_url': data['payment_url'],
+                'pid': data.get('pid'),  # Include PID in response
+                'success': True
+            })
+            
+        except Exception as e:
+            print(f"INITIATION ERROR: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=400)
+    
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@login_required
+def verify_payment(request):
+    # Try multiple ways to get PID
+    pid = (
+        request.GET.get('pid') or                  # Standard Khalti return
+        request.session.get('khalti_pid') or      # Session fallback
+        request.GET.get('transaction_id')         # Alternate parameter
+    )
+    
+    if not pid:
+        # Final fallback - check sessionStorage via AJAX
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'missing_pid'}, status=400)
+        
+        messages.error(request, "Could not verify payment - missing transaction ID")
+        print("MISSING PID - Available GET params:", request.GET)
+        return redirect('subscription_plans')
+    
+    try:
+        print(f"VERIFYING PID: {pid}")
+        
+        # Verify with Khalti
+        headers = {"Authorization": f"Key {settings.KHALTI_SECRET_KEY}"}
+        response = requests.post(
+            settings.KHALTI_VERIFY_URL,
+            json={"pid": pid},
+            headers=headers,
+            timeout=10
+        )
+        response.raise_for_status()
+        data = response.json()
+        print("VERIFICATION DATA:", data)
+        
+        # Check payment status
+        if data.get('state', {}).get('name') != 'Completed':
+            raise ValueError("Payment not completed")
+        
+        # Extract plan ID
+        purchase_order_id = data.get('product_identity') or data.get('purchase_order_id')
+        if not purchase_order_id:
+            raise ValueError("Missing purchase order ID")
+        
+        try:
+            plan_id = purchase_order_id.split('_')[-1]
+            plan = SubscriptionPlan.objects.get(id=plan_id)
+        except Exception as e:
+            raise ValueError(f"Invalid plan ID: {str(e)}")
+        
+        # Create subscription
+        UserSubscription.objects.update_or_create(
+            user=request.user,
+            defaults={
+                'plan': plan,
+                'is_active': True,
+                'khalti_idx': data['idx'],
+                'payment_verified': True,
+                'start_date': timezone.now(),
+                'end_date': timezone.now() + timedelta(days=plan.duration_days)
+            }
+        )
+        
+        # Clear any stored PID
+        if 'khalti_pid' in request.session:
+            del request.session['khalti_pid']
+        
+        return redirect('subscription_success')
+        
+    except Exception as e:
+        print(f"VERIFICATION FAILED: {str(e)}")
+        messages.error(request, f"Payment verification failed: {str(e)}")
+        return redirect('subscription_plans')
+
+
+@login_required
+def subscription_success(request):
+    # Additional security check
+    if not hasattr(request.user, 'subscription') or not request.user.subscription.payment_verified:
+        messages.warning(request, "No valid subscription found")
+        return redirect('subscription_plans')
+    
+    # Add context data for the template
+    context = {
+        'subscription': request.user.subscription,
+        'plan': request.user.subscription.plan,
+        'expiry_date': request.user.subscription.end_date.strftime("%B %d, %Y")
+    }
+    
+    return render(request, 'users/subscription_success.html', context)
+
+from django.db.models import F, ExpressionWrapper, DecimalField
+
+@login_required
+def revenue_details(request):
+    if not hasattr(request.user.profile, 'artist_profile'):
+        return HttpResponseForbidden("Only artists can view revenue details")
+    
+    artist_profile = request.user.profile.artist_profile
+    
+    # Calculate real-time stats
+    songs = Song.objects.filter(artist=artist_profile).annotate(
+        revenue_per_1k=ExpressionWrapper(
+            F('qualified_plays') / 1000 * 100,
+            output_field=DecimalField(max_digits=10, decimal_places=2)
+        ),
+        play_time_hours=ExpressionWrapper(
+            F('play_duration') / timedelta(hours=1),
+            output_field=DecimalField(max_digits=10, decimal_places=2)
+        )
+    ).order_by('-revenue')
+
+    # Calculate totals
+    total_revenue = sum(song.revenue for song in songs)
+    total_plays = sum(song.total_listens for song in songs)
+    total_qualified = sum(song.qualified_plays for song in songs)
+    total_play_time = sum((song.play_duration for song in songs), timedelta())
+
+    context = {
+        'songs': songs,
+        'total_revenue': total_revenue,
+        'total_plays': total_plays,
+        'total_qualified': total_qualified,
+        'total_play_time': total_play_time,
+        'artist_profile': artist_profile
+    }
+    return render(request, 'users/revenue_details.html', context)
+
+from .models import Song, RevenueRecord, PlayHistory
+
+@require_POST
+@csrf_exempt
+def track_play(request, song_id):
+    song = get_object_or_404(Song, id=song_id)
+    duration = int(request.POST.get('duration', 0))
+    
+    # Update song stats
+    if duration >= 60:
+        song.play_duration += timedelta(seconds=duration)
+        song.qualified_plays += 1
+        song.total_listens += 1
+        
+        new_revenue = (song.qualified_plays // 1000) * 100
+        if new_revenue > song.revenue:
+            RevenueRecord.objects.create(
+                artist=song.artist,
+                song=song,
+                amount=new_revenue - song.revenue,
+                plays_count=song.qualified_plays
+            )
+            song.revenue = new_revenue
+        
+        qualified = True
+    else:
+        song.total_listens += 1
+        qualified = False
+    
+    song.save()
+    
+    # Record play history
+    PlayHistory.objects.create(
+        user=request.user if request.user.is_authenticated else None,
+        song=song,
+        play_duration=timedelta(seconds=duration),
+        qualified=qualified
+    )
+    
+    # Return updated stats
+    artist_profile = song.artist
+    songs = Song.objects.filter(artist=artist_profile).values(
+        'id', 'total_listens', 'qualified_plays', 'play_duration', 'revenue'
+    )
+    
+    return JsonResponse({
+        'status': 'success',
+        'qualified': qualified,
+        'song_id': song.id,
+        'updated_stats': {
+            'total_listens': song.total_listens,
+            'qualified_plays': song.qualified_plays,
+            'play_duration': str(song.play_duration),
+            'revenue': song.revenue
+        }
+    })
+
+@login_required
+def revenue_stats(request):
+    if not hasattr(request.user.profile, 'artist_profile'):
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    
+    artist_profile = request.user.profile.artist_profile
+    
+    songs = Song.objects.filter(artist=artist_profile).values(
+        'id', 'title', 'total_listens', 'qualified_plays', 'play_duration', 'revenue'
+    )
+    
+    # Calculate totals
+    total_revenue = sum(song['revenue'] for song in songs)
+    total_plays = sum(song['total_listens'] for song in songs)
+    total_qualified = sum(song['qualified_plays'] for song in songs)
+    total_play_time = sum(
+        song['play_duration'].total_seconds() if isinstance(song['play_duration'], timedelta) else 0 
+        for song in songs
+    )
+    
+    # Convert play_time to readable format
+    total_play_time = str(timedelta(seconds=total_play_time))
+    
+    return JsonResponse({
+        'songs': list(songs),
+        'total_revenue': total_revenue,
+        'total_plays': total_plays,
+        'total_qualified': total_qualified,
+        'total_play_time': total_play_time
+    })
+
+from .forms import SupportQRForm
+import os
+
+@login_required
+def upload_support_qr(request):
+    artist_profile = get_object_or_404(ArtistProfile, user_profile__user=request.user)
+    
+    if request.method == 'POST':
+        form = SupportQRForm(request.POST, request.FILES, instance=artist_profile)
+        if form.is_valid():
+            # Ensure directory exists
+            os.makedirs(os.path.join(settings.MEDIA_ROOT, 'support_qr_codes'), exist_ok=True)
+            
+            # Save the form
+            form.save()
+            
+            # Verify file was saved
+            if artist_profile.support_qr_code:
+                full_path = os.path.join(settings.MEDIA_ROOT, artist_profile.support_qr_code.name)
+                if os.path.exists(full_path):
+                    messages.success(request, 'QR code uploaded successfully!')
+                else:
+                    messages.error(request, 'File failed to save')
+            return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
+    
+    return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
+
+
+@login_required
+def remove_support_qr(request):
+    artist_profile = get_object_or_404(ArtistProfile, user_profile__user=request.user)
+    
+    if artist_profile.support_qr_code:
+        artist_profile.support_qr_code.delete()
+        artist_profile.support_qr_code = None
+        artist_profile.save()
+        messages.success(request, 'QR code removed!')
+    
+    return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)  # Use artist_id

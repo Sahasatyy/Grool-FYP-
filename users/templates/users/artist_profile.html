@@ -610,6 +610,81 @@
     font-size: 0.9rem;
     color: #aaa;
 }
+
+/* Support Section Styles */
+  .support-card, .support-info-card, .support-upload-card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    height: 100%;
+  }
+  
+  .qr-code-container {
+    width: 200px;
+    height: 200px;
+    padding: 15px;
+    background-color: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .qr-code-image {
+    max-width: 100%;
+    max-height: 100%;
+  }
+  
+  .no-qr-placeholder {
+    background-color: var(--card-secondary-bg);
+    border-radius: var(--border-radius);
+    text-align: center;
+  }
+  
+  .support-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: rgba(255, 112, 67, 0.1);
+  }
+
+  .support-upload-card {
+    background-color: var(--card-secondary-bg);
+    border: 1px dashed rgba(255, 112, 67, 0.3) !important;
+  }
+  
+  .qr-preview-wrapper {
+    width: 200px;
+    height: 200px;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  #qrCodePreview {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  
+  @media (max-width: 768px) {
+    .qr-preview-wrapper {
+      width: 180px;
+      height: 180px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .qr-code-container {
+      width: 180px;
+      height: 180px;
+    }
+  }
   
   /* Responsive Adjustments */
   @media (max-width: 992px) {
@@ -710,6 +785,11 @@
               </a>
             </div>
             {% endif %}
+            {% if is_owner %}
+            <a href="{% url 'revenue_details' %}" class="btn btn-outline-secondary rounded-pill mb-3 w-100">
+                <i class="bi bi-cash-coin me-2"></i>View Revenue
+            </a>
+            {% endif %}            
           {% else %}
             <!-- Follow button for normal users -->
             {% if not is_owner %}
@@ -1077,6 +1157,190 @@
   </div>
 </div>
 
+<!-- Support the Artist Section -->
+<div class="section mt-5">
+  <h3 class="section-title">Support the Artist</h3>
+
+  {% if messages %}
+<div class="container mt-3">
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+  
+  <div class="row">
+    <!-- QR Code Display Section -->
+    <div class="col-md-6 mb-4">
+      <div class="card support-card border-0">
+        <div class="card-body text-center">
+          {% if artist_profile.support_qr_code and artist_profile.support_qr_code.url %}
+            <h4 class="mb-4">Scan to Support</h4>
+            <div class="qr-code-container mb-3 mx-auto">
+              <img src="{{ artist_profile.support_qr_code.url }}" 
+                   alt="Support QR Code" 
+                   class="img-fluid qr-code-image"
+                   onerror="this.style.display='none'; document.getElementById('qr-error').style.display='block'">
+            </div>
+            <p class="text-muted mb-3">Scan this QR code with your payment app to support {{ artist_profile.artist_name }}</p>
+            <div id="qr-error" style="display:none" class="alert alert-warning">
+              QR code image failed to load. Please try uploading again.
+            </div>
+          {% else %}
+            <div class="no-qr-placeholder py-4">
+              <i class="bi bi-qr-code fs-1 text-muted mb-3"></i>
+              <h5 class="mb-3">No QR Code Added</h5>
+              <p class="text-muted">The artist hasn't set up a support QR code yet</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Support Information Section -->
+    <div class="col-md-6 mb-4">
+      <div class="card support-info-card border-0">
+        <div class="card-body">
+          <h4 class="mb-4">Ways to Support</h4>
+          
+          <div class="support-method mb-4">
+            <div class="d-flex align-items-center mb-2">
+              <div class="support-icon me-3">
+                <i class="bi bi-qr-code-scan fs-3 text-primary"></i>
+              </div>
+              <h5>QR Code Payment</h5>
+            </div>
+            <p>Scan the QR code with any payment app to send direct support to the artist.</p>
+          </div>
+          
+          <div class="support-method mb-4">
+            <div class="d-flex align-items-center mb-2">
+              <div class="support-icon me-3">
+                <i class="bi bi-wallet2 fs-3 text-primary"></i>
+              </div>
+              <h5>Direct Payment</h5>
+            </div>
+            <p>Send support via PayPal, Venmo, or other payment methods if provided.</p>
+          </div>
+          
+          <div class="support-method">
+            <div class="d-flex align-items-center mb-2">
+              <div class="support-icon me-3">
+                <i class="bi bi-music-note-list fs-3 text-primary"></i>
+              </div>
+              <h5>Stream & Share</h5>
+            </div>
+            <p>Support by streaming their music and sharing with friends.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- QR Code Upload Form (Visible only to artist) -->
+    {% if is_owner %}
+    <div class="col-12 mt-3">
+      <div class="card support-upload-card border-0">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Your Support QR Code</h5>
+            {% if artist_profile.support_qr_code %}
+              <span class="badge bg-success">
+                <i class="bi bi-check-circle-fill me-1"></i> Active
+              </span>
+            {% else %}
+              <span class="badge bg-warning text-dark">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i> Not Setup
+              </span>
+            {% endif %}
+          </div>
+          
+          <form method="post" enctype="multipart/form-data" action="{% url 'upload_support_qr' %}" id="qrUploadForm">
+            {% csrf_token %}
+            <div class="row g-3">
+              <div class="col-md-8">
+                <div class="input-group">
+                  <input type="file" 
+                         class="form-control" 
+                         id="qrCodeUpload" 
+                         name="qr_code" 
+                         accept="image/png, image/jpeg, image/jpg"
+                         required
+                         onchange="previewQRCode(this)">
+                  <button class="btn btn-primary" type="submit" id="uploadBtn">
+                    <i class="bi bi-upload me-2"></i> Upload
+                  </button>
+                </div>
+                <div class="form-text mt-2">
+                  <small>
+                    <i class="bi bi-info-circle"></i> Upload a clear image (PNG/JPG) of your payment QR code.
+                    Recommended size: 500×500px. Max file size: 2MB.
+                  </small>
+                </div>
+                
+                <!-- QR Code Preview (hidden by default) -->
+                <div class="mt-3 text-center d-none" id="qrPreviewContainer">
+                  <div class="qr-preview-wrapper mx-auto">
+                    <img id="qrCodePreview" class="img-fluid rounded" style="max-height: 200px;">
+                  </div>
+                  <small class="text-muted">Preview - Make sure QR is clear and readable</small>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <div class="d-flex flex-column h-100">
+                  {% if artist_profile.support_qr_code %}
+                    <button type="button" 
+                            class="btn btn-outline-danger mb-2" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#confirmRemoveModal">
+                      <i class="bi bi-trash me-2"></i> Remove QR
+                    </button>
+                  {% endif %}
+                  
+                  <div class="mt-auto">
+                    <div class="d-flex align-items-center bg-dark rounded p-2">
+                      <i class="bi bi-lightbulb text-warning fs-4 me-2"></i>
+                      <small class="text-muted">
+                        Tip: Test your QR code before sharing it with fans
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Remove QR Code Confirmation Modal -->
+<div class="modal fade" id="confirmRemoveModal" tabindex="-1" aria-labelledby="confirmRemoveModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmRemoveModalLabel">Confirm Removal</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to remove your support QR code? Fans won't be able to send you support until you upload a new one.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form method="post" action="{% url 'remove_support_qr' %}" class="d-inline">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Remove QR Code</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Upload Song Modal -->
 <div class="modal fade" id="uploadSongModal" tabindex="-1" aria-labelledby="uploadSongModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
@@ -1207,6 +1471,47 @@
     const modal = new bootstrap.Modal(document.getElementById('songDetailsModal'));
     modal.show();
   }
+
+  function previewQRCode(input) {
+    const previewContainer = document.getElementById('qrPreviewContainer');
+    const previewImage = document.getElementById('qrCodePreview');
+    
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const fileSize = file.size / 1024 / 1024; // in MB
+      
+      // Validate file size
+      if (fileSize > 2) {
+        alert('File size exceeds 2MB limit. Please choose a smaller file.');
+        input.value = '';
+        previewContainer.classList.add('d-none');
+        return;
+      }
+      
+      // Validate file type
+      const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+      if (!validTypes.includes(file.type)) {
+        alert('Only PNG, JPG, and JPEG files are allowed.');
+        input.value = '';
+        previewContainer.classList.add('d-none');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        previewImage.src = e.target.result;
+        previewContainer.classList.remove('d-none');
+      }
+      reader.readAsDataURL(file);
+    }
+  }
+  
+  // Form submission handler
+  document.getElementById('qrUploadForm').addEventListener('submit', function(e) {
+    const uploadBtn = document.getElementById('uploadBtn');
+    uploadBtn.disabled = true;
+    uploadBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Uploading...';
+  });
 
   function toggleFavorite(event, heartIcon) {
     event.stopPropagation(); // Prevent event from bubbling up to the song card

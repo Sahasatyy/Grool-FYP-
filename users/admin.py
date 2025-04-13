@@ -1,13 +1,15 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import UserProfile, ArtistProfile, Song, Genre
+from .models import UserProfile, ArtistProfile, Song, Genre, Album, Playlist, SubscriptionPlan, UserSubscription
 from django.urls import path
+from django.db.models import Count
 
 # Register your models here.
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'user_type')
     list_filter = ('user_type',)
     search_fields = ('user__username', 'user__email')
+
 
 class ArtistProfileAdmin(admin.ModelAdmin):
     list_display = ('artist_name', 'user_profile', 'genre', 'verification_status', 'verification_date')
@@ -54,3 +56,33 @@ admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(ArtistProfile, ArtistProfileAdmin)
 admin.site.register(Song)
 admin.site.register(Genre)
+admin.site.register(Playlist)
+admin.site.register(Album)
+
+@admin.register(SubscriptionPlan)
+class SubscriptionPlanAdmin(admin.ModelAdmin):
+    list_display = ('name', 'plan_type', 'price', 'duration_days', 'is_active')
+    list_filter = ('plan_type', 'is_active')
+    search_fields = ('name', 'features')
+
+@admin.register(UserSubscription)
+class UserSubscriptionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'plan', 'start_date', 'end_date', 'is_active')
+    list_filter = ('plan', 'is_active')
+    search_fields = ('user__username', 'khalti_idx')
+    readonly_fields = ('start_date', 'end_date')
+
+from .models import RevenueRecord
+
+@admin.register(RevenueRecord)
+class RevenueRecordAdmin(admin.ModelAdmin):
+    list_display = ('artist', 'song_title', 'amount', 'plays_count', 'calculated_at')
+    list_filter = ('artist', 'calculated_at')
+    readonly_fields = ('calculated_at',)
+    
+    def song_title(self, obj):
+        return obj.song.title if obj.song else "Deleted Song"
+    song_title.short_description = 'Song'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('artist', 'song')

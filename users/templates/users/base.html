@@ -198,20 +198,27 @@ body {
         <div id="search-suggestions" class="search-suggestions"></div>
     </div>
     <div class="user-actions">
-      {% if user.is_authenticated %}
-          {% if user.profile.user_type == 'artist' %}
-              <a href="{% url 'artist_profile' user.id %}" class="btn btn-secondary">Artist Dashboard</a>
-          {% else %}
-              <a href="{% url 'user_profile' %}" class="btn btn-secondary">My Library</a>
-          {% endif %}
-          <form id="logout-form" method="POST" action="{% url 'logout' %}">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-secondary" id="logout-btn">Logout</button>
-          </form>
-      {% else %}
-          <a href="{% url 'users-register' %}" class="btn btn-secondary">Sign Up</a>
-          <a href="{% url 'login' %}" class="btn">Log In</a>
-      {% endif %}
+        {% if user.is_authenticated %}
+            {% if user.subscription.is_active %}
+                <span class="badge bg-success me-2">Premium</span>
+            {% else %}
+                <a href="{% url 'subscription_plans' %}" class="btn btn-primary me-2">Go Premium</a>
+            {% endif %}
+            
+            {% if user.profile.user_type == 'artist' %}
+                <a href="{% url 'artist_profile' user.id %}" class="btn btn-secondary me-2">Artist Dashboard</a>
+            {% else %}
+                <a href="{% url 'user_profile' %}" class="btn btn-secondary me-2">My Library</a>
+            {% endif %}
+            
+            <form id="logout-form" method="POST" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-secondary" id="logout-btn">Logout</button>
+            </form>
+        {% else %}
+            <a href="{% url 'users-register' %}" class="btn btn-secondary me-2">Sign Up</a>
+            <a href="{% url 'login' %}" class="btn btn-primary">Log In</a>
+        {% endif %}
     </div>
     
     </header>

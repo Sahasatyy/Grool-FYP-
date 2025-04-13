@@ -3,7 +3,7 @@ from .views import home, RegisterView
 from . import views
 from .views import upload_song, edit_song, delete_song, toggle_favorite, create_playlist, edit_playlist, delete_playlist, add_song_to_playlist, remove_song_from_playlist, increment_listens
 from .views import song_list, get_songs, search, search_suggestions, song_detail, create_album, album_detail, follow_artist, edit_album, delete_album, update_merchandise, update_events
-from .views import delete_album_song
+from .views import delete_album_song, subscription_plans, initiate_payment, verify_payment, subscription_success, revenue_details, track_play, revenue_stats, upload_support_qr, remove_support_qr
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -46,7 +46,16 @@ urlpatterns = [
     path('update-events/', update_events, name='update_events'),
     path('increment-listens/<int:song_id>/', increment_listens, name='increment_listens'),
     path('album/<int:album_id>/delete-song/<int:song_id>/', delete_album_song, name='delete_album_song'),
-
+    path('subscription/', subscription_plans, name='subscription_plans'),
+    path('subscription/initiate/', initiate_payment, name='initiate_payment'),
+    path('subscription/verify/', verify_payment, name='verify_payment'),
+    path('subscription/success/', subscription_success, name='subscription_success'),
+    path('revenue/', views.revenue_details, name='revenue_details'),
+    path('track-play/<int:song_id>/', views.track_play, name='track_play'),
+    path('revenue-stats/', views.revenue_stats, name='revenue_stats'),
+    path('artist/upload_qr/', views.upload_support_qr, name='upload_support_qr'),
+    path('artist/remove_qr/', views.remove_support_qr, name='remove_support_qr'),
 ]
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

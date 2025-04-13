@@ -37,6 +37,7 @@ AUTHENTICATION_BACKENDS = (
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'django.contrib.humanize', 
 ]
 
 MIDDLEWARE = [
@@ -63,6 +65,8 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
     'social_django.middleware.SocialAuthExceptionMiddleware',
     'users.middleware.ArtistRedirectMiddleware',
+    'users.middleware.SubscriptionMiddleware',
+    'users.middleware.KhaltiPIDMiddleware',
 ]
 
 ROOT_URLCONF = 'user_management.urls'
@@ -82,10 +86,39 @@ TEMPLATES = [
                 'social_django.context_processors.login_redirect',
                 'django.template.context_processors.request',
                 'users.context_processors.user_type',
+                'users.context_processors.subscription_context',
             ],
         },
     },
 ]
+
+JAZZMIN_SETTINGS = {
+    # UI Theme
+    "theme": "darkly",  # Try "flatly", "cosmo", or "materia" for light themes
+    
+    # Logo customization
+    "site_logo": "images/admin-logo.png",
+    "site_brand": "Your Admin Portal",
+    
+    # Sidebar customization
+    "navigation_expanded": True,
+    "show_sidebar": True,
+    
+    # Top menu customization
+    "topmenu_links": [
+        {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"app": "accounts"},
+    ],
+    
+    # Modern icons
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "socialaccount.SocialAccount": "fas fa-share-alt",
+        "sites.Site": "fas fa-globe",
+    },
+}
 
 WSGI_APPLICATION = 'user_management.wsgi.application'
 
@@ -169,3 +202,25 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Add these settings at the bottom of your settings.py
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # This is where collected static files will be stored
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'users/static'),
+]
+
+from dotenv import load_dotenv
+
+load_dotenv() 
+
+# Khalti settings
+KHALTI_SECRET_KEY = os.getenv('KHALTI_SECRET_KEY')
+KHALTI_PUBLIC_KEY = os.getenv('KHALTI_PUBLIC_KEY')
+KHALTI_VERIFY_URL = "https://a.khalti.com/api/v2/payment/verify/"
+KHALTI_INITIATE_URL = "https://a.khalti.com/api/v2/epayment/initiate/"
+
+
+from django.urls import reverse_lazy
+# Subscription settings
+SUBSCRIPTION_REDIRECT_URL = reverse_lazy('subscription_success')

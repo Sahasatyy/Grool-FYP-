@@ -12,3 +12,11 @@ def user_type(request):
         except UserProfile.DoesNotExist:
             context['user_type'] = 'user'
     return context
+
+from django.conf import settings
+
+def subscription_context(request):
+    context = {}
+    if request.user.is_authenticated:
+        context['has_active_subscription'] = hasattr(request.user, 'subscription') and request.user.subscription.is_valid
+    return context

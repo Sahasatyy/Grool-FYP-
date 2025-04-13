@@ -153,3 +153,26 @@ class AlbumForm(forms.ModelForm):
         widgets = {
             'release_date': forms.DateInput(attrs={'class': 'flatpickr', 'placeholder': 'Select a date'}),
         }
+    
+from .models import SubscriptionPlan
+
+class SubscriptionForm(forms.Form):
+    plan = forms.ModelChoiceField(
+        queryset=SubscriptionPlan.objects.all(),
+        widget=forms.RadioSelect,
+        empty_label=None
+    )
+
+class SupportQRForm(forms.ModelForm):
+    class Meta:
+        model = ArtistProfile
+        fields = ['support_qr_code']
+        widgets = {
+            'support_qr_code': forms.FileInput(attrs={
+                'accept': 'image/png, image/jpeg',
+                'class': 'form-control'
+            })
+        }
+        labels = {
+            'support_qr_code': 'Support QR Code'
+        }

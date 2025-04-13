@@ -1,0 +1,31 @@
+/* Modern font */
+body {
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+}
+
+/* Card-like containers */
+.dashboard .module {
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+/* Better tables */
+#changelist table thead th {
+    background: #f8f9fa;
+    font-weight: 600;
+}
+
+/* Button styling */
+input[type="submit"], button {
+    border-radius: 4px;
+    padding: 8px 16px;
+    transition: all 0.3s;
+}
+
+/* Hover effects */
+.module:hover {
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
