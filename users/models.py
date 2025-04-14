@@ -12,6 +12,7 @@ class UserProfile(models.Model):
     USER_TYPE_CHOICES = (
         ('normal', 'Normal User'),
         ('artist', 'Verified Artist'),
+        ('premium', 'Premium User'),
     )
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
@@ -25,7 +26,7 @@ class UserProfile(models.Model):
     
 
 def qr_code_upload_path(instance, filename):
-    return os.path.join('support_qr_codes', filename)
+    return os.path.join('support_qr_codes', f'user_{instance.user_profile.user.id}', filename)
 
 class ArtistProfile(models.Model):
     user_profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='artist_profile')
@@ -39,13 +40,18 @@ class ArtistProfile(models.Model):
     social_links = models.URLField(blank=True, null=True, verbose_name="Social Links", help_text="Provide links to your social media profiles.")
     popular_songs_1 = models.CharField(max_length=255, blank=True, null=True, verbose_name="Popular Song 1", help_text="Enter one of your popular songs.")
     popular_songs_2 = models.CharField(max_length=255, blank=True, null=True, verbose_name="Popular Song 2", help_text="Enter another popular song.")
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    verification_date = models.DateTimeField(null=True, blank=True)
     monthly_listeners = models.PositiveIntegerField(default=0)  # Number of monthly listeners
     total_plays = models.PositiveIntegerField(default=0)        # Total plays of all songs
     total_revenue = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # Total revenue in dollars
     support_qr_code = models.ImageField(
         upload_to=qr_code_upload_path,
         null=True,
-        blank=True
+        blank=True,
+        verbose_name='Support QR Code',
+        help_text='Upload a QR code for fans to support you'
     )
     support_message = models.TextField(blank=True, default="")
 
@@ -59,6 +65,34 @@ class ArtistProfile(models.Model):
 
     def __str__(self):
         return f"{self.artist_name}'s artist profile"
+    
+    def followers_count(self):
+        return self.followers.count()  # Or use cached_property if needed
+    
+    def get_monthly_listeners(self):
+        """Calculate monthly listeners"""
+        # Implement your actual logic here
+        return self.monthly_listeners or 0
+    
+    def get_total_plays(self):
+        """Calculate total plays"""
+        # Implement your actual logic here
+        return self.total_plays or 0
+    
+    def get_total_revenue(self):
+        """Calculate total revenue"""
+        # Implement your actual logic here
+        return float(self.total_revenue or 0)
+    
+def save(self, *args, **kwargs):
+
+    try:
+        old = ArtistProfile.objects.get(pk=self.pk)
+        if old.support_qr_code and old.support_qr_code != self.support_qr_code:
+            old.support_qr_code.delete(save=False)
+    except ArtistProfile.DoesNotExist:
+        pass
+    super().save(*args, **kwargs)
 
 class Album(models.Model):
     artist = models.ForeignKey(ArtistProfile, on_delete=models.CASCADE, related_name='albums')

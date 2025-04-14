@@ -144,9 +144,7 @@
             <p class="text-muted">{{ song.artist.artist_name }}</p>
             <p><strong>Genre:</strong> {{ song.genres.all|join:", " }}</p>
             <p><strong>Release Date:</strong> {{ song.release_date }}</p>
-            <p><strong>Duration:</strong> {{ song.duration }}</p>
             <p><strong>Explicit:</strong> {% if song.is_explicit %}Yes{% else %}No{% endif %}</p>
-            <p><strong>Total Listens:</strong> <span id="total-listens">{{ song.total_listens }}</span></p>
             <p><strong>Description:</strong> {{ song.description|default:"No description available." }}</p>
           </div>
         </div>

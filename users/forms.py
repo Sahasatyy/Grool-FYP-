@@ -89,30 +89,37 @@ class ChangeEmailForm(forms.ModelForm):
         fields = ['email']
 
 class SongUploadForm(forms.ModelForm):
-    MAX_FILE_SIZE = 20 * 1024 * 1024 
+    MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB
+    
     genres = forms.ModelMultipleChoiceField(
         queryset=Genre.objects.all(),
-        widget=forms.CheckboxSelectMultiple, 
-        required=False 
+        widget=forms.CheckboxSelectMultiple,
+        required=False
     )
-
-    album = forms.ModelChoiceField(
-    queryset=Album.objects.none(),
-    required=False,
-    label="Select Album"
-    )
-
+    
     class Meta:
         model = Song
         fields = [
-            'title', 'album', 'audio_file', 'cover_image', 'genres', 'lyrics', 'duration', 'is_explicit', 'is_public'
+            'title', 'album', 'audio_file', 'cover_image', 
+            'genres', 'lyrics', 'duration', 'is_explicit', 'is_public'
         ]
+        widgets = {
+            'album': forms.Select(attrs={'class': 'form-select'})
+        }
 
     def __init__(self, *args, **kwargs):
-        artist = kwargs.pop('artist', None)
+        self.artist = kwargs.pop('artist', None)  # Get artist from kwargs
         super().__init__(*args, **kwargs)
-        if artist:
-            self.fields['album'].queryset = Album.objects.filter(artist=artist)
+        
+        # Filter albums to only those by this artist
+        if self.artist:
+            self.fields['album'].queryset = Album.objects.filter(artist=self.artist)
+        else:
+            self.fields['album'].queryset = Album.objects.none()
+            
+        # Set empty label for album dropdown
+        self.fields['album'].empty_label = "Select an album (optional)"
+        self.fields['album'].required = False
 
     def clean_audio_file(self):
         audio_file = self.cleaned_data.get('audio_file')

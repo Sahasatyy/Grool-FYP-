@@ -189,7 +189,7 @@
             <div class="card-body">
               <h5 class="card-title">{{ song.title }}</h5>
               <p class="card-text">{{ song.artist.username }}</p>
-              <audio controls>
+              <audio controls class="song-audio-player">
                 <source src="{{ song.audio_file.url }}" type="audio/mpeg">
                 Your browser does not support the audio element.
               </audio>
@@ -251,4 +251,25 @@
     });
   });
 </script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get all audio players on the page
+    const audioPlayers = document.querySelectorAll('.song-audio-player');
+    
+    // Add event listener to each player
+    audioPlayers.forEach(player => {
+      player.addEventListener('play', function() {
+        // When one player starts playing, pause all others
+        audioPlayers.forEach(otherPlayer => {
+          if (otherPlayer !== player && !otherPlayer.paused) {
+            otherPlayer.pause();
+            // Optional: reset the playback position
+            otherPlayer.currentTime = 0;
+          }
+        });
+      });
+    });
+  });
+  </script>
 {% endblock %}

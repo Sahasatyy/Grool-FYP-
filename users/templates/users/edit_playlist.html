@@ -16,6 +16,11 @@
     --card-secondary-bg: #2d2d34;
     --profile-card-bg: #2d2d34;
     --border-radius: 12px;
+    --alert-bg: #2d2d34;
+    --alert-success-color: #81c784;
+    --alert-info-color: #64b5f6;
+    --alert-warning-color: #ffb74d;
+    --alert-danger-color: #e57373;
   }
   
   body {
@@ -23,6 +28,11 @@
     color: var(--text-color);
     background-color: #121212;
     line-height: 1.6;
+  }
+  
+  /* Ensure container has dark background */
+  .container {
+    background-color: #121212;
   }
   
   .edit-playlist-card {
@@ -72,6 +82,11 @@
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(187, 134, 252, 0.25);
     outline: none;
+  }
+  
+  /* Fix for placeholder text */
+  .form-control::placeholder {
+    color: #8e8e95;
   }
   
   textarea.form-control {
@@ -127,6 +142,7 @@
   .form-check-label {
     cursor: pointer;
     user-select: none;
+    color: var(--text-color);
   }
   
   /* Buttons */
@@ -135,12 +151,15 @@
     font-weight: 500;
     border-radius: 50px;
     transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
   }
   
   .btn-primary {
     background-color: var(--primary-color);
     border-color: var(--primary-dark);
-    color: var(--light-color);
+    color: var(--dark-color);
   }
   
   .btn-primary:hover {
@@ -177,6 +196,74 @@
     margin: 5px 0 0;
     color: #e74c3c;
     font-size: 0.9rem;
+  }
+  
+  /* Alert styles */
+  .alert {
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: var(--alert-bg);
+    color: var(--text-color);
+  }
+  
+  .alert-info {
+    background-color: rgba(33, 150, 243, 0.15);
+    border-color: rgba(33, 150, 243, 0.2);
+    color: var(--alert-info-color);
+  }
+  
+  .alert-success {
+    background-color: rgba(76, 175, 80, 0.15);
+    border-color: rgba(76, 175, 80, 0.2);
+    color: var(--alert-success-color);
+  }
+  
+  .alert-warning {
+    background-color: rgba(255, 152, 0, 0.15);
+    border-color: rgba(255, 152, 0, 0.2);
+    color: var(--alert-warning-color);
+  }
+  
+  .alert-danger {
+    background-color: rgba(244, 67, 54, 0.15);
+    border-color: rgba(244, 67, 54, 0.2);
+    color: var(--alert-danger-color);
+  }
+  
+  /* List groups */
+  .list-group {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+  }
+  
+  .list-group-item {
+    background-color: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--text-color);
+    padding: 12px 15px;
+  }
+  
+  .list-group-item:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  /* Input focus styles */
+  input:focus, 
+  textarea:focus, 
+  select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(187, 134, 252, 0.25);
+    background-color: var(--card-bg);
+    color: var(--text-color);
+  }
+  
+  /* Card styling */
+  .card {
+    background-color: var(--profile-card-bg);
+    border: none;
+    border-radius: var(--border-radius);
   }
   
   /* Responsive adjustments */
@@ -242,7 +329,7 @@
           <ul class="list-group">
             {% for song in playlist.songs.all %}
               <li class="list-group-item">
-                {{ song.title }} by {{ song.artist.username }}
+                {{ song.title }}
               </li>
             {% endfor %}
           </ul>

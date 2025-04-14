@@ -3,6 +3,15 @@ from django.utils.html import format_html
 from .models import UserProfile, ArtistProfile, Song, Genre, Album, Playlist, SubscriptionPlan, UserSubscription
 from django.urls import path
 from django.db.models import Count
+from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponse
+from django.utils import timezone
+from django.core.exceptions import FieldDoesNotExist
+
+import csv
+
+from .models import ArtistProfile, UserProfile
+
 
 # Register your models here.
 class UserProfileAdmin(admin.ModelAdmin):
@@ -12,17 +21,87 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 
 class ArtistProfileAdmin(admin.ModelAdmin):
-    list_display = ('artist_name', 'user_profile', 'genre', 'verification_status', 'verification_date')
-    list_filter = ('is_verified', 'genre')
-    search_fields = ('artist_name', 'user_profile__user__username')
-    actions = ['verify_selected_artists']
+    list_display = (
+        'artist_name',
+        'user_profile',
+        'get_genre',
+        'verification_status',
+        'get_created_at',
+        'verification_date',
+        'is_verified'
+    )
+    list_filter = (
+        'is_verified',
+        'genre',
+    )
+    try:
+        ArtistProfile._meta.get_field('created_at')
+        list_filter += (('created_at', admin.DateFieldListFilter),)
+        date_hierarchy = 'created_at'
+    except FieldDoesNotExist:
+        pass
     
+    readonly_fields = (
+        'get_created_at',
+        'verification_date',
+        'user_profile',
+        'verification_status'
+    )
+    search_fields = (
+        'artist_name',
+        'user_profile__user__username',
+        'user_profile__user__email'
+    )
+    actions = [
+        'verify_selected_artists',
+        'reject_selected_artists',
+        'export_as_csv'
+    ]
+    date_hierarchy = 'created_at'
+    list_select_related = ('user_profile', 'user_profile__user')
+
+    fieldsets = (
+        ('Artist Information', {
+            'fields': (
+                'user_profile',
+                'artist_name',
+                'profile_picture',
+                'genre',
+                'bio',
+                'description_about_yourself',
+                'social_links'
+            )
+        }),
+        ('Verification Status', {
+            'fields': (
+                'is_verified',
+                'verification_status',
+                'created_at',
+                'verification_date'
+            )
+        }),
+    )
+    def get_created_at(self, obj):
+        if hasattr(obj, 'created_at'):
+            return obj.created_at.strftime("%Y-%m-%d %H:%M") if obj.created_at else "-"
+        return "Not available"
+    get_created_at.short_description = 'Created At'
+
+    def get_genre(self, obj):
+        """Display the genre for a single CharField"""
+        return obj.genre if obj.genre else "-"
+    get_genre.short_description = 'Genre'
+
     def verification_status(self, obj):
         if obj.is_verified:
-            return format_html('<span style="color:green">Verified</span>')
-        else:
-            return format_html('<span style="color:orange">Pending</span>')
-    
+            return format_html(
+                '<span class="verified-badge" style="color:green; font-weight:bold">✓ Verified</span>'
+            )
+        return format_html(
+            '<span class="pending-badge" style="color:orange; font-weight:bold">⌛ Pending</span>'
+        )
+    verification_status.short_description = 'Status'
+
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
@@ -31,26 +110,71 @@ class ArtistProfileAdmin(admin.ModelAdmin):
                 self.admin_site.admin_view(self.verify_artist_view),
                 name='verify-artist',
             ),
+            path(
+                '<int:artist_profile_id>/preview/',
+                self.admin_site.admin_view(self.preview_artist_view),
+                name='preview-artist',
+            ),
         ]
         return custom_urls + urls
-    
+
     def verify_artist_view(self, request, artist_profile_id):
-        # Import the verify_artist view function here to avoid circular imports
         from .views import verify_artist
         return verify_artist(request, artist_profile_id)
-    
+
+    def preview_artist_view(self, request, artist_profile_id):
+        artist = get_object_or_404(ArtistProfile, id=artist_profile_id)
+        return render(request, 'admin/artist_preview.html', {'artist': artist})
+
     def verify_selected_artists(self, request, queryset):
-        for artist_profile in queryset:
-            if not artist_profile.is_verified:
-                artist_profile.is_verified = True
-                artist_profile.save()
-                
-                user_profile = artist_profile.user_profile
-                user_profile.user_type = 'artist'
-                user_profile.save()
+        updated = queryset.filter(is_verified=False).update(
+            is_verified=True,
+            verification_date=timezone.now()
+        )
+        UserProfile.objects.filter(
+            artistprofile__in=queryset
+        ).update(user_type='artist')
         
-        self.message_user(request, f"{queryset.count()} artists have been verified successfully.")
+        # # Send verification emails
+        # for artist in queryset:
+        #     send_verification_email(artist)
+        
+        self.message_user(
+            request,
+            f"Successfully verified {updated} artist(s). Notification emails sent."
+        )
     verify_selected_artists.short_description = "Verify selected artists"
+
+    def reject_selected_artists(self, request, queryset):
+        updated = queryset.filter(is_verified=False).update(
+            verification_date=None
+        )
+        self.message_user(
+            request,
+            f"Marked {updated} pending request(s) as rejected."
+        )
+    reject_selected_artists.short_description = "Reject selected requests"
+
+    def export_as_csv(self, request, queryset):
+        meta = self.model._meta
+        field_names = [field.name for field in meta.fields]
+        
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename={meta}.csv'
+        
+        writer = csv.writer(response)
+        writer.writerow(field_names)
+        for obj in queryset:
+            writer.writerow([getattr(obj, field) for field in field_names])
+        
+        return response
+    export_as_csv.short_description = "Export Selected"
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if not request.user.is_superuser:
+            return qs.filter(is_verified=False)
+        return qs
 
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(ArtistProfile, ArtistProfileAdmin)

@@ -159,87 +159,94 @@
     margin-top: 20px;
   }
 
-  /* Horizontal Grid Container */
-.favorites-grid-container {
-  overflow-x: auto; /* Enable horizontal scrolling */
-  padding: 1rem 0;
-  margin-top: 1rem;
-}
+  /* Horizontal Grid Container - Common for both playlists and favorites */
+  .horizontal-grid-container {
+    overflow-x: auto; /* Enable horizontal scrolling */
+    padding: 1rem 0;
+    margin-top: 1rem;
+  }
 
-.favorites-grid {
-  display: flex;
-  gap: 1rem; /* Space between cards */
-  padding-bottom: 1rem; /* Add padding to prevent scrollbar overlap */
-}
+  .horizontal-grid {
+    display: flex;
+    gap: 1rem; /* Space between cards */
+    padding-bottom: 1rem; /* Add padding to prevent scrollbar overlap */
+  }
 
-/* Favorite Song Card */
-.favorite-song-card {
-  flex: 0 0 auto; /* Prevent flex items from shrinking */
-  width: 150px; /* Fixed width for each card */
-  background-color: var(--card-bg);
-  border-radius: var(--border-radius);
-  padding: 1rem;
-  text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+  /* Favorite Song Card */
+  .music-card {
+    flex: 0 0 auto; /* Prevent flex items from shrinking */
+    width: 150px; /* Fixed width for each card */
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
 
-.favorite-song-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
+  .music-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  }
 
-/* Song Thumbnail */
-.favorite-song-card .song-thumbnail {
-  width: 100px;
-  height: 100px;
-  margin: 0 auto 0.5rem;
-  border-radius: 8px;
-  overflow: hidden;
-}
+  /* Thumbnail */
+  .music-card .thumbnail {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 0.5rem;
+    border-radius: 8px;
+    overflow: hidden;
+  }
 
-.favorite-song-card .song-thumbnail img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+  .music-card .thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 
-/* Song Details */
-.favorite-song-card .song-details {
-  margin-bottom: 0.5rem;
-}
+  /* Item Details */
+  .music-card .item-details {
+    margin-bottom: 0.5rem;
+  }
 
-.favorite-song-card .song-title {
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin-bottom: 0.2rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  .music-card .item-title {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-.favorite-song-card .song-artist {
-  font-size: 0.8rem;
-  color: #aaa;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  .music-card .item-subtitle {
+    font-size: 0.8rem;
+    color: #aaa;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-/* Song Actions */
-.favorite-song-card .song-actions {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-}
+  /* Item Actions */
+  .music-card .item-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
 
-.favorite-song-card .song-actions i {
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
+  .music-card .item-actions i {
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
 
-.favorite-song-card .song-actions i:hover {
-  color: var(--primary-color);
-}
+  .music-card .item-actions i:hover {
+    color: var(--primary-color);
+  }
+
+  .music-card .btn-xs {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
   
   /* Responsive Adjustments */
   @media (max-width: 992px) {
@@ -315,14 +322,14 @@
             </a>
           </div>
 
-<!-- user_profile_details -->
-<div class="col-md-6">
-  <h2 class="mb-2">{{ user.username }} <i class="bi bi-x-circle unverified-badge"></i></h2>
-  <p class="text-muted mb-3">Unverified User</p>
-  <p class="mb-3"><strong>First Name:</strong> {{ user.first_name }}</p>
-  <p class="mb-3"><strong>Last Name:</strong> {{ user.last_name }}</p>
-  <p class="mb-3"><strong>Bio:</strong> {{ user.profile.bio|default:"No bio available" }}</p>
-</div>
+          <!-- User Profile Details -->
+          <div class="col-md-6">
+            <h2 class="mb-2">{{ user.username }} <i class="bi bi-x-circle unverified-badge"></i></h2>
+            <p class="text-muted mb-3">Unverified User</p>
+            <p class="mb-3"><strong>First Name:</strong> {{ user.first_name }}</p>
+            <p class="mb-3"><strong>Last Name:</strong> {{ user.last_name }}</p>
+            <p class="mb-3"><strong>Bio:</strong> {{ user.profile.bio|default:"No bio available" }}</p>
+          </div>
 
           <!-- Action Buttons -->
           <div class="col-md-3 text-end">
@@ -356,89 +363,87 @@
     {% endif %}
 
 
-    <!-- User Features Section -->
-    <div class="row mt-4 mb-4">
-      <div class="col-lg-3 col-md-6 mb-4">
-        <div class="feature-card p-4">
-          <div class="feature-icon mx-auto">
-            <i class="bi bi-collection-play fs-3"></i>
+     <!-- User Features Section -->
+     <div class="row mt-4 mb-4">
+      <!-- My Playlists Card -->
+      <div class="col-lg-4 col-md-6 mb-4">
+        <div class="feature-card p-4 h-100">
+          <div class="feature-icon mx-auto mb-2">
+            <i class="bi bi-music-note-list fs-1 text-primary"></i>
           </div>
           <h5 class="feature-title text-center">My Playlists</h5>
-          <p class="feature-text text-center">Create and manage your custom playlists</p>
-          <div class="text-center mt-3">
-            <button class="btn btn-outline-primary btn-sm rounded-pill">
-              <i class="bi bi-plus-lg me-1"></i>Create New
-            </button>
+          <p class="feature-text text-center">Your custom playlists</p>          
+          <div class="horizontal-grid-container mt-3">
+            <div class="horizontal-grid">
+              {% for playlist in request.user.playlists.all %}
+                <div class="music-card">
+                  <div class="thumbnail">
+                    {% if playlist.songs.first and playlist.songs.first.cover_image %}
+                      <img src="{{ playlist.songs.first.cover_image.url }}" alt="{{ playlist.name }}">
+                    {% else %}
+                      <img src="https://via.placeholder.com/100" alt="Playlist thumbnail">
+                    {% endif %}
+                  </div>
+                  <div class="item-details">
+                    <h6 class="item-title">{{ playlist.name }}</h6>
+                    <p class="item-subtitle">{{ playlist.songs.count }} songs</p>
+                  </div>
+                  <div class="item-actions">
+                    <a href="{% url 'playlist_detail' playlist.id %}" class="btn btn-outline-primary btn-xs">
+                      <i class="bi bi-eye me-1"></i>View
+                    </a>
+                    
+                    {% if is_owner %}
+                    <a href="{% url 'delete_playlist' playlist.id %}" class="btn btn-outline-danger btn-xs">
+                      <i class="bi bi-trash3 me-1"></i>Delete
+                    </a>
+                    {% endif %}
+                  </div>
+                </div>
+              {% empty %}
+                <p class="text-muted">No playlists found. Create one to get started!</p>
+              {% endfor %}
+            </div>
           </div>
         </div>
       </div>
-      <div class="col-lg-3 col-md-6 mb-4">
-        <div class="feature-card p-4">
-          <div class="feature-icon mx-auto">
-            <i class="bi bi-heart fs-3"></i>
+    
+      <!-- Favorites Card -->
+      <div class="col-lg-4 col-md-6 mb-4">
+        <div class="feature-card p-4 h-100">
+          <div class="feature-icon mx-auto mb-2">
+            <i class="bi bi-heart-fill fs-1 text-danger"></i>
           </div>
-          <div class="section mt-4">
-            <h5 class="feature-title text-center">Favorites</h5>
-            <p class="feature-text text-center">Access your liked songs and albums</p>
-            <div class="text-center mt-3">
-              <button class="btn btn-outline-primary btn-sm rounded-pill">
-                <i class="bi bi-music-note-list me-1"></i>View All
-              </button>
-            </div>
+          <h5 class="feature-title text-center">Favorites</h5>
+          <p class="feature-text text-center">Access your liked songs</p>
           
-            <!-- Horizontal Grid Stack for Favorite Songs -->
-            <div class="favorites-grid-container">
-              <div class="favorites-grid">
-                {% for favorite in request.user.favorites.all %}
-                <div class="favorite-song-card">
-                  <div class="song-thumbnail">
+          <div class="horizontal-grid-container mt-3">
+            <div class="horizontal-grid">
+              {% for favorite in request.user.favorites.all %}
+                <div class="music-card" 
+                    data-song-id="{{ favorite.song.id }}"
+                    onclick="openSongDetailsModal('{{ favorite.song.id }}')">
+                  <div class="thumbnail">
                     {% if favorite.song.cover_image %}
                       <img src="{{ favorite.song.cover_image.url }}" alt="{{ favorite.song.title }}">
                     {% else %}
                       <img src="https://via.placeholder.com/100" alt="Song thumbnail">
                     {% endif %}
                   </div>
-                  <div class="song-details">
-                    <h6 class="song-title">{{ favorite.song.title }}</h6>
-                    <p class="song-artist">{{ favorite.song.artist.artist_name }}</p>
+                  <div class="item-details">
+                    <h6 class="item-title">{{ favorite.song.title }}</h6>
+                    <p class="item-subtitle">{{ favorite.song.artist.artist_name }}</p>
                   </div>
-                  <div class="song-actions">
+                  <div class="item-actions">
                     <i class="bi bi-heart text-danger" 
-                       data-song-id="{{ favorite.song.id }}" 
-                       onclick="toggleFavorite(this)"></i>
+                      data-song-id="{{ favorite.song.id }}" 
+                      onclick="toggleFavorite(event, this)"></i>
                   </div>
                 </div>
-                {% endfor %}
-              </div>
+              {% empty %}
+                <p class="text-muted">No favorite songs found. Add some to your favorites!</p>
+              {% endfor %}
             </div>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-3 col-md-6 mb-4">
-        <div class="feature-card p-4">
-          <div class="feature-icon mx-auto">
-            <i class="bi bi-clock-history fs-3"></i>
-          </div>
-          <h5 class="feature-title text-center">Recently Played</h5>
-          <p class="feature-text text-center">See your listening history</p>
-          <div class="text-center mt-3">
-            <button class="btn btn-outline-primary btn-sm rounded-pill">
-              <i class="bi bi-arrow-clockwise me-1"></i>View History
-            </button>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-3 col-md-6 mb-4">
-        <div class="feature-card p-4">
-          <div class="feature-icon mx-auto">
-            <i class="bi bi-gear fs-3"></i>
-          </div>
-          <h5 class="feature-title text-center">Settings</h5>
-          <p class="feature-text text-center">Customize your listening experience</p>
-          <div class="text-center mt-3">
-            <button class="btn btn-outline-primary btn-sm rounded-pill">
-              <i class="bi bi-sliders me-1"></i>Preferences
-            </button>
           </div>
         </div>
       </div>
@@ -490,15 +495,5 @@
       });
     });
 
-    // Feature card button functionality
-    const featureButtons = document.querySelectorAll('.feature-card .btn');
-    featureButtons.forEach(button => {
-      button.addEventListener('click', (e) => {
-        e.preventDefault();
-        const featureTitle = e.target.closest('.feature-card').querySelector('.feature-title').textContent;
-        alert(`${featureTitle} feature will be available soon!`);
-      });
-    });
-  });
 </script>
 {% endblock %}

@@ -316,13 +316,7 @@
     font-size: 0.9rem;
     color: #aaa;
   }
-  
-  /* Analytics grid */
-  .analytics-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 20px;
-  }
+
 
   /* Feature Cards */
   .feature-card {
@@ -375,28 +369,60 @@
     margin-top: 20px;
   }
 
-  /* Horizontal Grid Container */
-  .favorites-grid-container {
-    padding: 20px;
-  }
+    .playlists-grid, .favorites-grid {
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
   
-  .favorites-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px;
-  }
+    .playlist-card, .favorite-song-card {
+      flex: 0 0 auto;
+      width: 160px;
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+      text-align: center;
+      background: #2c2e35;
+    }
   
-  .favorite-song-card {
-    background-color: #2d2d34; /* Dark background */
-    border-radius: 12px;
-    padding: 15px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
+    .playlist-thumbnail img, .song-thumbnail img {
+      width: 100%;
+      height: auto;
+      border-radius: 0.5rem;
+    }
   
-  .favorite-song-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  }
+    .playlist-title, .song-title {
+      font-size: 0.9rem;
+      margin: 0.4rem 0 0.2rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  
+    .playlist-song-count, .song-artist {
+      font-size: 0.8rem;
+      color: #666;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  
+    .playlist-actions, .song-actions {
+      display: flex;
+      justify-content: center;
+      gap: 0.3rem;
+      margin-top: 0.4rem;
+    }
+  
+    /* Optional: hide scrollbar for cleaner look */
+    .playlists-grid::-webkit-scrollbar,
+    .favorites-grid::-webkit-scrollbar {
+      display: none;
+    }
+    .playlists-grid, .favorites-grid {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }  
   
   .song-thumbnail img {
     width: 100%;
@@ -748,13 +774,13 @@
                   <img src="https://via.placeholder.com/200" class="profile-image" alt="Profile Image">
                 {% endif %}
               </div>
-              <!-- Display "Change Photo" button only for the artist -->
               {% if is_owner %}
                 <a href="{% url 'upload_profile_picture' %}" class="btn btn-outline-primary rounded-pill px-4 mb-3">
                   <i class="bi bi-camera me-2"></i>Change photo
                 </a>
               {% endif %}
             </div>
+            
             <div class="col-md-6">
               <h2 class="mb-2">{{ artist_profile.artist_name }}
                 {% if artist_profile.is_verified %}
@@ -767,89 +793,29 @@
               <p class="mb-3"><strong>Genre:</strong> {{ artist_profile.genre }}</p>
               <p class="mb-3"><strong>Bio:</strong> {{ artist_profile.bio }}</p>
             </div>
-
-        <!-- Inside the profile-card div -->
-        <div class="col-md-3 text-end">
-          {% if is_owner %}
-            <!-- Artist-specific buttons -->
-            <a href="{% url 'edit_artist_profile' %}" class="btn btn-outline-secondary rounded-pill mb-3 w-100">
-              <i class="bi bi-pencil me-2"></i>Edit profile
-            </a>
-            <button class="btn btn-outline-secondary rounded-pill mb-3 w-100" data-bs-toggle="modal" data-bs-target="#uploadSongModal">
-              <i class="bi bi-upload me-2"></i>Upload music
-            </button>
-            {% if is_owner %}
-            <div class="text-end">
-              <a href="{% url 'create_album' %}" class="btn btn-outline-secondary rounded-pill mb-3 w-100">
-                <i class="bi bi-upload me-2"></i>Create Album
-              </a>
-            </div>
-            {% endif %}
-            {% if is_owner %}
-            <a href="{% url 'revenue_details' %}" class="btn btn-outline-secondary rounded-pill mb-3 w-100">
-                <i class="bi bi-cash-coin me-2"></i>View Revenue
-            </a>
-            {% endif %}            
-          {% else %}
-            <!-- Follow button for normal users -->
-            {% if not is_owner %}
-              <div class="text-end">
-                <button id="followButton" class="btn btn-primary rounded-pill mb-3 w-100" data-artist-id="{{ artist_profile.id }}">
-                  {% if is_following %}
-                    <i class="bi bi-person-dash me-2"></i>Unfollow
-                  {% else %}
-                    <i class="bi bi-person-plus me-2"></i>Follow
-                  {% endif %}
+    
+            <div class="col-md-3 text-end">
+              {% if is_owner %}
+                <!-- Artist controls -->
+                <a href="{% url 'edit_artist_profile' %}" class="btn btn-outline-secondary rounded-pill mb-3 w-100">
+                  <i class="bi bi-pencil me-2"></i>Edit profile
+                </a>
+                <button class="btn btn-outline-secondary rounded-pill mb-3 w-100" data-bs-toggle="modal" data-bs-target="#uploadSongModal">
+                  <i class="bi bi-upload me-2"></i>Upload music
                 </button>
-              </div>
-            {% endif %}
-          {% endif %}
-        </div>
-
-            <!-- artist_profile.html -->
-
+                <a href="{% url 'create_album' %}" class="btn btn-outline-secondary rounded-pill mb-3 w-100">
+                  <i class="bi bi-upload me-2"></i>Create Album
+                </a>
+                <a href="{% url 'revenue_details' %}" class="btn btn-outline-secondary rounded-pill mb-3 w-100">
+                  <i class="bi bi-cash-coin me-2"></i>View Revenue
+                </a>
+              {% endif %}
+            </div>
           </div>
         </div>
       </div>
     </div>
-
-{% if is_owner %}
-<!-- Analytics Section -->
-<div class="section mt-4">
-  <h3 class="section-title">Analytics</h3>
-  <div class="analytics-container">
-    <div class="analytics-card p-4">
-      <div class="analytics-icon mx-auto">
-        <i class="bi bi-headphones fs-3"></i>
-      </div>
-      <h5 class="analytics-title text-center">Monthly Listeners</h5>
-      <div class="analytics-value text-center" data-monthly-listeners>{{ monthly_listeners|default:"0" }}</div>
-    </div>
-    <div class="analytics-card p-4">
-      <div class="analytics-icon mx-auto">
-        <i class="bi bi-play-circle fs-3"></i>
-      </div>
-      <h5 class="analytics-title text-center">Total Plays</h5>
-      <div class="analytics-value text-center" data-total-plays>{{ total_plays|default:"0" }}</div>
-    </div>
-    <div class="analytics-card p-4">
-      <div class="analytics-icon mx-auto">
-        <i class="bi bi-people fs-3"></i>
-      </div>
-      <h5 class="analytics-title text-center">Followers</h5>
-      <div class="analytics-value text-center" data-followers>{{ followers|default:"0" }}</div>
-    </div>
-    <div class="analytics-card p-4">
-      <div class="analytics-icon mx-auto">
-        <i class="bi bi-cash fs-3"></i>
-      </div>
-      <h5 class="analytics-title text-center">Total Revenue</h5>
-      <div class="analytics-value text-center" data-total-revenue>${{ total_revenue|default:"0" }}</div>
-    </div>
-  </div>
-</div>
-{% endif %}
-
+    
 {% if is_owner %}
 <!-- Merchandise and Events Section (Artist View) -->
 <div class="section mt-4">
@@ -981,7 +947,7 @@
                 <div class="card-body">
                   <h5 class="card-title">{{ song.title }}</h5>
                   <p class="card-text">{{ song.artist.artist_name }}</p>
-                  <audio controls>
+                  <audio controls class="song-audio-player">
                     <source src="{{ song.audio_file.url }}" type="audio/mpeg">
                     Your browser does not support the audio element.
                   </audio>
@@ -1035,19 +1001,15 @@
 
     <!-- User Features Section -->
     <div class="row mt-4 mb-4">
-      <div class="col-lg-3 col-md-6 mb-4">
-        <div class="feature-card p-4">
-          <div class="feature-icon mx-auto">
-            <i class="bi bi-collection-play fs-3"></i>
+      <!-- My Playlists Card - Updated width -->
+      <div class="col-lg-4 col-md-6 mb-4">  <!-- Changed from col-lg-3 to col-lg-4 -->
+        <div class="feature-card p-4 h-100">  <!-- Added h-100 for consistent height -->
+          <div class="feature-icon mx-auto mb-2">
+            <i class="bi bi-music-note-list fs-1 text-primary"></i>
           </div>
           <h5 class="feature-title text-center">My Playlists</h5>
-          <p class="feature-text text-center">Create and manage your custom playlists</p>
-          <div class="text-center mt-3">
-            <button class="btn btn-outline-primary btn-sm rounded-pill">
-              <i class="bi bi-plus-lg me-1"></i>Create New
-            </button>
-          </div>
-          <div class="playlists-grid-container">
+          <p class="feature-text text-center">Create and manage your custom playlists</p>          
+          <div class="playlists-grid-container mt-3">
             <div class="playlists-grid">
               {% for playlist in request.user.playlists.all %}
                 <div class="playlist-card">
@@ -1062,16 +1024,29 @@
                     <h6 class="playlist-title">{{ playlist.name }}</h6>
                     <p class="playlist-song-count">{{ playlist.songs.count }} songs</p>
                   </div>
-                  <div class="playlist-actions">
-                    <a href="{% url 'playlist_detail' playlist.id %}" class="btn btn-sm btn-primary">
-                      <i class="bi bi-play-fill"></i> View
-                    </a>
-                    {% if is_owner %}
-                      <a href="{% url 'delete_playlist' playlist.id %}" class="btn btn-sm btn-danger">
-                        <i class="bi bi-trash"></i> Delete
+                  <div class="playlist-actions d-flex justify-content-center gap-2 mt-2">
+                    <div class="text-center">
+                      <i class="bi bi-eye fs-5 d-block text-primary mb-1"></i>
+                      <a href="{% url 'playlist_detail' playlist.id %}" 
+                         class="btn btn-outline-primary btn-xs d-flex align-items-center justify-content-center px-2 py-1" 
+                         style="font-size: 0.75rem;">
+                        View
                       </a>
+                    </div>
+                    
+                    {% if is_owner %}
+                    <div class="text-center">
+                      <i class="bi bi-trash3 fs-5 d-block text-danger mb-1"></i>
+                      <a href="{% url 'delete_playlist' playlist.id %}" 
+                         class="btn btn-outline-danger btn-xs d-flex align-items-center justify-content-center px-2 py-1" 
+                         style="font-size: 0.75rem;">
+                        Delete
+                      </a>
+                    </div>
                     {% endif %}
                   </div>
+                  
+                                
                 </div>
               {% empty %}
                 <p class="text-muted">No playlists found. Create one to get started!</p>
@@ -1080,79 +1055,50 @@
           </div>
         </div>
       </div>
-      <div class="col-lg-3 col-md-6 mb-4">
-        <div class="feature-card p-4">
-          <div class="feature-icon mx-auto">
-            <i class="bi bi-heart fs-3"></i>
+    
+      <!-- Favorites Card - Updated width -->
+      {% if is_owner %}
+      <div class="col-lg-4 col-md-6 mb-4">  <!-- Changed from col-lg-3 to col-lg-4 -->
+        <div class="feature-card p-4 h-100">  <!-- Added h-100 for consistent height -->
+          <div class="feature-icon mx-auto mb-2">
+            <i class="bi bi-heart-fill fs-1 text-danger"></i>
           </div>
-          <div class="section mt-4">
-            <h5 class="feature-title text-center">Favorites</h5>
-            <p class="feature-text text-center">Access your liked songs and albums</p>
-            <div class="text-center mt-3">
-              <button class="btn btn-outline-primary btn-sm rounded-pill">
-                <i class="bi bi-music-note-list me-1"></i>View All
-              </button>
-            </div>
-            <!-- Horizontal Grid Stack for Favorite Songs -->
-            <div class="favorites-grid-container">
-              <div class="favorites-grid">
-                {% for favorite in request.user.favorites.all %}
-                  <div class="favorite-song-card" 
-                      data-song-id="{{ favorite.song.id }}"
-                      onclick="openSongDetailsModal('{{ favorite.song.id }}')">
-                    <div class="song-thumbnail">
-                      {% if favorite.song.cover_image %}
-                        <img src="{{ favorite.song.cover_image.url }}" alt="{{ favorite.song.title }}">
-                      {% else %}
-                        <img src="https://via.placeholder.com/100" alt="Song thumbnail">
-                      {% endif %}
-                    </div>
-                    <div class="song-details">
-                      <h6 class="song-title">{{ favorite.song.title }}</h6>
-                      <p class="song-artist">{{ favorite.song.artist.artist_name }}</p>
-                    </div>
-                    <div class="song-actions">
-                      <i class="bi bi-heart text-danger" 
-                        data-song-id="{{ favorite.song.id }}" 
-                        onclick="toggleFavorite(event, this)"></i>
-                    </div>
+          <h5 class="feature-title text-center">Favorites</h5>
+          <p class="feature-text text-center">Access your liked songs</p>
+          
+          <div class="favorites-grid-container mt-3">
+            <div class="favorites-grid">
+              {% for favorite in request.user.favorites.all %}
+                <div class="favorite-song-card" 
+                    data-song-id="{{ favorite.song.id }}"
+                    onclick="openSongDetailsModal('{{ favorite.song.id }}')">
+                  <div class="song-thumbnail">
+                    {% if favorite.song.cover_image %}
+                      <img src="{{ favorite.song.cover_image.url }}" alt="{{ favorite.song.title }}">
+                    {% else %}
+                      <img src="https://via.placeholder.com/100" alt="Song thumbnail">
+                    {% endif %}
                   </div>
-                {% empty %}
-                  <p class="text-muted">No favorite songs found. Add some to your favorites!</p>
-                {% endfor %}
-              </div>
+                  <div class="song-details">
+                    <h6 class="song-title">{{ favorite.song.title }}</h6>
+                    <p class="song-artist">{{ favorite.song.artist.artist_name }}</p>
+                  </div>
+                  <div class="song-actions">
+                    <i class="bi bi-heart text-danger" 
+                      data-song-id="{{ favorite.song.id }}" 
+                      onclick="toggleFavorite(event, this)"></i>
+                  </div>
+                </div>
+              {% empty %}
+                <p class="text-muted">No favorite songs found. Add some to your favorites!</p>
+              {% endfor %}
             </div>
           </div>
         </div>
       </div>
-      <div class="col-lg-3 col-md-6 mb-4">
-        <div class="feature-card p-4">
-          <div class="feature-icon mx-auto">
-            <i class="bi bi-clock-history fs-3"></i>
-          </div>
-          <h5 class="feature-title text-center">Recently Played</h5>
-          <p class="feature-text text-center">See your listening history</p>
-          <div class="text-center mt-3">
-            <button class="btn btn-outline-primary btn-sm rounded-pill">
-              <i class="bi bi-arrow-clockwise me-1"></i>View History
-            </button>
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-3 col-md-6 mb-4">
-        <div class="feature-card p-4">
-          <div class="feature-icon mx-auto">
-            <i class="bi bi-gear fs-3"></i>
-          </div>
-          <h5 class="feature-title text-center">Settings</h5>
-          <p class="feature-text text-center">Customize your listening experience</p>
-          <div class="text-center mt-3">
-            <button class="btn btn-outline-primary btn-sm rounded-pill">
-              <i class="bi bi-sliders me-1"></i>Preferences
-            </button>
-          </div>
-        </div>
-      </div>
+      {% endif %}
+    
+      <!-- Recently Played Card - Removed to make space -->
     </div>
   </div>
 </div>
@@ -1173,32 +1119,33 @@
 {% endif %}
   
   <div class="row">
-    <!-- QR Code Display Section -->
-    <div class="col-md-6 mb-4">
-      <div class="card support-card border-0">
-        <div class="card-body text-center">
-          {% if artist_profile.support_qr_code and artist_profile.support_qr_code.url %}
-            <h4 class="mb-4">Scan to Support</h4>
-            <div class="qr-code-container mb-3 mx-auto">
-              <img src="{{ artist_profile.support_qr_code.url }}" 
-                   alt="Support QR Code" 
-                   class="img-fluid qr-code-image"
-                   onerror="this.style.display='none'; document.getElementById('qr-error').style.display='block'">
-            </div>
-            <p class="text-muted mb-3">Scan this QR code with your payment app to support {{ artist_profile.artist_name }}</p>
-            <div id="qr-error" style="display:none" class="alert alert-warning">
-              QR code image failed to load. Please try uploading again.
-            </div>
-          {% else %}
-            <div class="no-qr-placeholder py-4">
-              <i class="bi bi-qr-code fs-1 text-muted mb-3"></i>
-              <h5 class="mb-3">No QR Code Added</h5>
-              <p class="text-muted">The artist hasn't set up a support QR code yet</p>
-            </div>
-          {% endif %}
+<!-- QR Code Display Section -->
+<div class="col-md-6 mb-4">
+  <div class="card support-card border-0">
+    <div class="card-body text-center">
+      {% if artist_profile.support_qr_code %}
+        <h4 class="mb-4">Scan to Support</h4>
+        <div class="qr-code-container mb-3 mx-auto">
+          <img src="{{ artist_profile.support_qr_code.url }}" 
+               alt="Support QR Code" 
+               class="img-fluid qr-code-image"
+               style="max-width: 250px; max-height: 250px;"
+               onerror="this.onerror=null;this.style.display='none';document.getElementById('qr-error').style.display='block'">
         </div>
-      </div>
+        <p class="text-muted mb-3">Scan this QR code with your payment app to support {{ artist_profile.artist_name }}</p>
+        <div id="qr-error" style="display:none" class="alert alert-warning">
+          QR code image failed to load. Please try uploading again.
+        </div>
+      {% else %}
+        <div class="no-qr-placeholder py-4">
+          <i class="bi bi-qr-code fs-1 text-muted mb-3"></i>
+          <h5 class="mb-3">No QR Code Added</h5>
+          <p class="text-muted">The artist hasn't set up a support QR code yet</p>
+        </div>
+      {% endif %}
     </div>
+  </div>
+</div>
 
     <!-- Support Information Section -->
     <div class="col-md-6 mb-4">
@@ -1372,10 +1319,22 @@
           
           <div class="mb-3">
             <label for="{{ form.album.id_for_label }}" class="form-label">Album (Optional)</label>
-            {{ form.album }}
+            <select name="{{ form.album.name }}" id="{{ form.album.id_for_label }}" class="form-select">
+              <option value="">---------</option>
+              {% for album in form.album.field.queryset %}
+                <option value="{{ album.id }}" {% if form.album.value == album.id %}selected{% endif %}>
+                  {{ album.title }}
+                </option>
+              {% endfor %}
+            </select>            
             {% if form.album.errors %}
               <div class="text-danger">{{ form.album.errors }}</div>
             {% endif %}
+            <div class="form-text">
+              <a href="{% url 'create_album' %}" class="text-decoration-none">
+                <i class="bi bi-plus-circle"></i> Create new album
+              </a>
+            </div>
           </div>
           
           <div class="mb-3">
@@ -1534,56 +1493,27 @@
       })
       .catch(error => console.error('Error:', error));
   }
-
-
-    document.getElementById('followButton').addEventListener('click', function () {
-      const artistId = this.getAttribute('data-artist-id');
-      const followButton = this;
-  
-      fetch(`/follow-artist/${artistId}/`, {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': '{{ csrf_token }}',
-          'Content-Type': 'application/json',
-        },
-        credentials: 'same-origin',
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            // Toggle button text and icon
-            if (data.is_following) {
-              followButton.innerHTML = `<i class="bi bi-person-dash me-2"></i>Unfollow`;
-              followButton.classList.remove('btn-outline-primary');
-              followButton.classList.add('btn-primary');
-            } else {
-              followButton.innerHTML = `<i class="bi bi-person-plus me-2"></i>Follow`;
-              followButton.classList.remove('btn-primary');
-              followButton.classList.add('btn-outline-primary');
-            }
-  
-            // Update all analytics fields
-            const followersCountElement = document.querySelector('.analytics-value[data-followers]');
-            const monthlyListenersElement = document.querySelector('.analytics-value[data-monthly-listeners]');
-            const totalPlaysElement = document.querySelector('.analytics-value[data-total-plays]');
-            const totalRevenueElement = document.querySelector('.analytics-value[data-total-revenue]');
-  
-            if (followersCountElement) {
-              followersCountElement.textContent = data.followers_count;
-            }
-            if (monthlyListenersElement) {
-              monthlyListenersElement.textContent = data.monthly_listeners;
-            }
-            if (totalPlaysElement) {
-              totalPlaysElement.textContent = data.total_plays;
-            }
-            if (totalRevenueElement) {
-              totalRevenueElement.textContent = `$${data.total_revenue}`;
-            }
-          }
-        })
-        .catch(error => console.error('Error:', error));
-    });
 </script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get all audio players on the page
+    const audioPlayers = document.querySelectorAll('.song-audio-player');
+    
+    // Add event listener to each player
+    audioPlayers.forEach(player => {
+      player.addEventListener('play', function() {
+        // When one player starts playing, pause all others
+        audioPlayers.forEach(otherPlayer => {
+          if (otherPlayer !== player && !otherPlayer.paused) {
+            otherPlayer.pause();
+            // Optional: reset the playback position
+            otherPlayer.currentTime = 0;
+          }
+        });
+      });
+    });
+  });
+  </script>
 {% endblock %}
 </body>

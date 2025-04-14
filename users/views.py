@@ -177,35 +177,52 @@ def request_artist_status(request):
         user_profile = request.user.profile
     except UserProfile.DoesNotExist:
         messages.error(request, "User profile does not exist.")
-        return redirect('home')  # Redirect to a safe page
+        return redirect('home')
 
-    # Get or create the artist profile
+    # Get or create the artist profile with all necessary defaults
     artist_profile, created = ArtistProfile.objects.get_or_create(
         user_profile=user_profile,
-        defaults={'is_verified': False}
+        defaults={
+            'is_verified': False,
+            'artist_name': request.user.username,  # Default value
+        }
     )
 
-    # Check if the artist is already verified
+    # Check verification status
     if artist_profile.is_verified:
         messages.info(request, "You are already a verified artist.")
-        return redirect('artist_profile')  # Redirect to the artist profile page
-
-    # Check if the artist profile already exists (pending verification)
-    elif not created:
-        messages.info(request, "Your artist verification is pending approval.")
-        return redirect('user_profile')  # Redirect to the user profile page
+        return redirect('artist_profile')
 
     # Handle form submission
     if request.method == 'POST':
         form = ArtistVerificationForm(request.POST, request.FILES, instance=artist_profile)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Your artist verification request has been submitted.")
-            return redirect('user_profile')  # Redirect to the user profile page
+            # Save the form data to the artist profile
+            artist_profile = form.save(commit=False)
+            
+            # Ensure these fields are set correctly
+            artist_profile.user_profile = user_profile
+            artist_profile.is_verified = False  # Still needs admin approval
+            artist_profile.save()
+            
+            # Save many-to-many relationships if any
+            form.save_m2m()
+            
+            # Add timestamp for when the request was made
+            if not artist_profile.created_at:
+                artist_profile.created_at = timezone.now()
+                artist_profile.save()
+            
+            messages.success(request, "Your verification request has been submitted for review.")
+            return redirect('user_profile')
     else:
         form = ArtistVerificationForm(instance=artist_profile)
 
-    return render(request, 'users/request_artist_status.html', {'form': form})
+    context = {
+        'form': form,
+        'existing_request': not created,
+    }
+    return render(request, 'users/request_artist_status.html', context)
 
 
 @staff_member_required
@@ -214,7 +231,7 @@ def verify_artist(request, artist_profile_id):
     artist_profile = get_object_or_404(ArtistProfile, id=artist_profile_id)
     
     if request.method == 'POST':
-        # Verify the artist
+        # Verify the artist 
         artist_profile.is_verified = True
         artist_profile.save()
 
@@ -361,13 +378,10 @@ def toggle_favorite(request, song_id):
 # CRUD Operations for Songs
 @login_required
 def upload_song(request):
-    if not hasattr(request.user, 'profile') or request.user.profile.user_type != 'artist':
+    try:
+        artist_profile = request.user.profile.artist_profile
+    except AttributeError:
         messages.error(request, "You must be a verified artist to upload songs.")
-        return redirect('home')
-
-    artist_profile = request.user.profile.artist_profile
-    if not hasattr(artist_profile, 'user_profile'):
-        messages.error(request, "Artist profile is incomplete.")
         return redirect('home')
 
     if request.method == 'POST':
@@ -380,56 +394,68 @@ def upload_song(request):
                 song.album.update_total_tracks()
                 song.album.update_duration()
             messages.success(request, "Song uploaded successfully!")
-            # Fallback to home if artist_id is missing
-            if hasattr(artist_profile.user_profile.user, 'id'):
-                return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
-            else:
-                messages.error(request, "Invalid artist profile.")
-                return redirect('home')
-    
+            return redirect('artist_profile', artist_id=request.user.id)
     else:
         form = SongUploadForm(artist=artist_profile)
+
     return render(request, 'users/upload_song.html', {'form': form})
+
 
 @login_required
 def edit_song(request, song_id):
     # Fetch the song to edit
     song = get_object_or_404(Song, id=song_id)
 
+    # Get the artist profile of the user
+    try:
+        artist_profile = request.user.profile.artist_profile  # Or artist_profile() if it's a method
+    except AttributeError:
+        messages.error(request, "Artist profile not found.")
+        return redirect('home')
+
     # Ensure the logged-in user is the owner of the song
-    if song.artist != request.user.profile.artist_profile:
+    if song.artist != artist_profile:
         messages.error(request, "You do not have permission to edit this song.")
-        return redirect('artist_profile')
+        return redirect('artist_profile', artist_id=request.user.id)
 
     if request.method == 'POST':
-        form = SongUploadForm(request.POST, request.FILES, instance=song)
+        form = SongUploadForm(request.POST, request.FILES, instance=song, artist=artist_profile)
         if form.is_valid():
             form.save()
             messages.success(request, "Song updated successfully!")
-            return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
+            return redirect('artist_profile', artist_id=request.user.id)
         else:
             messages.error(request, "Error updating song. Please check the form.")
     else:
-        form = SongUploadForm(instance=song)
+        form = SongUploadForm(instance=song, artist=artist_profile)
 
     return render(request, 'users/edit_song.html', {'form': form, 'song': song})
+
 
 @login_required
 def delete_song(request, song_id):
     # Fetch the song to delete
     song = get_object_or_404(Song, id=song_id)
 
+    # Safely get the artist profile
+    try:
+        artist_profile = request.user.profile.artist_profile  # or call it if it's a method
+    except AttributeError:
+        messages.error(request, "Artist profile not found.")
+        return redirect('home')
+
     # Ensure the logged-in user is the owner of the song
-    if song.artist != request.user.profile.artist_profile:
+    if song.artist != artist_profile:
         messages.error(request, "You do not have permission to delete this song.")
-        return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
+        return redirect('artist_profile', artist_id=request.user.id)
 
     if request.method == 'POST':
         song.delete()
         messages.success(request, "Song deleted successfully!")
-        return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
+        return redirect('artist_profile', artist_id=request.user.id)
 
     return render(request, 'users/confirm_delete_song.html', {'song': song})
+
 
 def song_list(request):
     songs = Song.objects.filter(is_public=True).select_related('artist')
@@ -446,37 +472,97 @@ def get_songs(request):
 
 #CRUD Operations for Playlists
 
+from django.contrib import messages
+from .models import Playlist, Song  # Make sure these are imported
+import json
+
 def create_playlist(request):
+    # Check authentication
+    if not request.user.is_authenticated:
+        messages.error(request, 'You need to login to create a playlist.')
+        return redirect('login')
+
+    # Initialize variables
+    songs = Song.objects.filter(is_public=True)
+    messages_json = []
+
     if request.method == 'POST':
         form = PlaylistForm(request.POST)
+
+        # Check playlist limit for basic users
+        try:
+            user_profile = request.user.profile
+            if user_profile.user_type == 'normal':
+                playlist_count = Playlist.objects.filter(user=request.user).count()
+                if playlist_count >= 2:
+                    messages.error(request, 'Basic users can only create up to 2 playlists. Upgrade to premium to create more.')
+                    # Prepare messages for JSON response
+                    for message in messages.get_messages(request):
+                        messages_json.append({
+                            'message': str(message),
+                            'tags': message.tags
+                        })
+                    return render(request, 'users/create_playlist.html', {
+                        'form': form,
+                        'songs': songs,
+                        'messages_json': json.dumps(messages_json)
+                    })
+        except AttributeError:
+            raise PermissionDenied("User profile not found")
+
         if form.is_valid():
-            # Create the playlist
-            playlist = form.save(commit=False)
-            playlist.user = request.user  # Set the playlist owner
-            playlist.save()
+            try:
+                # Create the playlist
+                playlist = form.save(commit=False)
+                playlist.user = request.user
+                playlist.save()
 
-            # Add selected songs to the playlist
-            song_ids = request.POST.getlist('songs')  # Get selected song IDs
-            for song_id in song_ids:
-                try:
-                    song = Song.objects.get(id=song_id, is_public=True)  # Ensure the song is public
-                    playlist.songs.add(song)
-                except Song.DoesNotExist:
-                    messages.warning(request, f'Song with ID {song_id} does not exist or is not public.')
+                # Add selected songs
+                song_ids = request.POST.getlist('songs')
+                added_songs = 0
+                missing_songs = []
 
-            messages.success(request, 'Playlist created successfully!')
-            return redirect('playlist_detail', playlist_id=playlist.id)
+                for song_id in song_ids:
+                    try:
+                        song = Song.objects.get(id=song_id, is_public=True)
+                        playlist.songs.add(song)
+                        added_songs += 1
+                    except Song.DoesNotExist:
+                        missing_songs.append(song_id)
+
+                # Add messages based on song additions
+                if missing_songs:
+                    messages.warning(request, f"{len(missing_songs)} songs were not added (invalid or private).")
+                if added_songs == 0:
+                    messages.warning(request, "No songs were added to your playlist.")
+                
+                messages.success(request, f'Playlist "{playlist.name}" created successfully!')
+                return redirect('playlist_detail', playlist_id=playlist.id)
+
+            except Exception as e:
+                messages.error(request, f'An error occurred: {str(e)}')
         else:
-            messages.error(request, 'Failed to create the playlist. Please check the form.')
+            # Form is invalid - collect specific errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field.capitalize()}: {error}")
+
     else:
         form = PlaylistForm()
 
-    # Fetch all public songs for the form
-    songs = Song.objects.filter(is_public=True)
+    # Prepare messages for JSON response
+    for message in messages.get_messages(request):
+        messages_json.append({
+            'message': str(message),
+            'tags': message.tags
+        })
+
     return render(request, 'users/create_playlist.html', {
         'form': form,
         'songs': songs,
+        'messages_json': json.dumps(messages_json)
     })
+
 
 @login_required
 def edit_playlist(request, playlist_id):
@@ -720,33 +806,7 @@ def delete_album(request, album_id):
     messages.success(request, "Album deleted successfully!")
     return redirect('artist_profile', artist_id=album.artist.user_profile.user.id)
 
-@login_required
-@require_POST
-def follow_artist(request, artist_id):
-    artist_profile = get_object_or_404(ArtistProfile, id=artist_id)
-    user_profile = request.user.profile
-
-    if artist_profile in user_profile.followed_artists.all():
-        user_profile.followed_artists.remove(artist_profile)
-        is_following = False
-    else:
-        user_profile.followed_artists.add(artist_profile)
-        is_following = True
-
-    # Update analytics data
-    followers_count = artist_profile.followers.count()
-    monthly_listeners = artist_profile.monthly_listeners
-    total_plays = artist_profile.total_plays
-    total_revenue = artist_profile.total_revenue
-
-    return JsonResponse({
-        'success': True,
-        'is_following': is_following,
-        'followers_count': followers_count,
-        'monthly_listeners': monthly_listeners,
-        'total_plays': total_plays,
-        'total_revenue': total_revenue,
-    })
+from django.core.exceptions import PermissionDenied
 
 @login_required
 def update_merchandise(request):
@@ -790,14 +850,12 @@ def increment_listens(request, song_id):
 @login_required
 def delete_album_song(request, album_id, song_id):
     try:
-        song = Song.objects.get(id=song_id, album_id=album_id)
+        # Get the song and verify it belongs to the requesting artist
+        song = Song.objects.get(id=song_id, artist=request.user.profile.artist_profile)
         
-        # Verify the requesting user owns this song
-        if song.artist != request.user.profile.artist_profile:
-            return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
-        
-        # Delete the song
-        song.delete()
+        # Remove the song from the album (set album to None)
+        song.album = None
+        song.save()
         
         # Update album stats
         album = Album.objects.get(id=album_id)
@@ -806,12 +864,14 @@ def delete_album_song(request, album_id, song_id):
         
         return JsonResponse({
             'success': True,
-            'message': 'Song deleted successfully',
+            'message': 'Song removed from album successfully',
             'album_id': album_id
         })
         
     except Song.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Song not found'}, status=404)
+        return JsonResponse({'success': False, 'error': 'Song not found or not owned by you'}, status=404)
+    except Album.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Album not found'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
@@ -1104,20 +1164,24 @@ def upload_support_qr(request):
     if request.method == 'POST':
         form = SupportQRForm(request.POST, request.FILES, instance=artist_profile)
         if form.is_valid():
-            # Ensure directory exists
-            os.makedirs(os.path.join(settings.MEDIA_ROOT, 'support_qr_codes'), exist_ok=True)
-            
-            # Save the form
-            form.save()
-            
-            # Verify file was saved
-            if artist_profile.support_qr_code:
-                full_path = os.path.join(settings.MEDIA_ROOT, artist_profile.support_qr_code.name)
-                if os.path.exists(full_path):
+            try:
+                # Delete old QR code if exists
+                if artist_profile.support_qr_code:
+                    artist_profile.support_qr_code.delete()
+                
+                # Save the new QR code
+                artist_profile = form.save()
+                
+                # Verify the file was saved
+                if artist_profile.support_qr_code:
                     messages.success(request, 'QR code uploaded successfully!')
+                    return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
                 else:
-                    messages.error(request, 'File failed to save')
-            return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
+                    messages.error(request, 'Failed to save QR code')
+            except Exception as e:
+                messages.error(request, f'Error uploading QR code: {str(e)}')
+        else:
+            messages.error(request, 'Invalid form data')
     
     return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
 
@@ -1132,4 +1196,4 @@ def remove_support_qr(request):
         artist_profile.save()
         messages.success(request, 'QR code removed!')
     
-    return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)  # Use artist_id
+    return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)

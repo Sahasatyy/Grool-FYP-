@@ -179,9 +179,91 @@ body {
     padding-top: 80px;
     /* Adjusted to match navbar height */
 }
+
+/* Popup Message Styling */
+.message-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: gray;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-width: 400px;
+    width: 90%;
+    display: none;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.message-popup.show {
+    display: block;
+}
+
+.message-popup .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #000000;
+}
+
+.message-popup .close-btn:hover {
+    color: #333;
+}
+
+/* Message type colors */
+.message-popup.success {
+    border-left: 4px solid #28a745;
+}
+
+.message-popup.error {
+    border-left: 4px solid #dc3545;
+}
+
+.message-popup.warning {
+    border-left: 4px solid #ffc107;
+}
+
+.message-popup.info {
+    border-left: 4px solid #17a2b8;
+}
+
+/* Overlay */
+.message-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+}
+
+.message-overlay.show {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, -60%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
     </style>
   </head>
   <body>
+    <!-- Message Popup Container -->
+    <div id="message-popup" class="message-popup">
+        <button class="close-btn" onclick="closeMessage()">&times;</button>
+        <div class="message-content"></div>
+    </div>
+    <div id="message-overlay" class="message-overlay"></div>
+
     {% if not hide_navbar %}
     <header>
       <div class="logo-container">
@@ -236,6 +318,33 @@ body {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
     
+    <script>
+        // Show messages as popup
+        document.addEventListener('DOMContentLoaded', function() {
+            const messages = JSON.parse('{{ messages_json|escapejs }}' || '[]');
+            
+            if (messages.length > 0) {
+                const popup = document.getElementById('message-popup');
+                const overlay = document.getElementById('message-overlay');
+                const messageContent = document.querySelector('.message-content');
+                
+                // Show first message
+                const firstMessage = messages[0];
+                popup.classList.add(firstMessage.tags);
+                messageContent.textContent = firstMessage.message;
+                
+                popup.classList.add('show');
+                overlay.classList.add('show');
+            }
+        });
+
+        function closeMessage() {
+            document.getElementById('message-popup').classList.remove('show');
+            document.getElementById('message-overlay').classList.remove('show');
+        }
+    </script>
+
+
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("logout-btn")?.addEventListener("click", function (event) {

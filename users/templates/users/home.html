@@ -880,6 +880,16 @@ body::-webkit-scrollbar,
         min-width: 120px;
     }
 }
+
+.repeat-btn.active,
+.shuffle-btn.active {
+    color: var(--primary-color);
+}
+
+.repeat-btn.active i,
+.shuffle-btn.active i {
+    color: var(--primary-color);
+}
 </style>
 
 <body>
@@ -983,9 +993,7 @@ body::-webkit-scrollbar,
                     <p class="text-muted">{{ song.artist.artist_name }}</p>
                     <p><strong>Genre:</strong> {{ song.genres.all|join:", " }}</p>
                     <p><strong>Release Date:</strong> {{ song.release_date }}</p>
-                    <p><strong>Duration:</strong> {{ song.duration }}</p>
                     <p><strong>Explicit:</strong> {% if song.is_explicit %}Yes{% else %}No{% endif %}</p>
-                    <p><strong>Total Listens:</strong> <span id="total-listens">{{ song.total_listens }}</span></p>
                     <p><strong>Description:</strong> {{ song.description|default:"No description available." }}</p>
                   </div>
                 </div>
@@ -1202,6 +1210,20 @@ body::-webkit-scrollbar,
       const adAudio = new Audio('/media/ads/30sec_ad.mp3');
       let playStartTime;
       let currentSongId = null;
+
+      // Initialize repeat and shuffle buttons
+    repeatBtn.addEventListener('click', toggleRepeat);
+    shuffleBtn.addEventListener('click', toggleShuffle);
+
+    function toggleRepeat() {
+        isRepeatEnabled = !isRepeatEnabled;
+        repeatBtn.classList.toggle('active', isRepeatEnabled);
+    }
+
+    function toggleShuffle() {
+        isShuffleEnabled = !isShuffleEnabled;
+        shuffleBtn.classList.toggle('active', isShuffleEnabled);
+    }
   
       // Update song information
       function updateSongInfo(songElement) {
@@ -1231,24 +1253,24 @@ body::-webkit-scrollbar,
   
       // Play a specific song
       function playSong(songElement) {
-          if (isPlayingAd) return;
-          
-          // Reset previous song styling
-          songItems.forEach(item => item.classList.remove('active'));
-          songElement.classList.add('active');
-  
-          // Update audio source and play
-          audioPlayer.src = songElement.dataset.audioUrl;
-          audioPlayer.play();
-  
-          // Update UI
-          updateSongInfo(songElement);
-          playPauseBtn.querySelector('i').classList.replace('bi-play-fill', 'bi-pause-fill');
-          isPlaying = true;
-          
-          // Track playback start
-          playStartTime = Date.now();
-      }
+        if (isPlayingAd) return;
+        
+        // Reset previous song styling
+        songItems.forEach(item => item.classList.remove('active'));
+        songElement.classList.add('active');
+
+        // Update audio source and play
+        audioPlayer.src = songElement.dataset.audioUrl;
+        audioPlayer.play();
+
+        // Update UI
+        updateSongInfo(songElement);
+        playPauseBtn.querySelector('i').classList.replace('bi-play-fill', 'bi-pause-fill');
+        isPlaying = true;
+        
+        // Track playback start
+        playStartTime = Date.now();
+    }
   
       // Track playback and send data to server
       function trackPlayDuration() {
@@ -1283,24 +1305,27 @@ body::-webkit-scrollbar,
   
       // Skip to next/previous song
       function skipSong(direction) {
-          if (isPlayingAd) return;
-  
-          let newIndex;
-  
-          if (isShuffleEnabled) {
-              newIndex = Math.floor(Math.random() * songItems.length);
-          } else {
-              const currentActiveIndex = Array.from(songItems).findIndex(item => item.classList.contains('active'));
-              if (direction === 'next') {
-                  newIndex = (currentActiveIndex + 1) % songItems.length;
-              } else {
-                  newIndex = (currentActiveIndex - 1 + songItems.length) % songItems.length;
-              }
-          }
-  
-          songCount++;
-          checkForAd(newIndex);
-      }
+        if (isPlayingAd) return;
+
+        let newIndex;
+        const currentActiveIndex = Array.from(songItems).findIndex(item => item.classList.contains('active'));
+
+        if (isShuffleEnabled) {
+            // For shuffle, find a random index that's not the current one
+            do {
+                newIndex = Math.floor(Math.random() * songItems.length);
+            } while (newIndex === currentActiveIndex && songItems.length > 1);
+        } else {
+            if (direction === 'next') {
+                newIndex = (currentActiveIndex + 1) % songItems.length;
+            } else {
+                newIndex = (currentActiveIndex - 1 + songItems.length) % songItems.length;
+            }
+        }
+
+        songCount++;
+        checkForAd(newIndex);
+    }
   
       function checkForAd(nextIndex) {
           if (songCount % AD_INTERVAL === 0 && !isPlayingAd) {
