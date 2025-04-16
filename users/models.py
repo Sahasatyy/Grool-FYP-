@@ -20,10 +20,21 @@ class UserProfile(models.Model):
     user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES, default='normal')
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
     bio = models.TextField(blank=True)
+    is_premium = models.BooleanField(default=False)
+    premium_expiry = models.DateTimeField(null=True, blank=True)
     
     def __str__(self):
         return f"{self.user.username}'s profile"
     
+    @property
+    def has_active_premium(self):
+        if not self.is_premium:
+            return False
+        if self.premium_expiry and timezone.now() > self.premium_expiry:
+            self.is_premium = False
+            self.save()
+            return False
+        return True
 
 def qr_code_upload_path(instance, filename):
     return os.path.join('support_qr_codes', f'user_{instance.user_profile.user.id}', filename)

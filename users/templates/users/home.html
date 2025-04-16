@@ -1327,13 +1327,22 @@ body::-webkit-scrollbar,
         checkForAd(newIndex);
     }
   
-      function checkForAd(nextIndex) {
-          if (songCount % AD_INTERVAL === 0 && !isPlayingAd) {
-              playAd();
-          } else {
-              playSong(songItems[nextIndex]);
-          }
-      }
+    let showAds = true;
+
+    // Check premium status when page loads
+    fetch('/check-premium/')
+        .then(response => response.json())
+        .then(data => {
+            showAds = !data.is_premium;
+        });
+    
+    function checkForAd(nextIndex) {
+        if (showAds && songCount % AD_INTERVAL === 0 && !isPlayingAd) {
+            playAd();
+        } else {
+            playSong(songItems[nextIndex]);
+        }
+    }
   
       function playAd() {
           isPlayingAd = true;

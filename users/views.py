@@ -476,6 +476,7 @@ from django.contrib import messages
 from .models import Playlist, Song  # Make sure these are imported
 import json
 
+@login_required
 def create_playlist(request):
     # Check authentication
     if not request.user.is_authenticated:
@@ -485,36 +486,45 @@ def create_playlist(request):
     # Initialize variables
     songs = Song.objects.filter(is_public=True)
     messages_json = []
+    user_profile = request.user.profile
 
     if request.method == 'POST':
         form = PlaylistForm(request.POST)
 
-        # Check playlist limit for basic users
-        try:
-            user_profile = request.user.profile
-            if user_profile.user_type == 'normal':
-                playlist_count = Playlist.objects.filter(user=request.user).count()
-                if playlist_count >= 2:
-                    messages.error(request, 'Basic users can only create up to 2 playlists. Upgrade to premium to create more.')
-                    # Prepare messages for JSON response
-                    for message in messages.get_messages(request):
-                        messages_json.append({
-                            'message': str(message),
-                            'tags': message.tags
-                        })
-                    return render(request, 'users/create_playlist.html', {
-                        'form': form,
-                        'songs': songs,
-                        'messages_json': json.dumps(messages_json)
+        # Check playlist limit for non-premium users
+        if not user_profile.has_active_premium:
+            playlist_count = Playlist.objects.filter(user=request.user).count()
+            if playlist_count >= 2:
+                messages.error(
+                    request,
+                    'Free users can only create up to 2 playlists. '
+                    'Upgrade to premium to create unlimited playlists.'
+                )
+                # Prepare messages for JSON response
+                for message in messages.get_messages(request):
+                    messages_json.append({
+                        'message': str(message),
+                        'tags': message.tags
                     })
-        except AttributeError:
-            raise PermissionDenied("User profile not found")
+                return render(request, 'users/create_playlist.html', {
+                    'form': form,
+                    'songs': songs,
+                    'messages_json': json.dumps(messages_json),
+                    'is_premium': user_profile.has_active_premium
+                })
 
         if form.is_valid():
             try:
                 # Create the playlist
                 playlist = form.save(commit=False)
                 playlist.user = request.user
+                
+                # Set playlist visibility based on user preference
+                if user_profile.has_active_premium:
+                    playlist.is_public = form.cleaned_data.get('is_public', False)
+                else:
+                    playlist.is_public = False  # Free users get private playlists by default
+                
                 playlist.save()
 
                 # Add selected songs
@@ -548,7 +558,11 @@ def create_playlist(request):
                     messages.error(request, f"{field.capitalize()}: {error}")
 
     else:
-        form = PlaylistForm()
+        # Initialize form with default values
+        initial_data = {}
+        if user_profile.has_active_premium:
+            initial_data['is_public'] = True  # Default to public for premium users
+        form = PlaylistForm(initial=initial_data)
 
     # Prepare messages for JSON response
     for message in messages.get_messages(request):
@@ -560,7 +574,10 @@ def create_playlist(request):
     return render(request, 'users/create_playlist.html', {
         'form': form,
         'songs': songs,
-        'messages_json': json.dumps(messages_json)
+        'messages_json': json.dumps(messages_json),
+        'is_premium': user_profile.has_active_premium,
+        'current_playlist_count': Playlist.objects.filter(user=request.user).count(),
+        'max_free_playlists': 2
     })
 
 
@@ -885,6 +902,16 @@ def subscription_plans(request):
     }
     return render(request, 'payments/subscription_plans.html', context)
 
+def get_return_url(request):
+    return_url = request.build_absolute_uri(reverse('verify_payment'))
+    if not settings.DEBUG:
+        # Handle various cases including load balancers
+        if 'HTTP_X_FORWARDED_PROTO' in request.META:
+            return_url = return_url.replace('http://', 'https://')
+        elif not return_url.startswith('https://'):
+            return_url = 'https://' + return_url.split('://')[1]
+    return return_url
+
 @login_required
 def initiate_payment(request):
     if request.method == 'POST':
@@ -892,10 +919,8 @@ def initiate_payment(request):
             plan_id = request.POST.get('plan_id')
             plan = SubscriptionPlan.objects.get(id=plan_id)
             
-            # Build absolute URL with HTTPS in production
-            return_url = request.build_absolute_uri(reverse('verify_payment'))
-            if not settings.DEBUG:
-                return_url = return_url.replace('http://', 'https://')
+            # Use the get_return_url function
+            return_url = get_return_url(request)
             
             print(f"RETURN URL: {return_url}")  # Debug print
             
@@ -928,6 +953,10 @@ def initiate_payment(request):
             if not data.get('payment_url'):
                 raise ValueError("Missing payment URL in response")
             
+            if 'pid' in data:
+                request.session['khalti_pid'] = data['pid']
+                request.session.modified = True
+            
             return JsonResponse({
                 'payment_url': data['payment_url'],
                 'pid': data.get('pid'),  # Include PID in response
@@ -940,78 +969,147 @@ def initiate_payment(request):
     
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
+import logging
+logger = logging.getLogger(__name__)
+
 @login_required
 def verify_payment(request):
-    # Try multiple ways to get PID
-    pid = (
-        request.GET.get('pid') or                  # Standard Khalti return
-        request.session.get('khalti_pid') or      # Session fallback
-        request.GET.get('transaction_id')         # Alternate parameter
-    )
+    # Enhanced PID extraction with validation
+    pid = None
+    potential_pids = [
+        request.GET.get('pid'),
+        request.POST.get('pid'),
+        request.GET.get('transaction_id'),
+        request.POST.get('transaction_id'),
+        request.session.get('khalti_pid')
+    ]
+    
+    for potential_pid in potential_pids:
+        if potential_pid and isinstance(potential_pid, str) and len(potential_pid) > 10:
+            pid = potential_pid
+            break
     
     if not pid:
-        # Final fallback - check sessionStorage via AJAX
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({'status': 'missing_pid'}, status=400)
+        logger.error("Missing PID in verify_payment", extra={
+            'user': request.user.id,
+            'GET_params': dict(request.GET),
+            'POST_params': dict(request.POST),
+            'session_data': {'khalti_pid': request.session.get('khalti_pid')}
+        })
         
-        messages.error(request, "Could not verify payment - missing transaction ID")
-        print("MISSING PID - Available GET params:", request.GET)
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'status': 'missing_pid',
+                'message': 'Payment ID not found in request',
+                'available_params': {
+                    'GET': dict(request.GET),
+                    'POST': dict(request.POST)
+                }
+            }, status=400)
+        
+        messages.error(request, "We couldn't verify your payment. Please contact support with your transaction details.")
         return redirect('subscription_plans')
     
     try:
-        print(f"VERIFYING PID: {pid}")
+        logger.info(f"Starting payment verification for PID: {pid}", extra={
+            'user': request.user.id,
+            'pid': pid
+        })
+
+        print(f"DEBUG - PID being verified: {pid}") 
         
-        # Verify with Khalti
-        headers = {"Authorization": f"Key {settings.KHALTI_SECRET_KEY}"}
-        response = requests.post(
-            settings.KHALTI_VERIFY_URL,
-            json={"pid": pid},
-            headers=headers,
-            timeout=10
-        )
-        response.raise_for_status()
-        data = response.json()
-        print("VERIFICATION DATA:", data)
+        # Verify with Khalti with enhanced error handling
+        headers = {
+            "Authorization": f"Key {settings.KHALTI_SECRET_KEY}",
+            "Content-Type": "application/json"
+        }
         
-        # Check payment status
-        if data.get('state', {}).get('name') != 'Completed':
-            raise ValueError("Payment not completed")
+        try:
+            response = requests.post(
+                settings.KHALTI_VERIFY_URL,
+                json={"pid": pid},
+                headers=headers,
+                timeout=15  # Increased timeout
+            )
+            
+            # Log the raw response for debugging
+            logger.debug(f"Khalti verification raw response: {response.text}")
+            
+            response.raise_for_status()
+            data = response.json()
+            
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Khalti API request failed: {str(e)}", exc_info=True)
+            raise ValueError("Temporary payment verification issue. Please try again later.")
         
-        # Extract plan ID
+        logger.info("Khalti verification response", extra={
+            'user': request.user.id,
+            'response_data': data
+        })
+        
+        # Enhanced payment status check
+        payment_state = data.get('state', {}).get('name')
+        if payment_state != 'Completed':
+            logger.warning(f"Payment not completed. State: {payment_state}", extra={
+                'user': request.user.id,
+                'pid': pid
+            })
+            raise ValueError(f"Payment status is '{payment_state}'. Please contact support if this is incorrect.")
+        
+        # Extract purchase details with better error handling
         purchase_order_id = data.get('product_identity') or data.get('purchase_order_id')
         if not purchase_order_id:
-            raise ValueError("Missing purchase order ID")
+            logger.error("Missing purchase order ID in Khalti response", extra={
+                'user': request.user.id,
+                'response_data': data
+            })
+            raise ValueError("Could not identify your subscription plan.")
         
         try:
             plan_id = purchase_order_id.split('_')[-1]
             plan = SubscriptionPlan.objects.get(id=plan_id)
+        except (ValueError, IndexError, SubscriptionPlan.DoesNotExist) as e:
+            logger.error(f"Invalid plan ID in purchase order: {purchase_order_id}", exc_info=True)
+            raise ValueError("Invalid subscription plan reference.")
+        
+        # Create/update subscription with transaction safety
+        try:
+            subscription, created = UserSubscription.objects.update_or_create(
+                user=request.user,
+                defaults={
+                    'plan': plan,
+                    'is_active': True,
+                    'khalti_idx': data.get('idx', ''),
+                    'payment_verified': True,
+                    'start_date': timezone.now(),
+                    'end_date': timezone.now() + timedelta(days=plan.duration_days),
+                    'last_payment_data': data  # Store full response for reference
+                }
+            )
+            
+            logger.info(f"{'Created' if created else 'Updated'} subscription", extra={
+                'user': request.user.id,
+                'subscription_id': subscription.id,
+                'plan_id': plan.id
+            })
+            
         except Exception as e:
-            raise ValueError(f"Invalid plan ID: {str(e)}")
+            logger.error("Failed to create/update subscription", exc_info=True)
+            raise ValueError("Failed to activate your subscription. Please contact support.")
         
-        # Create subscription
-        UserSubscription.objects.update_or_create(
-            user=request.user,
-            defaults={
-                'plan': plan,
-                'is_active': True,
-                'khalti_idx': data['idx'],
-                'payment_verified': True,
-                'start_date': timezone.now(),
-                'end_date': timezone.now() + timedelta(days=plan.duration_days)
-            }
-        )
-        
-        # Clear any stored PID
+        # Clear session data
         if 'khalti_pid' in request.session:
             del request.session['khalti_pid']
+            request.session.modified = True
         
+        # Send success notification
+        messages.success(request, "Payment verified successfully! Your subscription is now active.")
         return redirect('subscription_success')
         
     except Exception as e:
-        print(f"VERIFICATION FAILED: {str(e)}")
+        logger.error(f"Payment verification failed: {str(e)}", exc_info=True)
         messages.error(request, f"Payment verification failed: {str(e)}")
         return redirect('subscription_plans')
-
 
 @login_required
 def subscription_success(request):
@@ -1028,6 +1126,12 @@ def subscription_success(request):
     }
     
     return render(request, 'users/subscription_success.html', context)
+
+@login_required
+def check_premium(request):
+    return JsonResponse({
+        'is_premium': request.user.profile.has_active_premium
+    })
 
 from django.db.models import F, ExpressionWrapper, DecimalField
 

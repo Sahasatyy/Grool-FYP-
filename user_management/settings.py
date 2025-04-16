@@ -217,7 +217,8 @@ load_dotenv()
 # Khalti settings
 KHALTI_SECRET_KEY = os.getenv('KHALTI_SECRET_KEY')
 KHALTI_PUBLIC_KEY = os.getenv('KHALTI_PUBLIC_KEY')
-KHALTI_VERIFY_URL = "https://a.khalti.com/api/v2/payment/verify/"
+# KHALTI_VERIFY_URL = "https://a.khalti.com/api/v2/payment/verify/"  # Live
+KHALTI_VERIFY_URL = "https://test.khalti.com/api/v2/payment/verify/"  # Test
 KHALTI_INITIATE_URL = "https://a.khalti.com/api/v2/epayment/initiate/"
 
 

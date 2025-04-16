@@ -1,16 +1,17 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import UserProfile, ArtistProfile, Song, Genre, Album, Playlist, SubscriptionPlan, UserSubscription
+from .models import UserProfile, ArtistProfile, Song, Genre, Album, Playlist
 from django.urls import path
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse
 from django.utils import timezone
 from django.core.exceptions import FieldDoesNotExist
-
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
 import csv
-
-from .models import ArtistProfile, UserProfile
+from datetime import timedelta
+from .models import SubscriptionPlan, UserSubscription, RevenueRecord
 
 
 # Register your models here.
@@ -183,12 +184,14 @@ admin.site.register(Genre)
 admin.site.register(Playlist)
 admin.site.register(Album)
 
+# Subscription Plan Admin
 @admin.register(SubscriptionPlan)
 class SubscriptionPlanAdmin(admin.ModelAdmin):
     list_display = ('name', 'plan_type', 'price', 'duration_days', 'is_active')
     list_filter = ('plan_type', 'is_active')
     search_fields = ('name', 'features')
 
+# User Subscription Admin
 @admin.register(UserSubscription)
 class UserSubscriptionAdmin(admin.ModelAdmin):
     list_display = ('user', 'plan', 'start_date', 'end_date', 'is_active')
@@ -196,17 +199,46 @@ class UserSubscriptionAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'khalti_idx')
     readonly_fields = ('start_date', 'end_date')
 
-from .models import RevenueRecord
+# Custom action for upgrading users to premium
+def make_premium(modeladmin, request, queryset):
+    for user in queryset:
+        profile, created = UserProfile.objects.get_or_create(user=user)
+        profile.is_premium = True
+        profile.premium_expiry = timezone.now() + timedelta(days=30)  # 1 month premium
+        profile.save()
+make_premium.short_description = "Upgrade selected users to premium (1 month)"
 
+# Inline for UserProfile
+class UserProfileInline(admin.StackedInline):
+    model = UserProfile
+    can_delete = False
+    verbose_name_plural = 'Profile'
+    fk_name = 'user'
+
+# Custom User Admin
+class CustomUserAdmin(UserAdmin):
+    inlines = (UserProfileInline,)
+    actions = [make_premium]
+
+    def get_inline_instances(self, request, obj=None):
+        if not obj:
+            return []
+        return super().get_inline_instances(request, obj)
+
+# Unregister the original User and register the customized one
+admin.site.unregister(User)
+admin.site.register(User, CustomUserAdmin)
+
+# Revenue Record Admin
 @admin.register(RevenueRecord)
 class RevenueRecordAdmin(admin.ModelAdmin):
     list_display = ('artist', 'song_title', 'amount', 'plays_count', 'calculated_at')
     list_filter = ('artist', 'calculated_at')
     readonly_fields = ('calculated_at',)
-    
+
     def song_title(self, obj):
         return obj.song.title if obj.song else "Deleted Song"
     song_title.short_description = 'Song'
-    
+
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('artist', 'song')

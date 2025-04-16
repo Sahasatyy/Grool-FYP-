@@ -281,7 +281,7 @@ body {
     </div>
     <div class="user-actions">
         {% if user.is_authenticated %}
-            {% if user.subscription.is_active %}
+            {% if user.profile.is_premium %}
                 <span class="badge bg-success me-2">Premium</span>
             {% else %}
                 <a href="{% url 'subscription_plans' %}" class="btn btn-primary me-2">Go Premium</a>
