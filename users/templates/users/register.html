@@ -138,6 +138,18 @@ Page {% endblock title%}
           </div>
         </div>
       </div>
+
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(e) {
+                // Disable submit button after first click
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Sending...';
+            });
+        });
+        </script>
       {% endblock content %}
     </div>
   </div>

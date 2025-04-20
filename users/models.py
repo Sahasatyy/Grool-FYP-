@@ -41,7 +41,8 @@ def qr_code_upload_path(instance, filename):
 
 class ArtistProfile(models.Model):
     user_profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='artist_profile')
-    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True, verbose_name="Profile Picture", help_text="Upload a profile picture.")
+    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True, verbose_name="Profile Picture",
+                                        help_text="Upload a profile picture.")
     artist_name = models.CharField(max_length=100, verbose_name="Artist Name", help_text="Enter your artist name.")
     genre = models.CharField(max_length=50, verbose_name="Genre", help_text="Enter your music genre.")
     verification_date = models.DateField(auto_now_add=True, verbose_name="Verification Date")

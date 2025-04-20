@@ -13,14 +13,34 @@ import csv
 from datetime import timedelta
 from .models import SubscriptionPlan, UserSubscription, RevenueRecord
 
+# Custom Admin Site for Grool
+from django.contrib.admin import AdminSite
 
-# Register your models here.
+class GroolAdminSite(AdminSite):
+    site_header = "Grool - Music Streaming Platform (Admin Dashboard)"
+    site_title = "Grool Admin"
+    index_title = "Welcome to Grool Music Admin"
+
+    def each_context(self, request):
+        context = super().each_context(request)
+        context['site_title'] = "Grool Admin"
+        return context
+
+    class Media:
+        css = {
+            'all': ('admin/css/custom_admin.css',)
+        }
+
+# Instantiate custom admin site
+grool_admin_site = GroolAdminSite(name='grool_admin')
+
+# UserProfile Admin
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'user_type')
     list_filter = ('user_type',)
     search_fields = ('user__username', 'user__email')
 
-
+# ArtistProfile Admin
 class ArtistProfileAdmin(admin.ModelAdmin):
     list_display = (
         'artist_name',
@@ -41,7 +61,7 @@ class ArtistProfileAdmin(admin.ModelAdmin):
         date_hierarchy = 'created_at'
     except FieldDoesNotExist:
         pass
-    
+
     readonly_fields = (
         'get_created_at',
         'verification_date',
@@ -82,6 +102,7 @@ class ArtistProfileAdmin(admin.ModelAdmin):
             )
         }),
     )
+
     def get_created_at(self, obj):
         if hasattr(obj, 'created_at'):
             return obj.created_at.strftime("%Y-%m-%d %H:%M") if obj.created_at else "-"
@@ -89,7 +110,6 @@ class ArtistProfileAdmin(admin.ModelAdmin):
     get_created_at.short_description = 'Created At'
 
     def get_genre(self, obj):
-        """Display the genre for a single CharField"""
         return obj.genre if obj.genre else "-"
     get_genre.short_description = 'Genre'
 
@@ -135,11 +155,6 @@ class ArtistProfileAdmin(admin.ModelAdmin):
         UserProfile.objects.filter(
             artistprofile__in=queryset
         ).update(user_type='artist')
-        
-        # # Send verification emails
-        # for artist in queryset:
-        #     send_verification_email(artist)
-        
         self.message_user(
             request,
             f"Successfully verified {updated} artist(s). Notification emails sent."
@@ -159,15 +174,15 @@ class ArtistProfileAdmin(admin.ModelAdmin):
     def export_as_csv(self, request, queryset):
         meta = self.model._meta
         field_names = [field.name for field in meta.fields]
-        
+
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename={meta}.csv'
-        
+
         writer = csv.writer(response)
         writer.writerow(field_names)
         for obj in queryset:
             writer.writerow([getattr(obj, field) for field in field_names])
-        
+
         return response
     export_as_csv.short_description = "Export Selected"
 
@@ -177,21 +192,14 @@ class ArtistProfileAdmin(admin.ModelAdmin):
             return qs.filter(is_verified=False)
         return qs
 
-admin.site.register(UserProfile, UserProfileAdmin)
-admin.site.register(ArtistProfile, ArtistProfileAdmin)
-admin.site.register(Song)
-admin.site.register(Genre)
-admin.site.register(Playlist)
-admin.site.register(Album)
-
-# Subscription Plan Admin
+# SubscriptionPlan Admin
 @admin.register(SubscriptionPlan)
 class SubscriptionPlanAdmin(admin.ModelAdmin):
     list_display = ('name', 'plan_type', 'price', 'duration_days', 'is_active')
     list_filter = ('plan_type', 'is_active')
     search_fields = ('name', 'features')
 
-# User Subscription Admin
+# UserSubscription Admin
 @admin.register(UserSubscription)
 class UserSubscriptionAdmin(admin.ModelAdmin):
     list_display = ('user', 'plan', 'start_date', 'end_date', 'is_active')
@@ -204,7 +212,7 @@ def make_premium(modeladmin, request, queryset):
     for user in queryset:
         profile, created = UserProfile.objects.get_or_create(user=user)
         profile.is_premium = True
-        profile.premium_expiry = timezone.now() + timedelta(days=30)  # 1 month premium
+        profile.premium_expiry = timezone.now() + timedelta(days=30)
         profile.save()
 make_premium.short_description = "Upgrade selected users to premium (1 month)"
 
@@ -225,11 +233,7 @@ class CustomUserAdmin(UserAdmin):
             return []
         return super().get_inline_instances(request, obj)
 
-# Unregister the original User and register the customized one
-admin.site.unregister(User)
-admin.site.register(User, CustomUserAdmin)
-
-# Revenue Record Admin
+# RevenueRecord Admin
 @admin.register(RevenueRecord)
 class RevenueRecordAdmin(admin.ModelAdmin):
     list_display = ('artist', 'song_title', 'amount', 'plays_count', 'calculated_at')
@@ -242,3 +246,22 @@ class RevenueRecordAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('artist', 'song')
+
+# Registering models to the default admin site
+admin.site.register(UserProfile, UserProfileAdmin)
+admin.site.register(ArtistProfile, ArtistProfileAdmin)
+admin.site.register(Song)
+admin.site.register(Genre)
+admin.site.register(Playlist)
+admin.site.register(Album)
+
+# Customizing default admin site
+admin.site.site_header = "Grool - Music Streaming Platform (Admin Dashboard)"
+admin.site.site_title = "Grool Admin"
+admin.site.index_title = "Welcome to Grool Music Admin"
+
+# Unregister and re-register User with the custom admin
+admin.site.unregister(User)
+admin.site.register(User, CustomUserAdmin)
+
+admin_site = GroolAdminSite(name='grool_admin')

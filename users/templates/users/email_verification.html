@@ -1,0 +1,43 @@
+{% extends "users/base.html" %}
+
+{% block title %}Email Verification{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Verify Your Email</h4>
+                </div>
+                <div class="card-body">
+                    <p>We've sent a verification code to <strong>{{ email }}</strong>.</p>
+                    <p>Please enter the 6-digit code below:</p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <input type="text" name="verification_code" 
+                                   class="form-control" 
+                                   placeholder="Enter verification code" 
+                                   required>
+                        </div>
+                        <input type="hidden" name="verify_code" value="true">
+                        <button type="submit" class="btn btn-primary w-100">
+                            Verify & Complete Registration
+                        </button>
+                    </form>
+                    
+                    {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

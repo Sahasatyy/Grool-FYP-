@@ -3,6 +3,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import ArtistProfile, UserProfile, Song, Genre, Playlist, Album
 from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
+from django.conf import settings
+import random
 
 class RegisterForm(UserCreationForm):
     first_name = forms.CharField(
@@ -38,6 +41,20 @@ class RegisterForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'username', 'email', 'password1', 'password2']
+
+    confirmation_code = forms.CharField(
+    required=False,
+    widget=forms.HiddenInput()
+    )
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("This email is already in use.")
+        return email
+    
+    def generate_confirmation_code(self):
+        return str(random.randint(100000, 999999))
 
 class LoginForm(AuthenticationForm):
     username = forms.CharField(

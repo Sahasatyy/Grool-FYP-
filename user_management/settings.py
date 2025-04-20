@@ -196,7 +196,14 @@ LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = 'login'
 
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Email Configuration (Development)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # For Gmail (or your SMTP provider)
+EMAIL_PORT = 587  # TLS port
+EMAIL_USE_TLS = True  # Use TLS encryption
+EMAIL_HOST_USER = 'amatya.sahas@gmail.com'  # Your email
+EMAIL_HOST_PASSWORD = 'sswq ufuv owcn hsik'  # App password (NOT your regular password)
+DEFAULT_FROM_EMAIL = 'amatya.sahas@gmail.com'  # Default sender
 
 # settings.py
 

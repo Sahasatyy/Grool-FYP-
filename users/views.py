@@ -28,6 +28,8 @@ import requests
 from .models import SubscriptionPlan, UserSubscription
 from django.utils import timezone
 from datetime import timedelta
+from django.core.mail import send_mail
+import random
 
 
 
@@ -51,6 +53,7 @@ def home(request):
 class RegisterView(View):
     form_class = RegisterForm
     template_name = 'users/register.html'
+    verification_template = 'users/email_verification.html'
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
@@ -61,14 +64,86 @@ class RegisterView(View):
         form = self.form_class()
         return render(request, self.template_name, {'form': form, 'hide_navbar': True})
 
+
+    def send_verification_code(self, request, form):
+        email = form.cleaned_data['email']
+        code = str(random.randint(100000, 999999))
+        
+        # Store data in session
+        request.session['registration_data'] = {
+            'form_data': form.cleaned_data,
+            'confirmation_code': code,
+            'attempts': 0
+        }
+        
+        # Send email (in production, use Celery for this)
+        self.send_verification_email(email, code)
+        
+        # Redirect to verification page
+        return render(request, self.verification_template, {
+            'email': email,
+            'hide_navbar': True
+        })
+
     def post(self, request, *args, **kwargs):
+    # Check if this is a verification attempt
+        if 'verification_code' in request.POST:
+            return self.handle_verification(request)
+        
+        # Otherwise process as initial registration
         form = self.form_class(request.POST)
         if form.is_valid():
-            user = form.save()
-            messages.success(request, f'Account created for {user.username}! You can now log in.')
-            return redirect('login')
+            return self.send_verification_code(request, form)
+        
         return render(request, self.template_name, {'form': form, 'hide_navbar': True})
 
+    def handle_verification(self, request):
+        session_data = request.session.get('registration_data', {})
+        user_code = request.POST.get('verification_code')
+        
+        if not session_data:
+            messages.error(request, 'Session expired. Please register again.')
+            return redirect('users-register')
+        
+        if session_data.get('confirmation_code') == user_code:
+            # Create user from session data (no form validation needed)
+            form_data = session_data['form_data']
+            user = User.objects.create_user(
+                username=form_data['username'],
+                email=form_data['email'],
+                password=form_data['password1'],
+                first_name=form_data['first_name'],
+                last_name=form_data['last_name']
+            )
+            
+            del request.session['registration_data']
+            messages.success(request, 'Registration successful! Please log in.')
+            return redirect('login')
+    
+        
+        # Handle invalid code
+        session_data['attempts'] += 1
+        request.session['registration_data'] = session_data
+        
+        if session_data['attempts'] >= 3:
+            del request.session['registration_data']
+            messages.error(request, 'Too many failed attempts. Please start over.')
+            return redirect('users-register')
+        
+        messages.error(request, 'Invalid verification code. Please try again.')
+        return render(request, self.verification_template, {
+            'email': session_data['form_data']['email'],
+            'hide_navbar': True
+        })
+
+    def send_verification_email(self, email, code):
+        subject = 'Verify your email address'
+        message = f'Your verification code is: {code}'
+        from_email = 'noreply@yourdomain.com'  # Update with your email
+        recipient_list = [email]
+        
+        # In production, use Celery task for this
+        send_mail(subject, message, from_email, recipient_list, fail_silently=False)
 
 class CustomLoginView(LoginView):
     form_class = LoginForm

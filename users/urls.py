@@ -6,9 +6,11 @@ from .views import song_list, get_songs, search, search_suggestions, song_detail
 from .views import delete_album_song, subscription_plans, initiate_payment, verify_payment, subscription_success, revenue_details, track_play, revenue_stats, upload_support_qr, remove_support_qr, check_premium
 from django.conf import settings
 from django.conf.urls.static import static
+from users.admin import admin_site
 
 urlpatterns = [
     path('', home, name='users-home'),
+    path('admin/', admin_site.urls),
     path('register/', RegisterView.as_view(), name='users-register'),
     path('profile/', views.profile_view, name='profile'),
     path('profile/normal/', views.normal_profile, name='user_profile'),
