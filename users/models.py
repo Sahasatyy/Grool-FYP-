@@ -260,3 +260,16 @@ class RevenueRecord(models.Model):
         ordering = ['-calculated_at']
         verbose_name = "Revenue Record"
         verbose_name_plural = "Revenue Records"
+
+class PaymentRequest(models.Model):
+    artist = models.ForeignKey(ArtistProfile, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    requested_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=[
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected')
+    ], default='pending')
+    
+    def __str__(self):
+        return f"{self.artist.user_profile.user.username} - Rs.{self.amount} - {self.status}"

@@ -17,7 +17,7 @@ from .models import SubscriptionPlan, UserSubscription, RevenueRecord
 from django.contrib.admin import AdminSite
 
 class GroolAdminSite(AdminSite):
-    site_header = "Grool - Music Streaming Platform (Admin Dashboard)"
+    site_header = "Grool"
     site_title = "Grool Admin"
     index_title = "Welcome to Grool Music Admin"
 
@@ -265,3 +265,24 @@ admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
 
 admin_site = GroolAdminSite(name='grool_admin')
+
+
+from .models import PaymentRequest
+
+@admin.register(PaymentRequest)
+class PaymentRequestAdmin(admin.ModelAdmin):
+    list_display = ('artist', 'amount', 'status', 'requested_at')
+    list_filter = ('status', 'requested_at')
+    search_fields = ('artist__user__username',)
+
+    actions = ['approve_requests', 'reject_requests']
+
+    @admin.action(description="Approve selected requests")
+    def approve_requests(self, request, queryset):
+        queryset.update(status='approved')
+
+    @admin.action(description="Reject selected requests")
+    def reject_requests(self, request, queryset):
+        queryset.update(status='rejected')
+
+grool_admin_site.register(PaymentRequest, PaymentRequestAdmin)

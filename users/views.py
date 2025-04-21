@@ -17,7 +17,7 @@ from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
 from .forms import RegisterForm, LoginForm, ArtistVerificationForm, SongUploadForm
 from .forms import ProfilePictureForm, EditProfileForm, ChangeEmailForm, PlaylistForm, AlbumForm, SongUploadForm
-from .models import ArtistProfile, UserProfile, Song, Favorite, Playlist, Album
+from .models import ArtistProfile, UserProfile, Song, Favorite, Playlist, Album, PaymentRequest
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.views.decorators.csrf import csrf_exempt
@@ -1216,34 +1216,55 @@ def revenue_details(request):
         return HttpResponseForbidden("Only artists can view revenue details")
     
     artist_profile = request.user.profile.artist_profile
-    
-    # Calculate real-time stats
+
     songs = Song.objects.filter(artist=artist_profile).annotate(
-        revenue_per_1k=ExpressionWrapper(
-            F('qualified_plays') / 1000 * 100,
-            output_field=DecimalField(max_digits=10, decimal_places=2)
-        ),
-        play_time_hours=ExpressionWrapper(
-            F('play_duration') / timedelta(hours=1),
+        calculated_revenue=ExpressionWrapper(
+            F('total_listens') / 100 * 10,
             output_field=DecimalField(max_digits=10, decimal_places=2)
         )
-    ).order_by('-revenue')
+    ).order_by('-calculated_revenue')
 
-    # Calculate totals
-    total_revenue = sum(song.revenue for song in songs)
+    total_revenue = sum(song.calculated_revenue for song in songs)
     total_plays = sum(song.total_listens for song in songs)
-    total_qualified = sum(song.qualified_plays for song in songs)
     total_play_time = sum((song.play_duration for song in songs), timedelta())
+
+    eligible_songs = songs.filter(total_listens__gte=100).count()
+    can_request_payment = eligible_songs >= 3
 
     context = {
         'songs': songs,
         'total_revenue': total_revenue,
         'total_plays': total_plays,
-        'total_qualified': total_qualified,
         'total_play_time': total_play_time,
-        'artist_profile': artist_profile
+        'can_request_payment': can_request_payment,
+        'eligible_songs': eligible_songs
     }
     return render(request, 'users/revenue_details.html', context)
+
+
+@require_POST
+@login_required
+def request_payment(request):
+    if not hasattr(request.user.profile, 'artist_profile'):
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    
+    artist_profile = request.user.profile.artist_profile
+    
+    songs = Song.objects.filter(artist=artist_profile)
+
+    total_revenue = sum(song.total_listens / 100 * 10 for song in songs)
+
+    # Remove eligibility check
+    PaymentRequest.objects.create(
+        artist=artist_profile,
+        amount=total_revenue,
+        status='pending'
+    )
+
+    return JsonResponse({
+        'success': True,
+        'message': 'Payment request submitted successfully!'
+    })
 
 from .models import Song, RevenueRecord, PlayHistory
 
@@ -1252,44 +1273,27 @@ from .models import Song, RevenueRecord, PlayHistory
 def track_play(request, song_id):
     song = get_object_or_404(Song, id=song_id)
     duration = int(request.POST.get('duration', 0))
-    
-    # Update song stats
+    qualified = False
+
     if duration >= 60:
         song.play_duration += timedelta(seconds=duration)
         song.qualified_plays += 1
         song.total_listens += 1
-        
-        new_revenue = (song.qualified_plays // 1000) * 100
-        if new_revenue > song.revenue:
-            RevenueRecord.objects.create(
-                artist=song.artist,
-                song=song,
-                amount=new_revenue - song.revenue,
-                plays_count=song.qualified_plays
-            )
-            song.revenue = new_revenue
-        
         qualified = True
     else:
         song.total_listens += 1
-        qualified = False
-    
+
+    # Always calculate revenue even if plays < 100
+    song.revenue = (song.total_listens / 100) * 10
     song.save()
-    
-    # Record play history
+
     PlayHistory.objects.create(
         user=request.user if request.user.is_authenticated else None,
         song=song,
         play_duration=timedelta(seconds=duration),
         qualified=qualified
     )
-    
-    # Return updated stats
-    artist_profile = song.artist
-    songs = Song.objects.filter(artist=artist_profile).values(
-        'id', 'total_listens', 'qualified_plays', 'play_duration', 'revenue'
-    )
-    
+
     return JsonResponse({
         'status': 'success',
         'qualified': qualified,
@@ -1306,31 +1310,39 @@ def track_play(request, song_id):
 def revenue_stats(request):
     if not hasattr(request.user.profile, 'artist_profile'):
         return JsonResponse({'error': 'Unauthorized'}, status=403)
-    
+
     artist_profile = request.user.profile.artist_profile
-    
-    songs = Song.objects.filter(artist=artist_profile).values(
-        'id', 'title', 'total_listens', 'qualified_plays', 'play_duration', 'revenue'
-    )
-    
-    # Calculate totals
-    total_revenue = sum(song['revenue'] for song in songs)
-    total_plays = sum(song['total_listens'] for song in songs)
-    total_qualified = sum(song['qualified_plays'] for song in songs)
-    total_play_time = sum(
-        song['play_duration'].total_seconds() if isinstance(song['play_duration'], timedelta) else 0 
-        for song in songs
-    )
-    
-    # Convert play_time to readable format
-    total_play_time = str(timedelta(seconds=total_play_time))
-    
+
+    songs = Song.objects.filter(artist=artist_profile)
+
+    song_list = []
+    total_revenue = 0
+    total_plays = 0
+    total_qualified = 0
+    total_play_time = timedelta()
+
+    for song in songs:
+        calculated_revenue = (song.total_listens / 100) * 10
+        total_revenue += calculated_revenue
+        total_plays += song.total_listens
+        total_qualified += song.qualified_plays
+        total_play_time += song.play_duration
+
+        song_list.append({
+            'id': song.id,
+            'title': song.title,
+            'total_listens': song.total_listens,
+            'qualified_plays': song.qualified_plays,
+            'play_duration': str(song.play_duration),
+            'revenue': calculated_revenue
+        })
+
     return JsonResponse({
-        'songs': list(songs),
+        'songs': song_list,
         'total_revenue': total_revenue,
         'total_plays': total_plays,
         'total_qualified': total_qualified,
-        'total_play_time': total_play_time
+        'total_play_time': str(total_play_time)
     })
 
 from .forms import SupportQRForm
