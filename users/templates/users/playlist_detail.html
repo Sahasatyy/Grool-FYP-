@@ -176,9 +176,11 @@
       {{ playlist.name }}
     </h2>
     <!-- Edit Playlist Button -->
+    {% if playlist.user == request.user %}
     <a href="{% url 'edit_playlist' playlist.id %}" class="btn btn-primary">
       <i class="bi bi-pencil me-2"></i>Edit Playlist
     </a>
+    {% endif %}
   </div>
   <div class="row">
     {% if songs %}
@@ -194,12 +196,14 @@
                 Your browser does not support the audio element.
               </audio>
               <!-- Remove Song Button -->
+              {% if playlist.user == request.user %}
               <form method="post" action="{% url 'remove_song_from_playlist' playlist.id song.id %}" class="remove-song-form">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-danger">
                   <i class="bi bi-trash"></i> Remove
                 </button>
               </form>
+              {% endif %}
             </div>
           </div>
         </div>

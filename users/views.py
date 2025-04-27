@@ -685,7 +685,7 @@ def delete_playlist(request, playlist_id):
 
 @login_required
 def playlist_detail(request, playlist_id):
-    playlist = get_object_or_404(Playlist, id=playlist_id, user=request.user)
+    playlist = get_object_or_404(Playlist, id=playlist_id)  # No user restriction
     songs = playlist.songs.all()
     return render(request, 'users/playlist_detail.html', {'playlist': playlist, 'songs': songs})
 
@@ -890,13 +890,18 @@ def edit_album(request, album_id):
 @login_required
 def delete_album(request, album_id):
     album = get_object_or_404(Album, id=album_id)
-
+    
+    # Permission check (only the album's artist can delete)
     if not hasattr(request.user.profile, 'artist_profile') or request.user.profile.artist_profile != album.artist:
         return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
-
-    album.delete()
-    messages.success(request, "Album deleted successfully!")
-    return redirect('artist_profile', artist_id=album.artist.user_profile.user.id)
+    
+    if request.method == "POST":
+        album.delete()
+        messages.success(request, "Album deleted successfully!")
+        return redirect('artist_profile', artist_id=album.artist.user_profile.user.id)
+    
+    # GET request: Show confirmation page
+    return render(request, 'users/confirm_delete_album.html', {'album': album})
 
 from django.core.exceptions import PermissionDenied
 
