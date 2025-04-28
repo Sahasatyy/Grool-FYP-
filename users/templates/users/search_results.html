@@ -122,13 +122,13 @@
     </div>
   {% endif %}
 
-  <!-- Artists -->
-  {% if results.artists %}
-    <h3 class="section-title">Artists</h3>
-    <div class="grid-container">
-      {% for artist in results.artists %}
-        <div class="card">
-          <img src="{{ artist.user_profile.profile_picture.url }}" alt="{{ artist.artist_name }}">
+<!-- Artists -->
+{% if results.artists %}
+  <h3 class="section-title">Artists</h3>
+  <div class="grid-container">
+    {% for artist in results.artists %}
+      <div class="card">
+        <img src="{% if artist.user_profile.profile_picture %}{{ artist.user_profile.profile_picture.url }}{% else %}https://via.placeholder.com/200{% endif %}" alt="{{ artist.artist_name }}">
           <div class="card-body">
             <h5 class="card-title">{{ artist.artist_name }}</h5>
             <p class="card-text">{{ artist.genre }}</p>
@@ -169,10 +169,10 @@
   <div class="recommendation-section">
     <h3 class="section-title">Recommendations</h3>
     <div class="grid-container">
-      <!-- Random Artists -->
-      {% for artist in random_artists %}
-        <div class="card">
-          <img src="{{ artist.user_profile.profile_picture.url }}" alt="{{ artist.artist_name }}">
+<!-- Random Artists -->
+{% for artist in random_artists %}
+  <div class="card">
+    <img src="{% if artist.user_profile.profile_picture %}{{ artist.user_profile.profile_picture.url }}{% else %}https://via.placeholder.com/200{% endif %}" alt="{{ artist.artist_name }}">
           <div class="card-body">
             <h5 class="card-title">{{ artist.artist_name }}</h5>
             <p class="card-text">{{ artist.genre }}</p>

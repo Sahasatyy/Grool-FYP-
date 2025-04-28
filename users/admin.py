@@ -153,7 +153,7 @@ class ArtistProfileAdmin(admin.ModelAdmin):
             verification_date=timezone.now()
         )
         UserProfile.objects.filter(
-            artistprofile__in=queryset
+            artist_profile__in=queryset
         ).update(user_type='artist')
         self.message_user(
             request,

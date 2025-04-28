@@ -139,19 +139,16 @@ class SongUploadForm(forms.ModelForm):
         self.fields['album'].required = False
 
     def clean_audio_file(self):
-        audio_file = self.cleaned_data.get('audio_file')
-        
-        if audio_file:
-            if audio_file.size > self.MAX_FILE_SIZE:
-                raise ValidationError(f'File too large. Max size is {self.MAX_FILE_SIZE / (1024 * 1024)}MB.')
-            
-            valid_types = ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp4']
-            content_type = getattr(audio_file, 'content_type', None)
-            
-            if content_type and content_type not in valid_types:
-                raise ValidationError('Unsupported audio file type.')
-        
-        return audio_file
+        audio = self.cleaned_data.get('audio_file')
+
+        if audio:
+            if not audio.name.lower().endswith('.mp3'):
+                raise forms.ValidationError('Only MP3 files are allowed.')
+            # Optionally you can also check content_type
+            if audio.content_type != 'audio/mpeg':
+                raise forms.ValidationError('Invalid audio file type. Must be MP3.')
+
+        return audio
 
 class PlaylistForm(forms.ModelForm):
     is_public = forms.BooleanField(

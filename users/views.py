@@ -266,7 +266,7 @@ def request_artist_status(request):
     # Check verification status
     if artist_profile.is_verified:
         messages.info(request, "You are already a verified artist.")
-        return redirect('artist_profile')
+        return redirect('artist_profile', artist_id=artist_profile.id) 
 
     # Handle form submission
     if request.method == 'POST':
