@@ -273,3 +273,16 @@ class PaymentRequest(models.Model):
     
     def __str__(self):
         return f"{self.artist.user_profile.user.username} - Rs.{self.amount} - {self.status}"
+    
+from django.db import models
+from django.utils.timezone import now
+
+class PaymentHistory(models.Model):
+    artist = models.ForeignKey('ArtistProfile', on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    total_listens = models.PositiveIntegerField()
+    requested_at = models.DateTimeField()
+    approved_at = models.DateTimeField(default=now)
+
+    def __str__(self):
+        return f"{self.artist.user.username} - {self.amount} at {self.approved_at}"

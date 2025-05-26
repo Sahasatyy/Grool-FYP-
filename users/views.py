@@ -17,7 +17,7 @@ from django.contrib.sessions.models import Session
 from django.contrib.auth.models import User
 from .forms import RegisterForm, LoginForm, ArtistVerificationForm, SongUploadForm
 from .forms import ProfilePictureForm, EditProfileForm, ChangeEmailForm, PlaylistForm, AlbumForm, SongUploadForm
-from .models import ArtistProfile, UserProfile, Song, Favorite, Playlist, Album, PaymentRequest
+from .models import ArtistProfile, UserProfile, Song, Favorite, Playlist, Album, PaymentRequest, PaymentHistory
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.views.decorators.csrf import csrf_exempt
@@ -1270,6 +1270,16 @@ def request_payment(request):
         'success': True,
         'message': 'Payment request submitted successfully!'
     })
+
+@login_required
+def payment_history(request):
+    if not hasattr(request.user.profile, 'artist_profile'):
+        return HttpResponseForbidden("Only artists can view payment history")
+
+    artist_profile = request.user.profile.artist_profile
+    history = PaymentHistory.objects.filter(artist=artist_profile).order_by('-approved_at')
+
+    return render(request, 'users/payment_history.html', {'history': history})
 
 from .models import Song, RevenueRecord, PlayHistory
 

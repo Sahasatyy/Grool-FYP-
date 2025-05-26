@@ -37,6 +37,10 @@
         <button id="payment-btn" class="btn btn-success">
             Request Payment (Rs. {{ total_revenue|floatformat:2 }})
         </button>
+        <a href="{% url 'payment_history' %}" class="btn btn-success">
+            View Payment History
+        </a>
+
     </div>
     
     <!-- Update the table headers -->

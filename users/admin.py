@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import UserProfile, ArtistProfile, Song, Genre, Album, Playlist
+from .models import UserProfile, ArtistProfile, Song, Genre, Album, Playlist, PaymentHistory
 from django.urls import path
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, render
@@ -266,6 +266,13 @@ admin.site.register(User, CustomUserAdmin)
 
 admin_site = GroolAdminSite(name='grool_admin')
 
+@admin.register(PaymentHistory)
+class PaymentHistoryAdmin(admin.ModelAdmin):
+    list_display = ('artist', 'amount', 'total_listens', 'requested_at', 'approved_at')
+    list_filter = ('approved_at',)
+    search_fields = ('artist__user__username',)
+
+from django.utils.timezone import now
 
 from .models import PaymentRequest
 
@@ -274,12 +281,34 @@ class PaymentRequestAdmin(admin.ModelAdmin):
     list_display = ('artist', 'amount', 'status', 'requested_at')
     list_filter = ('status', 'requested_at')
     search_fields = ('artist__user__username',)
-
     actions = ['approve_requests', 'reject_requests']
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # Only show non-approved requests in the admin queue
+        return qs.exclude(status='approved')
 
     @admin.action(description="Approve selected requests")
     def approve_requests(self, request, queryset):
-        queryset.update(status='approved')
+        for payment_request in queryset:
+            if payment_request.status != 'approved':
+                artist = payment_request.artist
+                songs = Song.objects.filter(artist=artist)
+                total_listens = sum(song.total_listens for song in songs)
+
+                # Log payment history
+                PaymentHistory.objects.create(
+                    artist=artist,
+                    amount=payment_request.amount,
+                    total_listens=total_listens,
+                    requested_at=payment_request.requested_at,
+                    approved_at=timezone.now()
+                )
+
+                # Approve and reset listens
+                payment_request.status = 'approved'
+                payment_request.save()
+                songs.update(total_listens=0)
 
     @admin.action(description="Reject selected requests")
     def reject_requests(self, request, queryset):

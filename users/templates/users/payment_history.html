@@ -1,0 +1,34 @@
+{% extends "users/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Payment History</h2>
+
+    {% if history %}
+    <div class="table-responsive">
+        <table class="table table-dark table-striped table-bordered mt-4">
+            <thead class="thead-light">
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Amount (₹)</th>
+                    <th scope="col">Total Listens</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in history %}
+                <tr>
+                    <td>{{ record.approved_at|date:"Y-m-d H:i" }}</td>
+                    <td>₹ {{ record.amount|floatformat:2 }}</td>
+                    <td>{{ record.total_listens }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info mt-4" role="alert">
+        No payment records found.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

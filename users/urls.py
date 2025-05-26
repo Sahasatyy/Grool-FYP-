@@ -2,7 +2,7 @@ from django.urls import path
 from .views import home, RegisterView 
 from . import views
 from .views import upload_song, edit_song, delete_song, toggle_favorite, create_playlist, edit_playlist, delete_playlist, add_song_to_playlist, remove_song_from_playlist, increment_listens
-from .views import song_list, get_songs, search, search_suggestions, song_detail, create_album, album_detail, edit_album, delete_album, update_merchandise, update_events, request_payment
+from .views import song_list, get_songs, search, search_suggestions, song_detail, create_album, album_detail, edit_album, delete_album, update_merchandise, update_events, request_payment, payment_history
 from .views import delete_album_song, subscription_plans, initiate_payment, verify_payment, subscription_success, revenue_details, track_play, revenue_stats, upload_support_qr, remove_support_qr, check_premium
 from django.conf import settings
 from django.conf.urls.static import static
@@ -58,6 +58,8 @@ urlpatterns = [
     path('artist/upload_qr/', views.upload_support_qr, name='upload_support_qr'),
     path('artist/remove_qr/', views.remove_support_qr, name='remove_support_qr'),
     path('check-premium/', views.check_premium, name='check_premium'),
+    path('payment-history/', views.payment_history, name='payment_history'),
+
 ]
 
 if settings.DEBUG:
