@@ -184,7 +184,13 @@
       <i class="bi bi-music-note-list"></i>
       Create Playlist
     </h2>
-    
+    {% if not is_premium and current_playlist_count >= max_free_playlists %}
+      <div class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle-fill"></i> You’ve reached your playlist limit ({{ max_free_playlists }}). 
+        <a href="{% url 'subscription_plans' %}">Upgrade to Premium</a> for unlimited playlists.
+      </div>
+    {% endif %}
+
     <form method="post">
       {% csrf_token %}
       
@@ -195,12 +201,20 @@
       </div>
       
       <!-- Public/Private Checkbox -->
+      {% if is_premium %}
       <div class="form-group">
         <div class="form-check">
           <input type="checkbox" id="is-public" name="is_public" class="form-check-input">
           <label for="is-public" class="form-check-label">Make this playlist public</label>
         </div>
       </div>
+      {% else %}
+      <div class="alert alert-warning">
+        <i class="bi bi-lock"></i> Public playlists are only available for <strong>Premium Users</strong>. 
+        <a href="{% url 'subscription_plans' %}">Go Premium</a> to unlock this feature.
+      </div>
+      {% endif %}
+
       
       
       <!-- Form Buttons -->

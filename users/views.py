@@ -1403,3 +1403,37 @@ def remove_support_qr(request):
         messages.success(request, 'QR code removed!')
     
     return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
+@require_POST
+@login_required
+def mark_premium(request):
+    plan_id = request.POST.get("plan_id")
+    try:
+        plan = SubscriptionPlan.objects.get(id=plan_id)
+
+        # Create or update UserSubscription (with test/manual identifier)
+        subscription, _ = UserSubscription.objects.update_or_create(
+            user=request.user,
+            defaults={
+                'plan': plan,
+                'is_active': True,
+                'payment_verified': True,
+                'start_date': timezone.now(),
+                'end_date': timezone.now() + timedelta(days=30),  # 30 days fixed like admin
+                'khalti_idx': "MANUAL-UPGRADE"
+            }
+        )
+
+        # Mirror admin premium upgrade logic
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        profile.is_premium = True
+        profile.premium_expiry = timezone.now() + timedelta(days=30)
+        profile.save()
+
+        messages.success(request, "You have been manually upgraded to premium for 30 days.")
+        return redirect('subscription_success')
+
+    except SubscriptionPlan.DoesNotExist:
+        messages.error(request, "Invalid subscription plan.")
+        return redirect('subscription_plans')
+
+

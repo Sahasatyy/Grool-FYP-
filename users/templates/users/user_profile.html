@@ -56,6 +56,18 @@
     margin-left: 0.5rem;
     font-size: 1.2rem;
   }
+
+    .premium-badge {
+  background-color: #28a745;  /* Bootstrap green */
+  color: white;
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
   
   /* Form Controls */
   .form-control {
@@ -329,6 +341,9 @@
             <p class="mb-3"><strong>First Name:</strong> {{ user.first_name }}</p>
             <p class="mb-3"><strong>Last Name:</strong> {{ user.last_name }}</p>
             <p class="mb-3"><strong>Bio:</strong> {{ user.profile.bio|default:"No bio available" }}</p>
+            {% if request.user.profile.has_active_premium %}
+              <span class="premium-badge">Premium</span>
+            {% endif %}
           </div>
 
           <!-- Action Buttons -->

@@ -893,6 +893,8 @@ body::-webkit-scrollbar,
 </style>
 
 <body>
+<form style="display: none;">{% csrf_token %}</form>
+
   <div class="content-wrapper">
     <!-- Sidebar -->
     <nav class="sidebar">
@@ -1183,288 +1185,212 @@ body::-webkit-scrollbar,
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-      const audioPlayer = new Audio();
-      const playPauseBtn = document.querySelector('.play-pause-btn');
-      const prevBtn = document.querySelector('.prev-btn');
-      const nextBtn = document.querySelector('.next-btn');
-      const progressBar = document.querySelector('.progress-bar');
-      const progressFill = document.querySelector('.progress-fill');
-      const progressHandle = document.querySelector('.progress-handle');
-      const currentTimeEl = document.querySelector('.current-time');
-      const totalTimeEl = document.querySelector('.total-time');
-      const volumeSlider = document.querySelector('.volume-slider');
-      const volumeFill = document.querySelector('.volume-fill');
-      const volumeHandle = document.querySelector('.volume-handle');
-      const songItems = document.querySelectorAll('.grid-item');
-      const repeatBtn = document.querySelector('.repeat-btn');
-      const shuffleBtn = document.querySelector('.shuffle-btn');
-  
-      let currentSongIndex = 0;
-      let isPlaying = false;
-      let isRepeatEnabled = false;
-      let isShuffleEnabled = false;
-      let songCount = 0;
-      const AD_INTERVAL = 3;
-      let isPlayingAd = false;
-      const adAudio = new Audio('/media/ads/30sec_ad.mp3');
-      let playStartTime;
-      let currentSongId = null;
+document.addEventListener('DOMContentLoaded', () => {
+    let showAds = true;
 
-      // Initialize repeat and shuffle buttons
-    repeatBtn.addEventListener('click', toggleRepeat);
-    shuffleBtn.addEventListener('click', toggleShuffle);
+    fetch('/check-premium/')
+        .then(res => res.json())
+        .then(data => {
+            showAds = !data.is_premium;
+            console.log("Premium status checked. showAds:", showAds);
+        })
+        .catch(err => console.error('Premium check failed:', err))
+        .finally(() => {
+            initializePlayer();
+        });
 
-    function toggleRepeat() {
-        isRepeatEnabled = !isRepeatEnabled;
-        repeatBtn.classList.toggle('active', isRepeatEnabled);
-    }
+    function initializePlayer() {
+        const audioPlayer = new Audio();
+        const adAudio = new Audio('/media/ads/30sec_ad.mp3');
+        const playPauseBtn = document.querySelector('.play-pause-btn');
+        const prevBtn = document.querySelector('.prev-btn');
+        const nextBtn = document.querySelector('.next-btn');
+        const progressBar = document.querySelector('.progress-bar');
+        const progressFill = document.querySelector('.progress-fill');
+        const progressHandle = document.querySelector('.progress-handle');
+        const currentTimeEl = document.querySelector('.current-time');
+        const totalTimeEl = document.querySelector('.total-time');
+        const volumeSlider = document.querySelector('.volume-slider');
+        const volumeFill = document.querySelector('.volume-fill');
+        const volumeHandle = document.querySelector('.volume-handle');
+        const repeatBtn = document.querySelector('.repeat-btn');
+        const shuffleBtn = document.querySelector('.shuffle-btn');
+        const songItems = document.querySelectorAll('.grid-item');
 
-    function toggleShuffle() {
-        isShuffleEnabled = !isShuffleEnabled;
-        shuffleBtn.classList.toggle('active', isShuffleEnabled);
-    }
-  
-      // Update song information
-      function updateSongInfo(songElement) {
-          const title = songElement.dataset.title;
-          const artist = songElement.dataset.artist;
-          const coverImage = songElement.dataset.cover;
-          currentSongId = songElement.dataset.songId;
-  
-          document.getElementById('current-song-title').textContent = title;
-          document.getElementById('current-song-artist').textContent = artist;
-          document.getElementById('current-song-image').src = coverImage;
-      }
-  
-      // Play/Pause functionality
-      function togglePlayPause() {
-          if (isPlayingAd) return;
-          
-          if (isPlaying) {
-              audioPlayer.pause();
-              playPauseBtn.querySelector('i').classList.replace('bi-pause-fill', 'bi-play-fill');
-          } else {
-              audioPlayer.play();
-              playPauseBtn.querySelector('i').classList.replace('bi-play-fill', 'bi-pause-fill');
-          }
-          isPlaying = !isPlaying;
-      }
-  
-      // Play a specific song
-      function playSong(songElement) {
-        if (isPlayingAd) return;
-        
-        // Reset previous song styling
-        songItems.forEach(item => item.classList.remove('active'));
-        songElement.classList.add('active');
+        let isPlaying = false;
+        let isRepeatEnabled = false;
+        let isShuffleEnabled = false;
+        let isPlayingAd = false;
+        let currentSongId = null;
+        let playStartTime = null;
+        let songCount = 0;
+        const AD_INTERVAL = 3;
 
-        // Update audio source and play
-        audioPlayer.src = songElement.dataset.audioUrl;
-        audioPlayer.play();
+        repeatBtn.addEventListener('click', () => {
+            isRepeatEnabled = !isRepeatEnabled;
+            repeatBtn.classList.toggle('active', isRepeatEnabled);
+        });
 
-        // Update UI
-        updateSongInfo(songElement);
-        playPauseBtn.querySelector('i').classList.replace('bi-play-fill', 'bi-pause-fill');
-        isPlaying = true;
-        
-        // Track playback start
-        playStartTime = Date.now();
-    }
-  
-      // Track playback and send data to server
-      function trackPlayDuration() {
-          if (playStartTime && currentSongId) {
-              const duration = Math.floor((Date.now() - playStartTime) / 1000);
-              
-              fetch(`/track-play/${currentSongId}/`, {
-                  method: 'POST',
-                  headers: {
-                      'Content-Type': 'application/json',
-                      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                  },
-                  body: JSON.stringify({duration: duration})
-              })
-              .then(response => response.json())
-              .then(data => {
-                  if (data.status === 'success') {
-                      // Update the UI with new stats
-                      const row = document.querySelector(`tr[data-song-id="${data.song_id}"]`);
-                      if (row) {
-                          row.querySelector('.song-plays').textContent = data.updated_stats.total_listens;
-                          row.querySelector('.song-qualified').textContent = data.updated_stats.qualified_plays;
-                          row.querySelector('.song-play-time').textContent = data.updated_stats.play_duration;
-                          row.querySelector('.song-revenue').textContent = data.updated_stats.revenue;
-                      }
-                  }
-              });
-              
-              playStartTime = null;
-          }
-      }
-  
-      // Skip to next/previous song
-      function skipSong(direction) {
-        if (isPlayingAd) return;
+        shuffleBtn.addEventListener('click', () => {
+            isShuffleEnabled = !isShuffleEnabled;
+            shuffleBtn.classList.toggle('active', isShuffleEnabled);
+        });
 
-        let newIndex;
-        const currentActiveIndex = Array.from(songItems).findIndex(item => item.classList.contains('active'));
+        function playSong(songElement) {
+            if (isPlayingAd) return;
+            songItems.forEach(item => item.classList.remove('active'));
+            songElement.classList.add('active');
+            audioPlayer.src = songElement.dataset.audioUrl;
+            audioPlayer.play();
+            document.getElementById('current-song-title').textContent = songElement.dataset.title;
+            document.getElementById('current-song-artist').textContent = songElement.dataset.artist;
+            document.getElementById('current-song-image').src = songElement.dataset.cover;
+            currentSongId = songElement.dataset.songId;
+            isPlaying = true;
+            playPauseBtn.querySelector('i').classList.replace('bi-play-fill', 'bi-pause-fill');
+            playStartTime = Date.now();
+        }
 
-        if (isShuffleEnabled) {
-            // For shuffle, find a random index that's not the current one
-            do {
-                newIndex = Math.floor(Math.random() * songItems.length);
-            } while (newIndex === currentActiveIndex && songItems.length > 1);
-        } else {
-            if (direction === 'next') {
-                newIndex = (currentActiveIndex + 1) % songItems.length;
+        function skipSong(direction) {
+            if (isPlayingAd) return;
+
+            const currentIndex = Array.from(songItems).findIndex(item => item.classList.contains('active'));
+            let nextIndex = isShuffleEnabled
+                ? (() => {
+                    let i;
+                    do { i = Math.floor(Math.random() * songItems.length); }
+                    while (i === currentIndex && songItems.length > 1);
+                    return i;
+                })()
+                : direction === 'next'
+                    ? (currentIndex + 1) % songItems.length
+                    : (currentIndex - 1 + songItems.length) % songItems.length;
+
+            if (showAds && (songCount + 1) % AD_INTERVAL === 0) {
+                playAd(() => {
+                    songCount++;
+                    playSong(songItems[nextIndex]);
+                });
             } else {
-                newIndex = (currentActiveIndex - 1 + songItems.length) % songItems.length;
+                songCount++;
+                playSong(songItems[nextIndex]);
             }
         }
 
-        songCount++;
-        checkForAd(newIndex);
-    }
-  
-    let showAds = true;
-
-    // Check premium status when page loads
-    fetch('/check-premium/')
-        .then(response => response.json())
-        .then(data => {
-            showAds = !data.is_premium;
-        });
-    
-    function checkForAd(nextIndex) {
-        if (showAds && songCount % AD_INTERVAL === 0 && !isPlayingAd) {
-            playAd();
-        } else {
-            playSong(songItems[nextIndex]);
+        function playAd(callback) {
+            isPlayingAd = true;
+            audioPlayer.pause();
+            document.getElementById('current-song-title').textContent = "Advertisement";
+            document.getElementById('current-song-artist').textContent = "";
+            document.getElementById('current-song-image').src = "/static/images/ad-placeholder.jpg";
+            adAudio.play();
+            adAudio.onended = () => {
+                isPlayingAd = false;
+                if (callback) callback();
+            };
         }
+
+        function togglePlayPause() {
+            if (isPlayingAd) return;
+            if (isPlaying) {
+                audioPlayer.pause();
+                playPauseBtn.querySelector('i').classList.replace('bi-pause-fill', 'bi-play-fill');
+            } else {
+                audioPlayer.play();
+                playPauseBtn.querySelector('i').classList.replace('bi-play-fill', 'bi-pause-fill');
+            }
+            isPlaying = !isPlaying;
+        }
+
+        function updateProgressBar() {
+            const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+            progressFill.style.width = `${progress}%`;
+            progressHandle.style.left = `${progress}%`;
+            currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
+            totalTimeEl.textContent = formatTime(audioPlayer.duration);
+        }
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60).toString().padStart(2, '0');
+            return `${mins}:${secs}`;
+        }
+
+        function trackPlayDuration() {
+            if (playStartTime && currentSongId) {
+                const duration = Math.floor((Date.now() - playStartTime) / 1000);
+                fetch(`/track-play/${currentSongId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({ duration })
+                });
+                playStartTime = null;
+            }
+        }
+
+        playPauseBtn.addEventListener('click', togglePlayPause);
+        prevBtn.addEventListener('click', () => skipSong('prev'));
+        nextBtn.addEventListener('click', () => skipSong('next'));
+        audioPlayer.addEventListener('timeupdate', updateProgressBar);
+        audioPlayer.addEventListener('pause', trackPlayDuration);
+        audioPlayer.addEventListener('ended', () => {
+            trackPlayDuration();
+            isRepeatEnabled ? audioPlayer.play() : skipSong('next');
+        });
+
+        progressBar.addEventListener('click', e => {
+            const rect = progressBar.getBoundingClientRect();
+            const pos = (e.clientX - rect.left) / rect.width;
+            audioPlayer.currentTime = pos * audioPlayer.duration;
+        });
+
+        volumeSlider.addEventListener('click', e => {
+            const rect = volumeSlider.getBoundingClientRect();
+            const pos = (e.clientX - rect.left) / rect.width;
+            audioPlayer.volume = pos;
+            volumeFill.style.width = `${pos * 100}%`;
+            volumeHandle.style.left = `${pos * 100}%`;
+        });
+
+        document.querySelectorAll('.play-button, .play-btn').forEach(button => {
+            button.addEventListener('click', e => {
+                const songElement = e.target.closest('.grid-item');
+                if (showAds && (songCount + 1) % AD_INTERVAL === 0) {
+                    playAd(() => {
+                        songCount++;
+                        playSong(songElement);
+                    });
+                } else {
+                    songCount++;
+                    playSong(songElement);
+                }
+            });
+        });
+
+        document.querySelectorAll('.favorite-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const songId = button.dataset.songId;
+                fetch(`/toggle-favorite/${songId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    button.classList.toggle('text-danger', data.is_favorited);
+                });
+            });
+        });
     }
-  
-      function playAd() {
-          isPlayingAd = true;
-          audioPlayer.pause();
-          
-          document.getElementById('current-song-title').textContent = "Advertisement";
-          document.getElementById('current-song-artist').textContent = "";
-          document.getElementById('current-song-image').src = "/static/images/ad-placeholder.jpg";
-          
-          adAudio.play();
-          
-          adAudio.onended = function() {
-              isPlayingAd = false;
-              const currentActiveIndex = Array.from(songItems).findIndex(item => item.classList.contains('active'));
-              const nextIndex = (currentActiveIndex + 1) % songItems.length;
-              playSong(songItems[nextIndex]);
-          };
-      }
-  
-      // Event Listeners
-      document.querySelectorAll('.play-button, .play-btn').forEach(button => {
-          button.addEventListener('click', function(e) {
-              e.stopPropagation();
-              const songElement = this.closest('.grid-item');
-              playSong(songElement);
-          });
-      });
-  
-      document.querySelectorAll('.favorite-button').forEach(button => {
-          button.addEventListener('click', function(e) {
-              e.stopPropagation();
-              const songId = this.getAttribute('data-song-id');
-              toggleFavorite(this);
-          });
-      });
-  
-      function toggleFavorite(heartIcon) {
-          const songId = heartIcon.getAttribute('data-song-id');
-          fetch(`/toggle-favorite/${songId}/`, {
-              method: 'POST',
-              headers: {
-                  'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                  'Content-Type': 'application/json',
-              },
-              credentials: 'same-origin',
-          })
-          .then(response => response.json())
-          .then(data => {
-              if (data.is_favorited) {
-                  heartIcon.classList.add('text-danger');
-              } else {
-                  heartIcon.classList.remove('text-danger');
-              }
-          })
-          .catch(error => console.error('Error:', error));
-      }
-  
-      playPauseBtn.addEventListener('click', togglePlayPause);
-      prevBtn.addEventListener('click', () => skipSong('prev'));
-      nextBtn.addEventListener('click', () => skipSong('next'));
-  
-      progressBar.addEventListener('click', (e) => {
-          const rect = progressBar.getBoundingClientRect();
-          const clickPosition = e.clientX - rect.left;
-          const progress = (clickPosition / rect.width) * audioPlayer.duration;
-          audioPlayer.currentTime = progress;
-  
-          if (!isPlaying) {
-              audioPlayer.play();
-              playPauseBtn.querySelector('i').classList.replace('bi-play-fill', 'bi-pause-fill');
-              isPlaying = true;
-          }
-      });
-  
-      volumeSlider.addEventListener('click', (e) => {
-          const rect = volumeSlider.getBoundingClientRect();
-          const clickPosition = e.clientX - rect.left;
-          const volume = clickPosition / rect.width;
-          audioPlayer.volume = volume;
-          volumeFill.style.width = `${volume * 100}%`;
-          volumeHandle.style.left = `${volume * 100}%`;
-      });
-  
-      audioPlayer.addEventListener('timeupdate', updateProgressBar);
-  
-      function updateProgressBar() {
-          const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-          progressFill.style.width = `${progress}%`;
-          progressHandle.style.left = `${progress}%`;
-          currentTimeEl.textContent = formatTime(audioPlayer.currentTime);
-          totalTimeEl.textContent = formatTime(audioPlayer.duration);
-      }
-  
-      function formatTime(seconds) {
-          if (isNaN(seconds)) return '0:00';
-          const minutes = Math.floor(seconds / 60);
-          const remainingSeconds = Math.floor(seconds % 60);
-          return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
-      }
-  
-      // Track when playback is paused
-      audioPlayer.addEventListener('pause', () => {
-          trackPlayDuration();
-      });
-  
-      // Track when song ends
-      audioPlayer.addEventListener('ended', () => {
-          trackPlayDuration();
-          
-          if (isRepeatEnabled) {
-              audioPlayer.currentTime = 0;
-              audioPlayer.play();
-          } else {
-              skipSong('next');
-          }
-      });
-  
-      // Track when new playback starts
-      audioPlayer.addEventListener('play', () => {
-          playStartTime = Date.now();
-      });
-  });
-  </script>
+});
+</script>
+
+
 </body>
 {% endblock content %}

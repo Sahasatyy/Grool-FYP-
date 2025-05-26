@@ -171,7 +171,16 @@
                                 data-plan-id="{{ plan.id }}">
                             Subscribe Now
                         </button>
+                        <!-- Fallback manual premium button -->
+                        <form method="post" action="{% url 'mark_premium' %}" class="mt-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="plan_id" value="{{ plan.id }}">
+                            <button type="submit" class="btn btn-outline-light w-100">
+                                Mark as Premium (Dev)
+                            </button>
+                        </form>
                     {% endif %}
+
                 </div>
             </div>
         </div>

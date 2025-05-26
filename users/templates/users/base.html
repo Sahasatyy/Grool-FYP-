@@ -233,6 +233,10 @@ body {
     border-left: 4px solid #17a2b8;
 }
 
+.badge.bg-success {
+    background-color: #00c853 !important;
+}
+
 /* Overlay */
 .message-overlay {
     position: fixed;
@@ -281,11 +285,18 @@ body {
     </div>
     <div class="user-actions">
         {% if user.is_authenticated %}
-            {% if user.profile.is_premium %}
-                <span class="badge bg-success me-2">Premium</span>
-            {% else %}
-                <a href="{% url 'subscription_plans' %}" class="btn btn-primary me-2">Go Premium</a>
+            {% if request.resolver_match.url_name != 'artist_profile' and request.resolver_match.url_name != 'user_profile' %}
+                {% if user.profile.has_active_premium %}
+                    <span class="badge bg-success me-2">Premium</span>
+                {% else %}
+                    <a href="{% url 'subscription_plans' %}" class="btn btn-warning me-2">
+                        <i class="bi bi-stars me-1"></i> Go Premium
+                    </a>
+                {% endif %}
             {% endif %}
+
+
+
             
             {% if user.profile.user_type == 'artist' %}
                 <a href="{% url 'artist_profile' user.id %}" class="btn btn-secondary me-2">Artist Dashboard</a>
