@@ -804,8 +804,10 @@
               </p>
               <p class="mb-3"><strong>Genre:</strong> {{ artist_profile.genre }}</p>
               <p class="mb-3"><strong>Bio:</strong> {{ artist_profile.bio }}</p>
+              {% if is_owner %}
               {% if request.user.profile.has_active_premium %}
                 <span class="premium-badge">Premium</span>
+              {% endif %}
               {% endif %}
             </div>
     
@@ -1084,9 +1086,8 @@
           <div class="favorites-grid-container mt-3">
             <div class="favorites-grid">
               {% for favorite in request.user.favorites.all %}
-                <div class="favorite-song-card" 
-                    data-song-id="{{ favorite.song.id }}"
-                    onclick="openSongDetailsModal('{{ favorite.song.id }}')">
+                <a href="{% url 'song_detail' favorite.song.id %}" class="favorite-song-card text-decoration-none text-white">
+
                   <div class="song-thumbnail">
                     {% if favorite.song.cover_image %}
                       <img src="{{ favorite.song.cover_image.url }}" alt="{{ favorite.song.title }}">
@@ -1103,7 +1104,7 @@
                       data-song-id="{{ favorite.song.id }}" 
                       onclick="toggleFavorite(event, this)"></i>
                   </div>
-                </div>
+                </a>
               {% empty %}
                 <p class="text-muted">No favorite songs found. Add some to your favorites!</p>
               {% endfor %}
@@ -1113,7 +1114,6 @@
       </div>
       {% endif %}
     
-      <!-- Recently Played Card - Removed to make space -->
     </div>
   </div>
 </div>
@@ -1141,11 +1141,8 @@
       {% if artist_profile.support_qr_code %}
         <h4 class="mb-4">Scan to Support</h4>
         <div class="qr-code-container mb-3 mx-auto">
-          <img src="{{ artist_profile.support_qr_code.url }}" 
-               alt="Support QR Code" 
-               class="img-fluid qr-code-image"
-               style="max-width: 250px; max-height: 250px;"
-               onerror="this.onerror=null;this.style.display='none';document.getElementById('qr-error').style.display='block'">
+          <img src="{{ artist_profile.support_qr_code.url }}" alt="Support QR Code" class="img-fluid qr-code-image">
+
         </div>
         <p class="text-muted mb-3">Scan this QR code with your payment app to support {{ artist_profile.artist_name }}</p>
         <div id="qr-error" style="display:none" class="alert alert-warning">
@@ -1185,7 +1182,7 @@
               </div>
               <h5>Direct Payment</h5>
             </div>
-            <p>Send support via PayPal, Venmo, or other payment methods if provided.</p>
+            <p>Send support via esewa, khalti, or other payment methods if provided.</p>
           </div>
           
           <div class="support-method">
@@ -1209,7 +1206,7 @@
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="mb-0">Your Support QR Code</h5>
             {% if artist_profile.support_qr_code %}
-              <span class="badge bg-success">
+              <span class="Premium-badge">
                 <i class="bi bi-check-circle-fill me-1"></i> Active
               </span>
             {% else %}
@@ -1227,7 +1224,7 @@
                   <input type="file" 
                          class="form-control" 
                          id="qrCodeUpload" 
-                         name="qr_code" 
+                         name="support_qr_code"
                          accept="image/png, image/jpeg, image/jpg"
                          required
                          onchange="previewQRCode(this)">
@@ -1283,25 +1280,31 @@
 
 <!-- Remove QR Code Confirmation Modal -->
 <div class="modal fade" id="confirmRemoveModal" tabindex="-1" aria-labelledby="confirmRemoveModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="confirmRemoveModalLabel">Confirm Removal</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content custom-confirm-modal">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="confirmRemoveModalLabel">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm QR Removal
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-        Are you sure you want to remove your support QR code? Fans won't be able to send you support until you upload a new one.
+      <div class="modal-body text-center">
+        <p class="text-muted small">Are you sure you want to remove your support QR code?</p>
+        <p class="text-muted small">Fans won’t be able to support you until you upload a new one.</p>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
         <form method="post" action="{% url 'remove_support_qr' %}" class="d-inline">
           {% csrf_token %}
-          <button type="submit" class="btn btn-danger">Remove QR Code</button>
+          <button type="submit" class="btn btn-danger px-4">
+            <i class="bi bi-trash me-2"></i>Remove
+          </button>
         </form>
       </div>
     </div>
   </div>
 </div>
+
 
 <!-- Upload Song Modal -->
 <div class="modal fade" id="uploadSongModal" tabindex="-1" aria-labelledby="uploadSongModalLabel" aria-hidden="true">

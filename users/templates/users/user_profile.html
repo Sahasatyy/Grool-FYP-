@@ -378,91 +378,92 @@
     {% endif %}
 
 
-     <!-- User Features Section -->
-     <div class="row mt-4 mb-4">
-      <!-- My Playlists Card -->
-      <div class="col-lg-4 col-md-6 mb-4">
-        <div class="feature-card p-4 h-100">
-          <div class="feature-icon mx-auto mb-2">
-            <i class="bi bi-music-note-list fs-1 text-primary"></i>
-          </div>
-          <h5 class="feature-title text-center">My Playlists</h5>
-          <p class="feature-text text-center">Your custom playlists</p>          
-          <div class="horizontal-grid-container mt-3">
-            <div class="horizontal-grid">
-              {% for playlist in request.user.playlists.all %}
-                <div class="music-card">
-                  <div class="thumbnail">
-                    {% if playlist.songs.first and playlist.songs.first.cover_image %}
-                      <img src="{{ playlist.songs.first.cover_image.url }}" alt="{{ playlist.name }}">
-                    {% else %}
-                      <img src="https://via.placeholder.com/100" alt="Playlist thumbnail">
-                    {% endif %}
-                  </div>
-                  <div class="item-details">
-                    <h6 class="item-title">{{ playlist.name }}</h6>
-                    <p class="item-subtitle">{{ playlist.songs.count }} songs</p>
-                  </div>
-                  <div class="item-actions">
-                    <a href="{% url 'playlist_detail' playlist.id %}" class="btn btn-outline-primary btn-xs">
-                      <i class="bi bi-eye me-1"></i>View
-                    </a>
-                    
-                    {% if is_owner %}
-                    <a href="{% url 'delete_playlist' playlist.id %}" class="btn btn-outline-danger btn-xs">
-                      <i class="bi bi-trash3 me-1"></i>Delete
-                    </a>
-                    {% endif %}
-                  </div>
-                </div>
-              {% empty %}
-                <p class="text-muted">No playlists found. Create one to get started!</p>
-              {% endfor %}
-            </div>
-          </div>
-        </div>
+    <!-- User Features Section -->
+<div class="row mt-4 mb-4">
+
+  <!-- My Playlists Card -->
+  <div class="col-lg-6 col-md-12 mb-4">
+    <div class="feature-card p-4 h-100">
+      <div class="feature-icon mx-auto mb-2">
+        <i class="bi bi-music-note-list fs-1 text-primary"></i>
       </div>
-    
-      <!-- Favorites Card -->
-      <div class="col-lg-4 col-md-6 mb-4">
-        <div class="feature-card p-4 h-100">
-          <div class="feature-icon mx-auto mb-2">
-            <i class="bi bi-heart-fill fs-1 text-danger"></i>
-          </div>
-          <h5 class="feature-title text-center">Favorites</h5>
-          <p class="feature-text text-center">Access your liked songs</p>
-          
-          <div class="horizontal-grid-container mt-3">
-            <div class="horizontal-grid">
-              {% for favorite in request.user.favorites.all %}
-                <div class="music-card" 
-                    data-song-id="{{ favorite.song.id }}"
-                    onclick="openSongDetailsModal('{{ favorite.song.id }}')">
-                  <div class="thumbnail">
-                    {% if favorite.song.cover_image %}
-                      <img src="{{ favorite.song.cover_image.url }}" alt="{{ favorite.song.title }}">
-                    {% else %}
-                      <img src="https://via.placeholder.com/100" alt="Song thumbnail">
-                    {% endif %}
-                  </div>
-                  <div class="item-details">
-                    <h6 class="item-title">{{ favorite.song.title }}</h6>
-                    <p class="item-subtitle">{{ favorite.song.artist.artist_name }}</p>
-                  </div>
-                  <div class="item-actions">
-                    <i class="bi bi-heart text-danger" 
-                      data-song-id="{{ favorite.song.id }}" 
-                      onclick="toggleFavorite(event, this)"></i>
-                  </div>
-                </div>
-              {% empty %}
-                <p class="text-muted">No favorite songs found. Add some to your favorites!</p>
-              {% endfor %}
+      <h5 class="feature-title text-center">My Playlists</h5>
+      <p class="feature-text text-center">Your custom playlists</p>
+
+      <div class="horizontal-grid-container mt-3">
+        <div class="horizontal-grid">
+          {% for playlist in request.user.playlists.all %}
+            <div class="music-card text-white text-decoration-none">
+              <div class="thumbnail">
+                {% if playlist.songs.first and playlist.songs.first.cover_image %}
+                  <img src="{{ playlist.songs.first.cover_image.url }}" alt="{{ playlist.name }}">
+                {% else %}
+                  <img src="https://via.placeholder.com/100" alt="Playlist thumbnail">
+                {% endif %}
+              </div>
+              <div class="item-details">
+                <h6 class="item-title">{{ playlist.name }}</h6>
+                <p class="item-subtitle">{{ playlist.songs.count }} songs</p>
+              </div>
+              <div class="item-actions">
+                <a href="{% url 'playlist_detail' playlist.id %}" class="btn btn-outline-primary btn-xs">
+                  <i class="bi bi-eye me-1"></i> View
+                </a>
+                {% if is_owner %}
+                  <a href="{% url 'delete_playlist' playlist.id %}" class="btn btn-outline-danger btn-xs">
+                    <i class="bi bi-trash3 me-1"></i> Delete
+                  </a>
+                {% endif %}
+              </div>
             </div>
-          </div>
+          {% empty %}
+            <p class="text-muted">No playlists found. Create one to get started!</p>
+          {% endfor %}
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Favorites Card -->
+  <div class="col-lg-6 col-md-12 mb-4">
+    <div class="feature-card p-4 h-100">
+      <div class="feature-icon mx-auto mb-2">
+        <i class="bi bi-heart-fill fs-1 text-danger"></i>
+      </div>
+      <h5 class="feature-title text-center">Favorites</h5>
+      <p class="feature-text text-center">Access your liked songs</p>
+
+      <div class="horizontal-grid-container mt-3">
+        <div class="horizontal-grid">
+          {% for favorite in request.user.favorites.all %}
+            <a href="{% url 'song_detail' favorite.song.id %}" class="music-card text-decoration-none text-white">
+              <div class="thumbnail">
+                {% if favorite.song.cover_image %}
+                  <img src="{{ favorite.song.cover_image.url }}" alt="{{ favorite.song.title }}">
+                {% else %}
+                  <img src="https://via.placeholder.com/100" alt="Song thumbnail">
+                {% endif %}
+              </div>
+              <div class="item-details">
+                <h6 class="item-title">{{ favorite.song.title }}</h6>
+                <p class="item-subtitle">{{ favorite.song.artist.artist_name }}</p>
+              </div>
+              <div class="item-actions">
+                <i class="bi bi-heart-fill text-danger"
+                   data-song-id="{{ favorite.song.id }}"
+                   onclick="toggleFavorite(event, this)"></i>
+              </div>
+            </a>
+          {% empty %}
+            <p class="text-muted">No favorite songs found. Add some to your favorites!</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
   </div>
 </div>
 

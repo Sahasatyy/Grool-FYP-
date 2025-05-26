@@ -992,7 +992,7 @@ body::-webkit-scrollbar,
                   <!-- Song Information -->
                   <div class="col-md-8">
                     <h3>{{ song.title }}</h3>
-                    <p class="text-muted">{{ song.artist.artist_name }}</p>
+                    <p><strong>{{ song.artist.artist_name }}</strong> </p>
                     <p><strong>Genre:</strong> {{ song.genres.all|join:", " }}</p>
                     <p><strong>Release Date:</strong> {{ song.release_date }}</p>
                     <p><strong>Explicit:</strong> {% if song.is_explicit %}Yes{% else %}No{% endif %}</p>

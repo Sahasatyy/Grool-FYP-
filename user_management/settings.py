@@ -208,9 +208,10 @@ DEFAULT_FROM_EMAIL = 'amatya.sahas@gmail.com'  # Default sender
 # settings.py
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = BASE_DIR / 'media'
 
-# Add these settings at the bottom of your settings.py
+
+
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # This is where collected static files will be stored
 STATICFILES_DIRS = [

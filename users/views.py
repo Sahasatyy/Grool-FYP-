@@ -1366,42 +1366,45 @@ import os
 @login_required
 def upload_support_qr(request):
     artist_profile = get_object_or_404(ArtistProfile, user_profile__user=request.user)
-    
+
     if request.method == 'POST':
         form = SupportQRForm(request.POST, request.FILES, instance=artist_profile)
         if form.is_valid():
             try:
-                # Delete old QR code if exists
-                if artist_profile.support_qr_code:
-                    artist_profile.support_qr_code.delete()
-                
-                # Save the new QR code
-                artist_profile = form.save()
-                
-                # Verify the file was saved
-                if artist_profile.support_qr_code:
-                    messages.success(request, 'QR code uploaded successfully!')
-                    return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
-                else:
-                    messages.error(request, 'Failed to save QR code')
+                # Safely delete old QR code file if exists
+                old_qr = artist_profile.support_qr_code
+                if old_qr and old_qr.name and old_qr.storage.exists(old_qr.name):
+                    old_qr.delete(save=False)
+
+                # Save new file
+                updated_profile = form.save()
+
+                if updated_profile.support_qr_code:
+                    print("QR URL:", updated_profile.support_qr_code.url)
+
+                messages.success(request, 'QR code uploaded successfully!')
             except Exception as e:
                 messages.error(request, f'Error uploading QR code: {str(e)}')
         else:
-            messages.error(request, 'Invalid form data')
-    
+            messages.error(request, 'Invalid form data. Please upload a valid image.')
+
     return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
 
 
 @login_required
 def remove_support_qr(request):
     artist_profile = get_object_or_404(ArtistProfile, user_profile__user=request.user)
-    
+
     if artist_profile.support_qr_code:
-        artist_profile.support_qr_code.delete()
+        try:
+            artist_profile.support_qr_code.delete(save=False)
+        except Exception as e:
+            messages.warning(request, f'QR code delete error: {str(e)}')
+
         artist_profile.support_qr_code = None
         artist_profile.save()
         messages.success(request, 'QR code removed!')
-    
+
     return redirect('artist_profile', artist_id=artist_profile.user_profile.user.id)
 @require_POST
 @login_required

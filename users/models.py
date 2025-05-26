@@ -58,13 +58,8 @@ class ArtistProfile(models.Model):
     monthly_listeners = models.PositiveIntegerField(default=0)  # Number of monthly listeners
     total_plays = models.PositiveIntegerField(default=0)        # Total plays of all songs
     total_revenue = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # Total revenue in dollars
-    support_qr_code = models.ImageField(
-        upload_to=qr_code_upload_path,
-        null=True,
-        blank=True,
-        verbose_name='Support QR Code',
-        help_text='Upload a QR code for fans to support you'
-    )
+    support_qr_code = models.ImageField(upload_to='support_qr/', blank=True, null=True)
+
     support_message = models.TextField(blank=True, default="")
 
     merchandise_url = models.URLField(blank=True, null=True, verbose_name="Merchandise URL")
