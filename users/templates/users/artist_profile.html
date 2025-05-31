@@ -805,10 +805,11 @@
               <p class="mb-3"><strong>Genre:</strong> {{ artist_profile.genre }}</p>
               <p class="mb-3"><strong>Bio:</strong> {{ artist_profile.bio }}</p>
               {% if is_owner %}
-              {% if request.user.profile.has_active_premium %}
-                <span class="premium-badge">Premium</span>
+                {% if request.user.profile.has_active_premium %}
+                  <a href="{% url 'subscription_success' %}" class="premium-badge">Premium</a>
+                {% endif %}
               {% endif %}
-              {% endif %}
+
             </div>
     
             <div class="col-md-3 text-end">

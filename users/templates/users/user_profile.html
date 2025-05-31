@@ -341,9 +341,9 @@
             <p class="mb-3"><strong>First Name:</strong> {{ user.first_name }}</p>
             <p class="mb-3"><strong>Last Name:</strong> {{ user.last_name }}</p>
             <p class="mb-3"><strong>Bio:</strong> {{ user.profile.bio|default:"No bio available" }}</p>
-            {% if request.user.profile.has_active_premium %}
-              <span class="premium-badge">Premium</span>
-            {% endif %}
+              {% if request.user.profile.has_active_premium %}
+                <a href="{% url 'subscription_success' %}" class="premium-badge">Premium</a>
+              {% endif %}
           </div>
 
           <!-- Action Buttons -->
